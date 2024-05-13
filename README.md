@@ -1,13 +1,13 @@
 # 135 Blocks
-This is designed to be a template-based way for FRC programming.
+This is designed to be a template-based framework for FRC programming.
 
-This is designed so that the only files that need changing to combine different subsystems, if done properly, is RobotContainer.java.
+This is designed so that the only files that need changing to combine different subsystems is RobotContainer.java if used properly.
 #### Every single block has the following subsystems built in for ease of development:
 
 - Swerve Drive
-- Custom Data Handler
+- Custom Data Handler (DataLog)
 - AdvantageKit
-
+ 
 #### Preferably, do NOT touch any of the drive/* contents, as that could cause a merge error!
 ###### However, some files do need to change interactions with the base, so it is understandable in some situations.
 #### An example branch directory could be
