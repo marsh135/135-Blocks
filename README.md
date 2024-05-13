@@ -13,23 +13,23 @@ This is designed so that the only files that need changing to combine different 
 #### An example branch directory could be
 
     src/main/java/frc/robot/
-            commands/
-					drive/
-							...
-                    exampleBranchName/
-							exampleCommand.java
-            subsystems/
-					drive/
-							...
-					exampleBranchName/
-							exampleSubsystem.java
-            utils/
-					drive/
-							...
-					exampleBranchName/
-							Constants.java
-            Constants.java
-			DataHandler.java
-			Main.java
-			Robot.java
-			RobotContainer.java
+        commands/
+		drive/
+			...
+        	exampleBranchName/
+			exampleCommand.java
+        subsystems/
+		drive/
+			...
+		exampleBranchName/
+			exampleSubsystem.java
+        utils/
+		drive/
+			...
+		exampleBranchName/
+			Constants.java
+        Constants.java
+	DataHandler.java
+	Main.java
+	Robot.java
+	RobotContainer.java
