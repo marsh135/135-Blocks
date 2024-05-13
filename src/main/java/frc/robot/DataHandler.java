@@ -94,7 +94,7 @@ public class DataHandler {
 				fileCreated = true;
 			}
 			//Creates an actual file in the directory
-			System.out.println("Path" + createdFile.getAbsolutePath());
+			System.out.println("Path: " + createdFile.getAbsolutePath());
 			createdFile.createNewFile();
 			//Adds 1 to the id then writes it to the first line, this is used to ensure no two logs have the same file number.
 			id += 1;
