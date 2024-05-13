@@ -20,8 +20,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 // edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.utils.drive.DriveConstants;
 
 public class SwerveModule extends SubsystemBase {
 	private final CANSparkMax driveMotor;
@@ -94,13 +94,13 @@ public class SwerveModule extends SubsystemBase {
 		turningMotor.setIdleMode(IdleMode.kBrake);
 		//accounts for gear ratios
 		driveEncoder.setPositionConversionFactor(
-				Constants.SwerveConstants.kDriveEncoderRot2Meter);
+				DriveConstants.SwerveConstants.kDriveEncoderRot2Meter);
 		driveEncoder.setVelocityConversionFactor(
-				Constants.SwerveConstants.kDriveEncoderRPM2MeterPerSec);
+				DriveConstants.SwerveConstants.kDriveEncoderRPM2MeterPerSec);
 		turningEncoder.setPositionConversionFactor(
-				Constants.SwerveConstants.kTurningEncoderRot2Rad);
+				DriveConstants.SwerveConstants.kTurningEncoderRot2Rad);
 		turningEncoder.setVelocityConversionFactor(
-				Constants.SwerveConstants.kTurningEncoderRPM2RadPerSec);
+				DriveConstants.SwerveConstants.kTurningEncoderRPM2RadPerSec);
 		//creates pidController, used exclusively for turning because that has to be precise
 		turningPIDController = new PIDController(.5, 0, 0);
 		//makes the value loop around
