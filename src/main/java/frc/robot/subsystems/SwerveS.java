@@ -165,7 +165,7 @@ public class SwerveS extends SubsystemBase {
 
 	public static boolean autoLock = false;
 	public static boolean redIsAlliance = true;
-	private static double kP, kI, kD;
+	private static double kP, kI, kD, kDistanceMultipler;
 	public PIDController autoLockController; //sadly cannot be system Id'd
 	//so that the navXDisconnect command doesn't start twice
 	int debounce = 0;
@@ -217,9 +217,11 @@ public class SwerveS extends SubsystemBase {
 		kP = Constants.DriveConstants.kP;
 		kI = Constants.DriveConstants.kI;
 		kD = Constants.DriveConstants.kD;
+		kDistanceMultipler = Constants.DriveConstants.kDistanceMultipler;
 		SmartDashboard.putNumber("P Gain AutoLock", kP);
 		SmartDashboard.putNumber("I Gain AutoLock", kI);
 		SmartDashboard.putNumber("D Gain AutoLock", kD);
+		SmartDashboard.putNumber("Distance AutoLock", kDistanceMultipler);
 		autoLockController = new PIDController(kP, kI, kD);
 		if (Robot.isSimulation()){
 			SimShootNote.setRobotPoseSupplier(pose2dSupplier);
@@ -288,6 +290,8 @@ public class SwerveS extends SubsystemBase {
 				Constants.DriveConstants.kI);
 		double d = SmartDashboard.getNumber("D Gain AutoLock",
 				Constants.DriveConstants.kD);
+		double distance = SmartDashboard.getNumber("Distance AutoLock",
+				Constants.DriveConstants.kDistanceMultipler);
 		if ((p != kP)) {
 			autoLockController.setP(p);
 			kP = p;
@@ -300,6 +304,13 @@ public class SwerveS extends SubsystemBase {
 			autoLockController.setD(d);
 			kD = d;
 		}
+		if ((distance != kDistanceMultipler)) {
+			kDistanceMultipler = distance;
+		}
+		autoLockController.setP(kP / Math.abs((1 +
+				(Constants.DriveConstants.kDistanceMultipler * getPoseMeters().getX()))));
+		// larger the distance, lower the P so not crazy
+
 		//xError = tx.getDouble(0.0);
 		m_modulePositions = getModulePositions();
 		// LIST MODULES IN THE SAME EXACT ORDER USED WHEN DECLARING SwerveDriveKinematics
