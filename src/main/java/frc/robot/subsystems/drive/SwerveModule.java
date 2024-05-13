@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.drive;
 
 // import
 // com.ctre.phoenix.sensors.CANCoder;
@@ -102,9 +102,7 @@ public class SwerveModule extends SubsystemBase {
 		turningEncoder.setVelocityConversionFactor(
 				Constants.SwerveConstants.kTurningEncoderRPM2RadPerSec);
 		//creates pidController, used exclusively for turning because that has to be precise
-		//must test updated
 		turningPIDController = new PIDController(.5, 0, 0);
-		//turningPIDController = new ProfiledPIDController(.5, 0, 0,new TrapezoidProfile.Constraints(Constants.DriveConstants.kMaxTurningSpeedRadPerSec,Constants.DriveConstants.kTeleTurningMaxAcceleration));
 		//makes the value loop around
 		turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
 		drivePIDController = new PIDController(driveKpKsKvKa[0], 0, 0);
@@ -178,15 +176,7 @@ public class SwerveModule extends SubsystemBase {
 		angle *= (absoluteEncoderReversed ? -1 : 1);
 		return angle;
 	}
-	/* public double getAbsoluteEncoderRad() {
-	    double angle = absoluteEncoder.getAbsolutePosition();
-	    angle /= 360;
-	    angle *= 2 * Math.PI;
-	    angle -= absoluteEncoderOffsetRad;
-	    angle *= (absoluteEncoderReversed ? -1 : 1);
-	    return angle;
-	} */
-
+	
 	public void resetEncoders() {
 		//resets the encoders, (drive motor becomes zero, turning encoder becomes the module heading from the absolute encoder)
 		driveEncoder.setPosition(0);
@@ -241,7 +231,7 @@ public class SwerveModule extends SubsystemBase {
 		m_simDriveEncoderPosition += distancePer20Ms;
 	}
 
-	@SuppressWarnings("unused")
+	@SuppressWarnings("unused") //incase we want accurate sim turn (this doesn't work right now tho!)
 	private void simTurnPosition(double angle) {
 		if (angle != m_currentAngle && m_simTurnAngleIncrement == 0) {
 			m_simAngleDifference = angle - m_currentAngle;

@@ -14,12 +14,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.LEDStripS;
-import frc.robot.utils.SimShootNote;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
-
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -29,7 +25,6 @@ import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
  */
 public class Robot extends LoggedRobot {
 	private Command m_autonomousCommand;
-	private boolean hasBeenEnabled;
 	private RobotContainer m_robotContainer;
 	public static boolean isReal;
 
@@ -63,14 +58,9 @@ public class Robot extends LoggedRobot {
 		}
 		DataLogManager.start();
 		DriverStation.startDataLog(DataLogManager.getLog());
-		Logger.registerURCL(URCL.startExternal(Constants.DataLog.manCanIdsToNames()));
+		Logger.registerURCL(URCL.startExternal(Constants.manCanIdsToNames()));
 		Logger.start();
 		m_robotContainer = new RobotContainer();
-		if (Robot.isReal()) {
-			DataHandler.createLogFileOnRIOUSB();
-		} else if (Robot.isSimulation()) {
-			DataHandler.createLogFileinSimulation("C:");
-		}
 	}
 
 	/**
@@ -142,20 +132,10 @@ public class Robot extends LoggedRobot {
 	/** This function is called once when the robot is first started up. */
 	@Override
 	public void simulationInit() {
-		AddressableLEDSim ledSim = new AddressableLEDSim(LEDStripS.leds);
-		ledSim.setLength(Constants.LEDConstants.ledBufferLength);
-		ledSim.setInitialized(true);
 	}
 
 	/** This function is called periodically whilst in simulation. */
 	@Override
 	public void simulationPeriodic() {
-		if (DriverStation.isAutonomousEnabled() && !hasBeenEnabled) {
-			SimShootNote.resetNotes();
-			hasBeenEnabled = true;
-		} else if (DriverStation.isDisabled()) {
-			hasBeenEnabled = false;
-		}
-		DataHandler.updateHandlerState();
 	}
 }
