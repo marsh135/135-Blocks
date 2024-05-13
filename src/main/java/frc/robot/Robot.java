@@ -61,6 +61,11 @@ public class Robot extends LoggedRobot {
 		Logger.registerURCL(URCL.startExternal(Constants.manCanIdsToNames()));
 		Logger.start();
 		m_robotContainer = new RobotContainer();
+		if (Robot.isReal()) {
+			DataHandler.createLogFileOnRIOUSB();
+		} else if (Robot.isSimulation()) {
+			DataHandler.createLogFileinSimulation("C:");
+		}
 	}
 
 	/**
@@ -137,5 +142,6 @@ public class Robot extends LoggedRobot {
 	/** This function is called periodically whilst in simulation. */
 	@Override
 	public void simulationPeriodic() {
+		DataHandler.updateHandlerState();
 	}
 }

@@ -18,7 +18,7 @@ public final class Constants {
 		/** Replaying from a log file. */
 		REPLAY
 	}
-
+	//put datalog constants IN THE UTIL FOR THAT FILE. 
 	public static Map<Integer, String> manCanIdsToNames() {
 		HashMap<Integer, String> map = new HashMap<>();
 		//this has to be adjusted for every block branch added!
