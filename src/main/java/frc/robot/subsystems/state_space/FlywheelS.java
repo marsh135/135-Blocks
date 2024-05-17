@@ -34,10 +34,10 @@ import frc.robot.utils.state_space.StateSpaceConstants;
 
 public class FlywheelS extends SubsystemBase {
 	//initialize motors
-	public CANSparkMax flywheel = new CANSparkMax(
+	private CANSparkMax flywheel = new CANSparkMax(
 			StateSpaceConstants.Flywheel.kMotorID, MotorType.kBrushless);
 	//encoders
-	public static RelativeEncoder flywheelEncoder;
+	private static RelativeEncoder flywheelEncoder;
 	//System ID Routine
 	Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1)); // for going FROM ZERO PER SECOND, this is 1v per 1sec.
 	Measure<Voltage> holdVoltage = Volts.of(7); //what voltage should I hold during Quas test?
@@ -91,7 +91,7 @@ public class FlywheelS extends SubsystemBase {
 	private final static LinearQuadraticRegulator<N1, N1, N1> m_controller = new LinearQuadraticRegulator<>(
 			flywheelPlant,
 			VecBuilder.fill(StateSpaceConstants.Flywheel.m_LQRQelms),
-			VecBuilder.fill(StateSpaceConstants.Flywheel.m_LQRVolts), dtSeconds);
+			VecBuilder.fill(StateSpaceConstants.Flywheel.m_LQRRVolts), dtSeconds);
 	/**
 	 * A state-space loop combines a controller, observer, feedforward, and plant
 	 * all into one. It does everything! The random 12 is the upper limit on
@@ -165,7 +165,7 @@ public class FlywheelS extends SubsystemBase {
 		return sysIdRoutine.dynamic(direction);
 	}
 
-	//TODO: test comment
+	//TODO: test me!
 	public static double getSpeedError(double setRPM) {
 		return Math.abs(flywheelVelocity - setRPM);
 		// return m_bottomLoop.getError(0); //very low chance this is the wrong call
