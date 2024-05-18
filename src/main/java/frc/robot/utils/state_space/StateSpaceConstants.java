@@ -6,7 +6,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.RobotContainer;
 import frc.robot.utils.drive.DriveConstants;
-import frc.robot.utils.drive.MotorConstantHolder;
+import frc.robot.utils.drive.MotorConstantContainer;
 
 public class StateSpaceConstants {
 	public static boolean debug = true;
@@ -27,7 +27,7 @@ public class StateSpaceConstants {
 		public static boolean inverted = false;
 		public static IdleMode mode = IdleMode.kBrake;
 		public static int kMotorID = 20, maxRPM = 7100;
-		public static MotorConstantHolder flywheelValueHolder = new MotorConstantHolder(-0.089838, 0.0015425 * .928,0.00039717 * 1, 0, 0);
+		public static MotorConstantContainer flywheelValueHolder = new MotorConstantContainer(-0.089838, 0.0015425 * .928,0.00039717 * 1, 0, 0);
 		public static double m_KalmanModel = 3,
 				m_KalmanEncoder = 0.01, m_LQRQelms = 1, m_LQRRVolts = 12,
 				flywheelGearing = 1.5;
@@ -37,7 +37,7 @@ public class StateSpaceConstants {
 		public static boolean inverted = false;
 		public static IdleMode mode = IdleMode.kBrake;
 		public static int kMotorID = 30;
-		public static MotorConstantHolder armValueHolder = new MotorConstantHolder(.001, .001, .001, 0, 0); //must have position set in SysId
+		public static MotorConstantContainer armValueHolder = new MotorConstantContainer(.001, .001, .001, 0, 0); //must have position set in SysId
 		public static double m_KalmanModelPosition = .015, m_KalmanModelVelocity = .17,
 				m_KalmanEncoder = 0.01, m_LQRQelmsPosition = 1,
 				m_LQRQelmsVelocity = 10, m_LQRRVolts = 12, armGearing = 1.5,
