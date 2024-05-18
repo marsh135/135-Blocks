@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import frc.robot.Constants;
-import frc.robot.Robot;
 import frc.robot.utils.leds.LEDConstants;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -25,6 +24,15 @@ public class LEDs extends SubsystemBase {
 	public static AddressableLEDSim ledSim;
 	public static String gifStorage;
 	public LEDs() {
+		switch (Constants.currentMode){
+			case REAL:
+				gifStorage = "/U/images";
+				break;
+			default:
+				ledSim = new AddressableLEDSim(leds);
+				gifStorage = "src\\main\\java\\frc\\robot\\utils\\leds\\images";
+				break;
+		}
 		//creates LED objects (the actual LEDs, and a buffer that stores data to be sent to them)
 		leds = new AddressableLED(LEDConstants.ledPort);
 		ledBuffer = new AddressableLEDBuffer(LEDConstants.ledBufferLength);
@@ -33,19 +41,6 @@ public class LEDs extends SubsystemBase {
 		//starts LED strips
 		leds.start(); //FOR THE LOVE OF GOD PLEASE REMEMBER THIS IF YOU'RE GONNA CODE YOUR OWN SUBSYSTEM I SPENT LIKE 6 HOURS TROUBLESHOOTING AND IT DIDNT WORK BECAUSE OF THIS
 		//if the robot is a simulation, create a simulation for the addressableLEDs
-		switch (Constants.currentMode){
-			case REAL:
-				gifStorage = "/U/images";
-			default:
-				ledSim = new AddressableLEDSim(leds);
-				gifStorage = "src\\main\\java\\frc\\robot\\utils\\leds\\images";
-				break;
-		}
-		if (Robot.isSimulation()) {
-
-		}else{
-
-		}
 	}
 
 	public static List<List<byte[][]> > preprocessImages(List<String> gifPaths) {
