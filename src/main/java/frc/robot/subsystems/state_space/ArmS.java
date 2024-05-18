@@ -325,7 +325,7 @@ public class ArmS extends SubsystemBase {
 		Logger.recordOutput("MyMechanism", m_mech2d);
 		//calcualate arm pose
 		var armPose = new Pose3d(0.292, 0, 0.1225,
-				new Rotation3d(0, -Units.degreesToRadians(m_position), 0.0));
+				new Rotation3d(0, -m_lastProfiledReference.position, 0.0));
 		Logger.recordOutput("Mechanism3d/", armPose);
 	}
 }
