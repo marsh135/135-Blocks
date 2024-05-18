@@ -16,7 +16,7 @@ public class StateSpaceConstants {
 		 * Left trigger is used for RPM speed. 0-0 1-7100.
 		 * Right trigger is used for arm Speed 0-0 1-maxArmSpeed.
 		 */
-		public static double kDeadband = 0.1, kArmDeadband = 0.05;
+		public static double kDeadband = 0.1, kArmDeadband = 0.1, armMoveSpeed = .01;
 		public static JoystickButton setButton = new JoystickButton(
 				RobotContainer.manipController, 3), //x
 				go45Button = new JoystickButton(RobotContainer.manipController, 1), //a

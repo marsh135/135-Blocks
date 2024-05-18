@@ -114,7 +114,7 @@ public class ArmS extends SubsystemBase {
 	 * TrapezoidProfile States are basically just a position in rads with a velocity in Rad/s
 	 * Here, we provide our starting position.
 	 */
-	private TrapezoidProfile.State goal = new TrapezoidProfile.State(
+	private static TrapezoidProfile.State goal = new TrapezoidProfile.State(
 			StateSpaceConstants.Arm.startingPosition, 0);
 		
 	/**
@@ -184,7 +184,7 @@ public class ArmS extends SubsystemBase {
 	}
 
 	public static double getDistance() { return m_position; }
-
+	public static double getSetpoint(){ return goal.position; }
 	public double getVelocity() { return m_velocity; }
 
 	/**
@@ -290,11 +290,9 @@ public class ArmS extends SubsystemBase {
 		updateEncoders();
 		if (StateSpaceConstants.debug) {
 			SmartDashboard.putNumber("Angle Error", getError());
-			SmartDashboard.putNumber("SETPOINT", goal.position);
-			SmartDashboard.putNumber("CURRENT WANTED SPOT", m_lastProfiledReference.position);
-			SmartDashboard.putNumber("pos according", m_position);
-
-
+			SmartDashboard.putNumber("SETPOINT", Units.radiansToDegrees(goal.position));
+			SmartDashboard.putNumber("CURRENT WANTED SPOT", Units.radiansToDegrees(m_lastProfiledReference.position));
+			SmartDashboard.putNumber("pos according",Units.radiansToDegrees(m_position));
 		}
 		m_lastProfiledReference = m_profile.calculate(dtSeconds,
 				m_lastProfiledReference, goal); //calculate where it SHOULD be.
