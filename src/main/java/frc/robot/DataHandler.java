@@ -66,7 +66,7 @@ public class DataHandler {
 	 * @see DataHandler
 	 */
 	public static void setSimDisk(String directory){
-		DataHandler.directoryName = directory;
+		DataHandler.diskName = directory;
 	}
 
 	/**
