@@ -70,16 +70,14 @@ public class ArmS extends SubsystemBase {
 			new SysIdRoutine.Mechanism((Measure<Voltage> volts) -> {
 				setIntakeMotorVolts(volts.in(Volts));
 			}, null, this));
-	/* 
-	//using MOI (currently broke estimate)
-	private final LinearSystem<N2,N1,N1> m_armPlant = 
-	    LinearSystemId.createSingleJointedArmSystem(DCMotor.getNEO(1), SingleJointedArmSim.estimateMOI(Units.inchesToMeters(5), Units.lbsToKilograms(13)), 400);
-	*/
 	//using sysId
 	/*
 	 * All Arm Statespace uses an N2 at the first position, because we care about velocity AND position of the arm.
 	 * First position in the Nat is for Position, second is Velocity.
 	 */
+	//private final LinearSystem<N2,N1,N1> m_armPlant = 
+	 //   LinearSystemId.createSingleJointedArmSystem(DCMotor.getNEO(1), SingleJointedArmSim.estimateMOI(Units.inchesToMeters(10), Units.lbsToKilograms(6)), 150);
+	
 	private final LinearSystem<N2, N1, N1> m_armPlant = LinearSystemId
 			.identifyPositionSystem(
 					StateSpaceConstants.Arm.armValueHolder.getKv(),
@@ -133,7 +131,7 @@ public class ArmS extends SubsystemBase {
 			DCMotor.getNEO(1), StateSpaceConstants.Arm.armGearing,
 			StateSpaceConstants.Arm.armLength,
 			StateSpaceConstants.Arm.startingPosition,
-			StateSpaceConstants.Arm.maxPosition, true,
+			StateSpaceConstants.Arm.maxPosition, false,
 			StateSpaceConstants.Arm.startingPosition);
 	// Create a Mechanism2d display of an Arm with a fixed ArmTower and moving Arm.
 	/*
@@ -279,6 +277,7 @@ public class ArmS extends SubsystemBase {
 		default:
 			m_position = simArm.getAngleRads();
 			m_velocity = simArm.getVelocityRadPerSec();
+			m_arm.setAngle(m_position);
 			break;
 		}
 	}
@@ -312,9 +311,8 @@ public class ArmS extends SubsystemBase {
 				armMotor.setVoltage(nextVoltage);
 				break;
 			default:
-				simArm.setInput(nextVoltage);
+				simArm.setInputVoltage(nextVoltage);
 				simArm.update(dtSeconds);
-				m_arm.setAngle(m_position);
 				break;
 		}
 
