@@ -82,8 +82,8 @@ public class ArmS extends SubsystemBase {
 	 */
 	private final LinearSystem<N2, N1, N1> m_armPlant = LinearSystemId
 			.identifyPositionSystem(
-					StateSpaceConstants.Arm.kArmVVoltSecondsPerRotation,
-					StateSpaceConstants.Arm.kArmAVoltSecondsSquaredPerRotation);
+					StateSpaceConstants.Arm.armValueHolder.getKv(),
+					StateSpaceConstants.Arm.armValueHolder.getKa());
 	private final KalmanFilter<N2, N1, N1> m_observer = new KalmanFilter<>(
 			Nat.N2(), Nat.N1(), m_armPlant,
 			VecBuilder.fill(StateSpaceConstants.Arm.m_KalmanModelPosition,
