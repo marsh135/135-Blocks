@@ -1,4 +1,4 @@
-package frc.robot.utils.state_space;
+package frc.robot.utils.drive;
 
 /**
  * Class designed to hold the values for Kp, Ks, Kv for state-space models and P and D for PID loops. Remember to check whether your loop should be position or velocity
@@ -14,10 +14,10 @@ package frc.robot.utils.state_space;
  * the D Value from SysId, used in PID loops
  * 
  */
-public class StateSpaceValueHolder {
+public class MotorConstantHolder {
 	private static double[] valueHolderArray = new double[5];
 	
-	public StateSpaceValueHolder(double Ks, double Kv, double Ka, double P, double D) {
+	public MotorConstantHolder(double Ks, double Kv, double Ka, double P, double D) {
 		if ((Ka <= 0) || (Kv <= 0)) {
 			throw new ArithmeticException("Ka and Kv must be greater than 0");
 		} else if ((P < 0) || (D < 0)) {
