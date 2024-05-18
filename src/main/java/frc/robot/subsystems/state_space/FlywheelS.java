@@ -140,12 +140,12 @@ public class FlywheelS extends SubsystemBase {
 		switch (Constants.currentMode) {
 		case REAL:
 			flywheel.setVoltage(nextVoltage);
-			flywheelVelocity = flywheelEncoder.getVelocity();
+			flywheelVelocity = flywheelEncoder.getVelocity(); //may need converted to Rad/S ?
 			break;
 		default:
 			flywheelSim.setInput(nextVoltage);
 			flywheelSim.update(dtSeconds);
-			flywheelVelocity = flywheelSim.getAngularVelocityRPM();
+			flywheelVelocity = Units.rotationsPerMinuteToRadiansPerSecond(flywheelSim.getAngularVelocityRPM()); //magic
 			break;
 		}
 		if (StateSpaceConstants.debug) {

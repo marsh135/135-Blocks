@@ -14,6 +14,7 @@ public class StateSpaceConstants {
 	public class Controls {
 		/* Enter any non-button controls here.
 		 * Left trigger is used for RPM speed. 0-0 1-7100.
+		 * Right trigger is used for arm Speed 0-0 1-maxArmSpeed.
 		 */
 		public static double kDeadband = 0.1, kArmDeadband = 0.05;
 		public static JoystickButton setButton = new JoystickButton(
@@ -26,9 +27,9 @@ public class StateSpaceConstants {
 		public static boolean inverted = false;
 		public static IdleMode mode = IdleMode.kBrake;
 		public static int kMotorID = 20, maxRPM = 7100;
-		public static double kFlywheelP = 0, kFlywheelSVolts = 0,
-				kFlywheelVVoltSecondsPerRotation = 0,
-				kFlywheelAVoltSecondsSquaredPerRotation = 0, m_KalmanModel = 3,
+		public static double kFlywheelP = 0, kFlywheelSVolts = -0.089838,
+				kFlywheelVVoltSecondsPerRotation = 0.0015425 * .928,
+				kFlywheelAVoltSecondsSquaredPerRotation =  0.00039717 * 1, m_KalmanModel = 3,
 				m_KalmanEncoder = 0.01, m_LQRQelms = 1, m_LQRRVolts = 12,
 				flywheelGearing = 1.5;
 	}
@@ -38,13 +39,15 @@ public class StateSpaceConstants {
 		public static IdleMode mode = IdleMode.kBrake;
 		public static int kMotorID = 30;
 		public static double kArmP = 0, kArmD = 0, //must have position set in SysId
-				kArmSVolts = 0, kArmVVoltSecondsPerRotation = 0,
-				kArmAVoltSecondsSquaredPerRotation = 0,
+				kArmSVolts = .0001, kArmVVoltSecondsPerRotation = .0001,
+				kArmAVoltSecondsSquaredPerRotation = .0001,
 				m_KalmanModelPosition = .015, m_KalmanModelVelocity = .17,
-				m_KalmanEncoder = 0.01, m_LQRQelmsPosition = 100,
-				m_LQRQelmsVelocity = 5, m_LQRRVolts = 12, armGearing = 1.5,
-				maxRPM = Units.radiansPerSecondToRotationsPerMinute(
-						DCMotor.getNEO(1).freeSpeedRadPerSec),
+				m_KalmanEncoder = 0.01, m_LQRQelmsPosition = 1,
+				m_LQRQelmsVelocity = 10, m_LQRRVolts = 12, armGearing = 1.5,
+				maxSpeed = 
+						DCMotor.getNEO(1).freeSpeedRadPerSec,
+				maxAcceleration = 
+						DCMotor.getNEO(1).freeSpeedRadPerSec / 2,
 				startingPosition = Units.degreesToRadians(0),
 				maxPosition = Units.degreesToRadians(90),
 				armLength = Units.inchesToMeters(5),

@@ -25,10 +25,12 @@ public class FlywheelC extends Command {
 				> StateSpaceConstants.Controls.kDeadband) 
 		{
 			flywheelSpeed = RobotContainer.manipController.getLeftTriggerAxis()
-					* StateSpaceConstants.Flywheel.maxRPM;
+					* StateSpaceConstants.Flywheel.maxRPM;			
 		}
-		if (StateSpaceConstants.Controls.setButton.getAsBoolean()) {
+		else if (StateSpaceConstants.Controls.setButton.getAsBoolean()) {
 			flywheelSpeed = 4000;
+		}else{
+			flywheelSpeed = 0;
 		}
 		flywheelS.setRPM(flywheelSpeed);
 	}
