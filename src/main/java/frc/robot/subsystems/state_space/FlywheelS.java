@@ -151,6 +151,7 @@ public class FlywheelS extends SubsystemBase {
 		}
 		if (StateSpaceConstants.debug) {
 			SmartDashboard.putNumber("Flywheel Speed", flywheelVelocity);
+			SmartDashboard.putNumber("FlywheelError",FlywheelS.getSpeedError());
 		}
 	}
 
@@ -166,10 +167,8 @@ public class FlywheelS extends SubsystemBase {
 		return sysIdRoutine.dynamic(direction);
 	}
 
-	//TODO: test me!
-	public static double getSpeedError(double setRPM) {
-		return Math.abs(flywheelVelocity - setRPM);
-		// return m_bottomLoop.getError(0); //very low chance this is the wrong call
+	public static double getSpeedError() {
+		return Math.abs(flywheelVelocity - m_loop.getNextR().get(0,0));
 	}
 
 	/*
