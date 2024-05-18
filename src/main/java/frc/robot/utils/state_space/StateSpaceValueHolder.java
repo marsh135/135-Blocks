@@ -18,9 +18,8 @@ public class StateSpaceValueHolder {
 	private static double[] valueHolderArray = new double[5];
 	
 	public StateSpaceValueHolder(double Ks, double Kv, double Ka, double P, double D) {
-		System.out.println("my weiner is small");
-		if ((Ka <= 0) || (Ks <= 0) || (Kv <= 0)) {
-			throw new ArithmeticException("Ka Ks and Kv must be greater than 0");
+		if ((Ka <= 0) || (Kv <= 0)) {
+			throw new ArithmeticException("Ka and Kv must be greater than 0");
 		} else if ((P < 0) || (D < 0)) {
 			throw new ArithmeticException(
 					"P and D must be greater than or equal to 0");

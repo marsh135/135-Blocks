@@ -65,8 +65,8 @@ public class FlywheelS extends SubsystemBase {
 	 */
 	private final static LinearSystem<N1, N1, N1> flywheelPlant = LinearSystemId
 			.identifyVelocitySystem(
-					StateSpaceConstants.Flywheel.kFlywheelVVoltSecondsPerRotation,
-					StateSpaceConstants.Flywheel.kFlywheelAVoltSecondsSquaredPerRotation);
+					StateSpaceConstants.Flywheel.flywheelValueHolder.getKv(),
+					StateSpaceConstants.Flywheel.flywheelValueHolder.getKa());
 	/**
 	 * Kalman filters are optional, and help to predict the actual state of the
 	 * system given a noisy encoder (which all encoders are!) Takes two empty
