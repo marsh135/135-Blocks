@@ -16,6 +16,7 @@ public class LEDConstants {
 	}, goldHSV = new int[] { 23, 255, 100
 	}, disabledHSV = new int[] { 0, 0, 0
 	};
-	public static List<String> imageList = List.of("C:\\Users\\grant\\Documents\\135-Blocks\\src\\main\\java\\frc\\robot\\utils\\leds\\first.png","C:\\Users\\grant\\Documents\\135-Blocks\\src\\main\\java\\frc\\robot\\utils\\leds\\two.png");
+	public static List<String> imageList = List.of("src\\main\\java\\frc\\robot\\utils\\leds\\images\\first.png","src\\main\\java\\frc\\robot\\utils\\leds\\images\\two.png");
+	//public static List<String> imageList = List.of("/U/Images/first.png","/U/Images/two.png");
 
 }
