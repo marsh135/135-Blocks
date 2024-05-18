@@ -4,19 +4,13 @@
 package frc.robot;
 
 import frc.robot.commands.drive.SwerveC;
-
+import frc.robot.commands.leds.LEDGifC;
 import frc.robot.subsystems.drive.SwerveS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.XboxController;
 import java.util.function.BooleanSupplier;
 import frc.robot.subsystems.leds.LEDs;
-/*import frc.robot.utils.drive.LEDConstants;
-import frc.robot.commands.drive.leds.LEDBreathingC;
-import frc.robot.commands.drive.leds.LEDConstantColorC;
-import frc.robot.commands.drive.leds.LEDBreathingC;
-import frc.robot.commands.drive.leds.LEDSineWaveC;*/
-import frc.robot.commands.drive.leds.LEDRainbowC;
-
+import frc.robot.utils.leds.LEDConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
 /**
  * THIS CODE REQUIRES WPILIB 2024 AND PATHPLANNER 2024 IT WILL NOT WORK OTHERWISE
  */
@@ -55,7 +48,7 @@ public class RobotContainer {
 	 */
 	public RobotContainer() {
 		swerveS.setDefaultCommand(new SwerveC(swerveS));
-		leds.setDefaultCommand(new LEDRainbowC(leds).ignoringDisable(true));
+		leds.setDefaultCommand(new LEDGifC(leds, LEDConstants.imageList, 1000, 9, 10).ignoringDisable(true));
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData("Auto Chooser", autoChooser);
 		// Configure the trigger bindings

@@ -1,7 +1,7 @@
-package frc.robot.commands.drive.leds;
+package frc.robot.commands.leds;
 
 import frc.robot.subsystems.leds.LEDs;
-import frc.robot.utils.drive.LEDConstants;
+import frc.robot.utils.leds.LEDConstants;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class LEDRainbowC extends Command {

@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import frc.robot.Robot;
-import frc.robot.utils.drive.LEDConstants;
+import frc.robot.utils.leds.LEDConstants;
 
 public class LEDs extends SubsystemBase {
 	public static AddressableLED leds;

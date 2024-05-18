@@ -1,4 +1,4 @@
-package frc.robot.commands.drive.leds;
+package frc.robot.commands.leds;
 
 import frc.robot.subsystems.leds.LEDs;
 import edu.wpi.first.wpilibj2.command.Command;

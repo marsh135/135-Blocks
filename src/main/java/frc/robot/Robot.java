@@ -64,7 +64,7 @@ public class Robot extends LoggedRobot {
 		if (Robot.isReal()) {
 			DataHandler.createLogFileOnRIOUSB();
 		} else if (Robot.isSimulation()) {
-			DataHandler.startHandler(false, "I:");
+			DataHandler.startHandler(false, "C:");
 		}
 	}
 

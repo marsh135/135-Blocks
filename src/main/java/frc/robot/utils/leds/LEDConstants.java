@@ -1,4 +1,5 @@
-package frc.robot.utils.drive;
+package frc.robot.utils.leds;
+import java.util.List;
 
 public class LEDConstants {
 	public static int
@@ -15,5 +16,6 @@ public class LEDConstants {
 	}, goldHSV = new int[] { 23, 255, 100
 	}, disabledHSV = new int[] { 0, 0, 0
 	};
+	public static List<String> imageList = List.of("C:\\Users\\grant\\Documents\\135-Blocks\\src\\main\\java\\frc\\robot\\utils\\leds\\first.png","C:\\Users\\grant\\Documents\\135-Blocks\\src\\main\\java\\frc\\robot\\utils\\leds\\two.png");
 
 }
