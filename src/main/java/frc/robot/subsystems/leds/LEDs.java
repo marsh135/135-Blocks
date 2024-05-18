@@ -6,7 +6,12 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import frc.robot.Robot;
 import frc.robot.utils.leds.LEDConstants;
-
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.imageio.ImageIO;
 public class LEDs extends SubsystemBase {
 	public static AddressableLED leds;
 	public static AddressableLEDBuffer ledBuffer;
@@ -24,5 +29,41 @@ public class LEDs extends SubsystemBase {
 		if (Robot.isSimulation()) {
 			ledSim = new AddressableLEDSim(leds);
 		}
+
 	}
+	public static List<byte[][]> preprocessImages(List<String> imagePaths) {
+		List<byte[][]> imageList = new ArrayList<>();
+		for (String path : imagePaths) {
+			 try {
+				  BufferedImage image = ImageIO.read(new File(path));
+				  imageList.add(processImageToLedStates(image));
+			 } catch (IOException e) {
+				  e.printStackTrace();
+			 }
+		}
+		return imageList;
+  }
+
+  private static byte[][] processImageToLedStates(BufferedImage image) {
+	 int ledCount = LEDConstants.ledRows * LEDConstants.ledCols;
+
+	 // Resize image to fit the number of LEDs
+	 BufferedImage resizedImage = new BufferedImage(LEDConstants.ledCols, LEDConstants.ledRows, BufferedImage.TYPE_INT_RGB);
+	 resizedImage.getGraphics().drawImage(image, 0, 0,LEDConstants.ledCols,LEDConstants.ledRows, null);
+
+		// Initialize ledStates from the image pixels
+		byte[][] ledStates = new byte[ledCount][3];
+		for (int y = 0; y < LEDConstants.ledRows; y++) {
+			 for (int x = 0; x < LEDConstants.ledCols; x++) {
+				  int pixel = resizedImage.getRGB(x, y);
+				  byte red = (byte) ((pixel >> 16) & 0xFF);
+				  byte green = (byte) ((pixel >> 8) & 0xFF);
+				  byte blue = (byte) (pixel & 0xFF);
+				  ledStates[x + y * LEDConstants.ledCols][0] = red;
+				  ledStates[x + y * LEDConstants.ledCols][1] = green;
+				  ledStates[x + y * LEDConstants.ledCols][2] = blue;
+			 }
+		}
+		return ledStates;
+  }
 }

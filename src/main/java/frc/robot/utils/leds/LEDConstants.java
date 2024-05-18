@@ -1,12 +1,16 @@
 package frc.robot.utils.leds;
 import java.util.List;
 
+import frc.robot.subsystems.leds.LEDs;
+
 public class LEDConstants {
 	public static int
 	//The physical port where the LED strip is plugged in 
 	ledPort = 9,
 	// amount of LEDs in the light strip
-	ledBufferLength = 90;
+	ledBufferLength = 4096,
+	ledCols = 64,
+	ledRows = 64;
 	//HSV Colors with values stored in arrays
 	public static int[] noteHSV = new int[] { 12, 255, 100
 	}, redHSV = new int[] { 0, 255, 100
@@ -16,7 +20,8 @@ public class LEDConstants {
 	}, goldHSV = new int[] { 23, 255, 100
 	}, disabledHSV = new int[] { 0, 0, 0
 	};
-	public static List<String> imageList = List.of("src\\main\\java\\frc\\robot\\utils\\leds\\images\\first.png","src\\main\\java\\frc\\robot\\utils\\leds\\images\\two.png");
+	public static List<String> imageList = List.of("src\\main\\java\\frc\\robot\\utils\\leds\\images\\image_1.png","src\\main\\java\\frc\\robot\\utils\\leds\\images\\color.jpg");
 	//public static List<String> imageList = List.of("/U/Images/first.png","/U/Images/two.png");
+	public static List<byte[][]> imageLedStates = LEDs.preprocessImages(imageList);
 
 }
