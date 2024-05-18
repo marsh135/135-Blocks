@@ -35,13 +35,15 @@ public class LEDGifC extends Command {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastUpdateTime >= delayMs) {
             // Update LEDs with the current image
-            byte[][] currentLedStates = LEDConstants.imageLedStates.get(currentImageIndex)[gifID];
+            byte[][] currentLedStates = LEDConstants.imageLedStates.get(gifID).get(currentImageIndex);
+				//System.err.println(currentLedStates.length);
             for (var i = 0; i < LEDs.ledBuffer.getLength(); i++) {
 					 LEDs.ledBuffer.setRGB(i, Byte.toUnsignedInt(currentLedStates[i][0]), Byte.toUnsignedInt(currentLedStates[i][1]), Byte.toUnsignedInt(currentLedStates[i][2]));
             }
 
             // Swap to the next image
-            currentImageIndex = (currentImageIndex + 1) % LEDConstants.imageLedStates.size();
+				//currentImageIndex = 1;
+            currentImageIndex = (currentImageIndex + 1) % LEDConstants.imageLedStates.get(gifID).size();
 
             // Set data to buffer
             LEDs.leds.setData(LEDs.ledBuffer);
