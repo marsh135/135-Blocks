@@ -7,7 +7,7 @@ public class LEDSineWaveC extends Command {
 	//Declaring Variables
 	private final int sinePeriod;
 	private int[] color;
-	private int[] ledStates;
+	private int[] ledStates ;
 	private LEDs ledS;
 	private static int initialLoopValue = 0;
 	private boolean isFinished;
@@ -20,6 +20,7 @@ public class LEDSineWaveC extends Command {
 		sinePeriod = sinePeriodLocal;
 		this.color = color;
 		this.ledS = ledSubsystem;
+		ledStates = new int[sinePeriodLocal];
 		addRequirements(ledS);
 	}
 

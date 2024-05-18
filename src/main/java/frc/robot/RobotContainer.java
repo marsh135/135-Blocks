@@ -9,6 +9,13 @@ import frc.robot.subsystems.drive.SwerveS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.XboxController;
 import java.util.function.BooleanSupplier;
+import frc.robot.subsystems.leds.LEDs;
+/*import frc.robot.utils.drive.LEDConstants;
+import frc.robot.commands.drive.leds.LEDBreathingC;
+import frc.robot.commands.drive.leds.LEDConstantColorC;
+import frc.robot.commands.drive.leds.LEDBreathingC;
+import frc.robot.commands.drive.leds.LEDSineWaveC;*/
+import frc.robot.commands.drive.leds.LEDRainbowC;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -24,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	private final SwerveS swerveS = new SwerveS();
+	private final LEDs leds = new LEDs();
 	private final SendableChooser<Command> autoChooser;
 
 	public static XboxController driveController = new XboxController(0);
@@ -47,6 +55,7 @@ public class RobotContainer {
 	 */
 	public RobotContainer() {
 		swerveS.setDefaultCommand(new SwerveC(swerveS));
+		leds.setDefaultCommand(new LEDRainbowC(leds).ignoringDisable(true));
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData("Auto Chooser", autoChooser);
 		// Configure the trigger bindings

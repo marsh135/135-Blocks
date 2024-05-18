@@ -11,11 +11,14 @@ public class LEDBreathingC extends Command {
 	private final double breathingPeriod;
 	private int[] breathingLEDStates;
 	/**Changes the brightness of all the LEDs to make them look like they are breathing (kind of like the Razer effect) */
-	public LEDBreathingC(int[] color, LEDs subsystem, double breathingLoopPeriod){
+	public LEDBreathingC(int[] color, LEDs subsystem, int breathingLoopPeriod){
+	
+		this.runsWhenDisabled();
 		ledSubsystem = subsystem;
 		addRequirements(ledSubsystem);
 		this.color = color;
 		this.breathingPeriod = breathingLoopPeriod;
+		breathingLEDStates = new int[breathingLoopPeriod];
 	}
 	@Override
 	public void initialize(){

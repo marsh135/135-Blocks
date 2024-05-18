@@ -10,7 +10,7 @@ public class LEDConstantColorC extends Command {
 	private boolean isFinished;
 
 	/** Designed to make all the LEDs a constant color */
-	public LEDConstantColorC(LEDs ledSubsytem, int[] colortoSet) {
+	public LEDConstantColorC(int[] colortoSet, LEDs ledSubsytem) {
 		color = colortoSet;
 		ledSubsystemLocal = ledSubsytem;
 		addRequirements(ledSubsystemLocal);
