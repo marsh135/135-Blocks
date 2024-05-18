@@ -10,13 +10,14 @@ public class LEDGifC extends Command {
     private boolean isFinished;
     private final int delayMs;
     private long lastUpdateTime;
-    private int currentImageIndex = 0;
+    private int currentImageIndex = 0, gifID;
     /**
      * Sets the LEDs to display images and swaps images at each delay interval.
      */
-    public LEDGifC(LEDs ledSubsystem, List<String> imagePaths, int delayMs) {
+    public LEDGifC(LEDs ledSubsystem, List<String> imagePaths, int delayMs, int gifID) {
         this.ledS = ledSubsystem;
         this.delayMs = delayMs;
+		  this.gifID = gifID;
         addRequirements(ledS);
     }
 
@@ -34,7 +35,7 @@ public class LEDGifC extends Command {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastUpdateTime >= delayMs) {
             // Update LEDs with the current image
-            byte[][] currentLedStates = LEDConstants.imageLedStates.get(currentImageIndex);
+            byte[][] currentLedStates = LEDConstants.imageLedStates.get(currentImageIndex)[gifID];
             for (var i = 0; i < LEDs.ledBuffer.getLength(); i++) {
 					 LEDs.ledBuffer.setRGB(i, Byte.toUnsignedInt(currentLedStates[i][0]), Byte.toUnsignedInt(currentLedStates[i][1]), Byte.toUnsignedInt(currentLedStates[i][2]));
             }

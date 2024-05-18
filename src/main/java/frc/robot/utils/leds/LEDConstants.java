@@ -9,6 +9,7 @@ public class LEDConstants {
 	ledPort = 9,
 	// amount of LEDs in the light strip
 	ledBufferLength = 4096,
+	totalGifs = 2,
 	ledCols = 64,
 	ledRows = 64;
 	//HSV Colors with values stored in arrays
@@ -22,6 +23,6 @@ public class LEDConstants {
 	};
 	public static List<String> imageList = List.of("src\\main\\java\\frc\\robot\\utils\\leds\\images\\image_1.png","src\\main\\java\\frc\\robot\\utils\\leds\\images\\color.jpg");
 	//public static List<String> imageList = List.of("/U/Images/first.png","/U/Images/two.png");
-	public static List<byte[][]> imageLedStates = LEDs.preprocessImages(imageList);
+	public static List<byte[][][]> imageLedStates = LEDs.preprocessImages(imageList);
 
 }
