@@ -36,7 +36,6 @@ public class DataHandler {
 	public static boolean fileCreated = false;
 	private static int debounce = 0;
 	private static int dumpID = 1;
-	@SuppressWarnings("unused")
 	private static boolean useNetworkTables;
 	/**
 	 * Creates a new Streamwriter, designed to be contingent in case of USB
