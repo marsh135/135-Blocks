@@ -48,7 +48,7 @@ public class RobotContainer {
 	 */
 	public RobotContainer() {
 		swerveS.setDefaultCommand(new SwerveC(swerveS));
-		leds.setDefaultCommand(new LEDGifC(leds, LEDConstants.imageList, 1000,1).ignoringDisable(true));
+		leds.setDefaultCommand(new LEDGifC(leds, LEDConstants.imageList, 20,2).ignoringDisable(true));
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData("Auto Chooser", autoChooser);
 		// Configure the trigger bindings
