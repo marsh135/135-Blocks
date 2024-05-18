@@ -21,15 +21,13 @@ public class FlywheelC extends Command {
 
 	@Override
 	public void execute() {
-		if (RobotContainer.manipController.getLeftTriggerAxis() 
-				> StateSpaceConstants.Controls.kDeadband) 
-		{
+		if (RobotContainer.manipController
+				.getLeftTriggerAxis() > StateSpaceConstants.Controls.kDeadband) {
 			flywheelSpeed = RobotContainer.manipController.getLeftTriggerAxis()
-					* StateSpaceConstants.Flywheel.maxRPM;			
-		}
-		else if (StateSpaceConstants.Controls.setButton.getAsBoolean()) {
+					* StateSpaceConstants.Flywheel.maxRPM;
+		} else if (StateSpaceConstants.Controls.setButton.getAsBoolean()) {
 			flywheelSpeed = 4000;
-		}else{
+		} else {
 			flywheelSpeed = 0;
 		}
 		flywheelS.setRPM(flywheelSpeed);

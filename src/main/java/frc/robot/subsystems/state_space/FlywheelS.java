@@ -145,7 +145,8 @@ public class FlywheelS extends SubsystemBase {
 		default:
 			flywheelSim.setInput(nextVoltage);
 			flywheelSim.update(dtSeconds);
-			flywheelVelocity = Units.rotationsPerMinuteToRadiansPerSecond(flywheelSim.getAngularVelocityRPM()); //magic
+			flywheelVelocity = Units.rotationsPerMinuteToRadiansPerSecond(
+					flywheelSim.getAngularVelocityRPM()); //magic
 			break;
 		}
 		if (StateSpaceConstants.debug) {
@@ -170,13 +171,13 @@ public class FlywheelS extends SubsystemBase {
 		return Math.abs(flywheelVelocity - setRPM);
 		// return m_bottomLoop.getError(0); //very low chance this is the wrong call
 	}
+
 	/*
 	 * Set RPM desired.
 	 * @param speed in RPM
 	 */
-	public void setRPM(double rpm){
-		m_loop.setNextR(VecBuilder.fill(rpm));
-	}
+	public void setRPM(double rpm) { m_loop.setNextR(VecBuilder.fill(rpm)); }
+
 	//Sim Only
 	public double getDrawnCurrentAmps() {
 		return flywheelSim.getCurrentDrawAmps();

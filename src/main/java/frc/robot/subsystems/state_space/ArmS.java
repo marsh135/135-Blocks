@@ -53,7 +53,8 @@ public class ArmS extends SubsystemBase {
 	//live tuning, only enabled in Debug.
 	/**
 	 * State Space
-	 *@see FlywheelS FOR IN DEPTH EXPLANATION OF THE STATE-SPACE VARIABLE 
+	 * 
+	 * @see FlywheelS FOR IN DEPTH EXPLANATION OF THE STATE-SPACE VARIABLE
 	 */
 	Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1));
 	Measure<Voltage> holdVoltage = Volts.of(3);
@@ -76,11 +77,9 @@ public class ArmS extends SubsystemBase {
 	 * First position in the Nat is for Position, second is Velocity.
 	 */
 	//private final LinearSystem<N2,N1,N1> m_armPlant = 
-	 //   LinearSystemId.createSingleJointedArmSystem(DCMotor.getNEO(1), SingleJointedArmSim.estimateMOI(Units.inchesToMeters(10), Units.lbsToKilograms(6)), 150);
-	
+	//   LinearSystemId.createSingleJointedArmSystem(DCMotor.getNEO(1), SingleJointedArmSim.estimateMOI(Units.inchesToMeters(10), Units.lbsToKilograms(6)), 150);
 	private final LinearSystem<N2, N1, N1> m_armPlant = LinearSystemId
-			.identifyPositionSystem(
-					StateSpaceConstants.Arm.armValueHolder.getKv(),
+			.identifyPositionSystem(StateSpaceConstants.Arm.armValueHolder.getKv(),
 					StateSpaceConstants.Arm.armValueHolder.getKa());
 	private final KalmanFilter<N2, N1, N1> m_observer = new KalmanFilter<>(
 			Nat.N2(), Nat.N1(), m_armPlant,
@@ -105,7 +104,7 @@ public class ArmS extends SubsystemBase {
 	 */
 	private final TrapezoidProfile m_profile = new TrapezoidProfile(
 			new TrapezoidProfile.Constraints(StateSpaceConstants.Arm.maxSpeed, //placeholder
-			StateSpaceConstants.Arm.maxAcceleration));
+					StateSpaceConstants.Arm.maxAcceleration));
 	private TrapezoidProfile.State m_lastProfiledReference = new TrapezoidProfile.State();
 	//set our starting position for the arm
 	/*
@@ -114,19 +113,22 @@ public class ArmS extends SubsystemBase {
 	 */
 	private static TrapezoidProfile.State goal = new TrapezoidProfile.State(
 			StateSpaceConstants.Arm.startingPosition, 0);
-		
 	/**
-     * Constructs a single-jointed arm simulation with the given parameters.
-     * @param armGearing The gearing ratio of the arm. >1 means reduction.
-     * @param armLength The length of the arm (in meters)
-     * @param minPosition The minimum allowed position of the arm (in radians).
-     * @param maxPosition The maximum allowed position of the arm (in radians).
-     * @param startingPosition The initial position of the arm (in radians).
-	  * Calculates the position, velocity, and acceleration of the arm based on 
-	  * the applied motor voltage and time step.
-	  * Provides current position, velocity, and voltage outputs for monitoring 
-	  * and control purposes.
-     */
+	 * Constructs a single-jointed arm simulation with the given parameters.
+	 * 
+	 * @param armGearing       The gearing ratio of the arm. >1 means reduction.
+	 * @param armLength        The length of the arm (in meters)
+	 * @param minPosition      The minimum allowed position of the arm (in
+	 *                            radians).
+	 * @param maxPosition      The maximum allowed position of the arm (in
+	 *                            radians).
+	 * @param startingPosition The initial position of the arm (in radians).
+	 *                            Calculates the position, velocity, and
+	 *                            acceleration of the arm based on the applied
+	 *                            motor voltage and time step. Provides current
+	 *                            position, velocity, and voltage outputs for
+	 *                            monitoring and control purposes.
+	 */
 	private SingleJointedArmSim simArm = new SingleJointedArmSim(m_armPlant,
 			DCMotor.getNEO(1), StateSpaceConstants.Arm.armGearing,
 			StateSpaceConstants.Arm.armLength,
@@ -161,7 +163,6 @@ public class ArmS extends SubsystemBase {
 		armEncoder.setVelocityConversionFactor(
 				1 / StateSpaceConstants.Arm.armGearing);
 		armMotor.burnFlash();
-
 		//reset our position (getDistance just because it's zero usually, and IF the robot died on field and rebooted, it'd still be accurate.)
 		m_loop.reset(VecBuilder.fill(getDistance(), getVelocity()));
 		m_lastProfiledReference = new TrapezoidProfile.State(getDistance(),
@@ -182,7 +183,9 @@ public class ArmS extends SubsystemBase {
 	}
 
 	public static double getDistance() { return m_position; }
-	public static double getSetpoint(){ return goal.position; }
+
+	public static double getSetpoint() { return goal.position; }
+
 	public double getVelocity() { return m_velocity; }
 
 	/**
@@ -236,23 +239,23 @@ public class ArmS extends SubsystemBase {
 	public TrapezoidProfile.State createState(double angle) {
 		return new TrapezoidProfile.State(angle, 0);
 	}
+
 	//Also overload the function to accept both angle in RADS and rad/s
 	/**
-	 * 
 	 * @param position in RADIANS
 	 * @param velocity in RADIANS/SECOND
 	 * @return state, pass through to deployIntake.
 	 */
-	public TrapezoidProfile.State createState(double position,double velocity) {
+	public TrapezoidProfile.State createState(double position, double velocity) {
 		return new TrapezoidProfile.State(position, velocity);
 	}
+
 	/**
 	 * Checks if close to state, with less than specified degrees
 	 * 
 	 * @param degrees error in degrees
 	 * @return true if at state
 	 */
-	
 	public boolean isAtState(double degrees) {
 		if (Math.abs(getError()) < Units.degreesToRadians(degrees)) {
 			return true;
@@ -289,9 +292,12 @@ public class ArmS extends SubsystemBase {
 		updateEncoders();
 		if (StateSpaceConstants.debug) {
 			SmartDashboard.putNumber("Angle Error", getError());
-			SmartDashboard.putNumber("SETPOINT", Units.radiansToDegrees(goal.position));
-			SmartDashboard.putNumber("CURRENT WANTED SPOT", Units.radiansToDegrees(m_lastProfiledReference.position));
-			SmartDashboard.putNumber("pos according",Units.radiansToDegrees(m_position));
+			SmartDashboard.putNumber("SETPOINT",
+					Units.radiansToDegrees(goal.position));
+			SmartDashboard.putNumber("CURRENT WANTED SPOT",
+					Units.radiansToDegrees(m_lastProfiledReference.position));
+			SmartDashboard.putNumber("pos according",
+					Units.radiansToDegrees(m_position));
 		}
 		m_lastProfiledReference = m_profile.calculate(dtSeconds,
 				m_lastProfiledReference, goal); //calculate where it SHOULD be.
@@ -307,15 +313,14 @@ public class ArmS extends SubsystemBase {
 		// Send the new calculated voltage to the motors.
 		double nextVoltage = m_loop.getU(0);
 		switch (Constants.currentMode) {
-			case REAL:
-				armMotor.setVoltage(nextVoltage);
-				break;
-			default:
-				simArm.setInputVoltage(nextVoltage);
-				simArm.update(dtSeconds);
-				break;
+		case REAL:
+			armMotor.setVoltage(nextVoltage);
+			break;
+		default:
+			simArm.setInputVoltage(nextVoltage);
+			simArm.update(dtSeconds);
+			break;
 		}
-
 		//Push the mechanism to AdvantageScope
 		Logger.recordOutput("MyMechanism", m_mech2d);
 		//calcualate arm pose

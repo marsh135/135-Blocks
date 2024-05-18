@@ -16,7 +16,8 @@ public class StateSpaceConstants {
 		 * Left trigger is used for RPM speed. 0-0 1-7100.
 		 * Right trigger is used for arm Speed 0-0 1-maxArmSpeed.
 		 */
-		public static double kDeadband = 0.1, kArmDeadband = 0.1, armMoveSpeed = .01;
+		public static double kDeadband = 0.1, kArmDeadband = 0.1,
+				armMoveSpeed = .01;
 		public static JoystickButton setButton = new JoystickButton(
 				RobotContainer.manipController, 3), //x
 				go45Button = new JoystickButton(RobotContainer.manipController, 1), //a
@@ -27,24 +28,23 @@ public class StateSpaceConstants {
 		public static boolean inverted = false;
 		public static IdleMode mode = IdleMode.kBrake;
 		public static int kMotorID = 20, maxRPM = 7100;
-		public static MotorConstantContainer flywheelValueHolder = new MotorConstantContainer(-0.089838, 0.0015425 * .928,0.00039717 * 1, 0, 0);
-		public static double m_KalmanModel = 3,
-				m_KalmanEncoder = 0.01, m_LQRQelms = 1, m_LQRRVolts = 12,
-				flywheelGearing = 1.5;
+		public static MotorConstantContainer flywheelValueHolder = new MotorConstantContainer(
+				-0.089838, 0.0015425 * .928, 0.00039717 * 1, 0, 0);
+		public static double m_KalmanModel = 3, m_KalmanEncoder = 0.01,
+				m_LQRQelms = 1, m_LQRRVolts = 12, flywheelGearing = 1.5;
 	}
 
 	public class Arm {
 		public static boolean inverted = false;
 		public static IdleMode mode = IdleMode.kBrake;
 		public static int kMotorID = 30;
-		public static MotorConstantContainer armValueHolder = new MotorConstantContainer(.001, .001, .001, 0, 0); //must have position set in SysId
-		public static double m_KalmanModelPosition = .015, m_KalmanModelVelocity = .17,
-				m_KalmanEncoder = 0.01, m_LQRQelmsPosition = 1,
-				m_LQRQelmsVelocity = 10, m_LQRRVolts = 12, armGearing = 1.5,
-				maxSpeed = 
-						DCMotor.getNEO(1).freeSpeedRadPerSec,
-				maxAcceleration = 
-						DCMotor.getNEO(1).freeSpeedRadPerSec / 2,
+		public static MotorConstantContainer armValueHolder = new MotorConstantContainer(
+				.001, .001, .001, 0, 0); //must have position set in SysId
+		public static double m_KalmanModelPosition = .015,
+				m_KalmanModelVelocity = .17, m_KalmanEncoder = 0.01,
+				m_LQRQelmsPosition = 1, m_LQRQelmsVelocity = 10, m_LQRRVolts = 12,
+				armGearing = 1.5, maxSpeed = DCMotor.getNEO(1).freeSpeedRadPerSec,
+				maxAcceleration = DCMotor.getNEO(1).freeSpeedRadPerSec / 2,
 				startingPosition = Units.degreesToRadians(0),
 				maxPosition = Units.degreesToRadians(90),
 				armLength = Units.inchesToMeters(5),

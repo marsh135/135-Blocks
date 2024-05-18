@@ -1,6 +1,5 @@
 package frc.robot.commands.state_space;
 
-
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
@@ -36,7 +35,8 @@ public class ArmC extends Command {
 					&& desSpeed < 0) {
 				armPos = StateSpaceConstants.Arm.startingPosition;
 			} else {
-				armSpeed = desSpeed * StateSpaceConstants.Arm.maxAcceleration * StateSpaceConstants.Controls.armMoveSpeed;
+				armSpeed = desSpeed * StateSpaceConstants.Arm.maxAcceleration
+						* StateSpaceConstants.Controls.armMoveSpeed;
 				armPos += (armSpeed * ArmS.dtSeconds); //add to our current position 20 MS of that accel
 			}
 		}
