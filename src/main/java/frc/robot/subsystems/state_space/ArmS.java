@@ -230,8 +230,7 @@ public class ArmS extends SubsystemBase {
 	}
 
 	/**
-	 * For cleanliness of code, create State is in IntakeS, called everywhere
-	 * else.
+	 * For cleanliness of code, create State is in ArmS, called everywhere else.
 	 * 
 	 * @param angle IN RADS
 	 * @return state, pass through to deployIntake.
@@ -322,9 +321,9 @@ public class ArmS extends SubsystemBase {
 			break;
 		}
 		//Push the mechanism to AdvantageScope
-		Logger.recordOutput("MyMechanism", m_mech2d);
+		Logger.recordOutput("ArmMechanism", m_mech2d);
 		//calcualate arm pose
-		var armPose = new Pose3d(0.292, 0, 0.1225,
+		var armPose = new Pose3d(StateSpaceConstants.Arm.simX, StateSpaceConstants.Arm.simY, StateSpaceConstants.Arm.simZ,
 				new Rotation3d(0, -m_lastProfiledReference.position, 0.0));
 		Logger.recordOutput("Mechanism3d/", armPose);
 	}

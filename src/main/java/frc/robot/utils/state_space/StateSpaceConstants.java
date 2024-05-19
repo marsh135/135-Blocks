@@ -49,6 +49,30 @@ public class StateSpaceConstants {
 				maxPosition = Units.degreesToRadians(90),
 				armLength = Units.inchesToMeters(5),
 				physicalX = Units.inchesToMeters(20),
-				physicalY = Units.inchesToMeters(DriveConstants.kChassisWidth / 2);
+				physicalY = Units.inchesToMeters(DriveConstants.kChassisWidth / 2),
+				simX = Units.inchesToMeters(11.5),
+				simY = Units.inchesToMeters(0),
+				simZ = Units.inchesToMeters(4.82);
+	}
+	public class Elevator {
+		public static boolean inverted = false;
+		public static IdleMode mode = IdleMode.kBrake;
+		public static int kMotorID = 40;
+		public static MotorConstantContainer armValueHolder = new MotorConstantContainer(
+				.001, .001, .001, 0, 0); //must have position set in SysId
+		public static double m_KalmanModelPosition = Units.inchesToMeters(1),
+				m_KalmanModelVelocity = Units.inchesToMeters(40), m_KalmanEncoder = 0.001,
+				m_LQRQelmsPosition = 1, m_LQRQelmsVelocity = 10, m_LQRRVolts = 12,
+				elevatorGearing = 1.5, carriageMass = Units.lbsToKilograms(10), drumRadius = 1.5 /2 *25.4 /1000,
+				maxSpeed = Units.feetToMeters(3),
+				maxAcceleration = Units.feetToMeters(6),
+				startingPosition = Units.inchesToMeters(0),
+				maxPosition = Units.feetToMeters(3),
+				armLength = Units.inchesToMeters(5),
+				physicalX = Units.inchesToMeters(20),
+				physicalY = Units.inchesToMeters(DriveConstants.kChassisWidth / 2),
+				simX = Units.inchesToMeters(5),
+				simY = Units.inchesToMeters(5),
+				simZ = Units.inchesToMeters(5);
 	}
 }
