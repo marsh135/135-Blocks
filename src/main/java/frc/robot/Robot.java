@@ -100,8 +100,9 @@ public class Robot extends LoggedRobot {
 	/** This function is called once each time the robot enters Disabled mode. */
 	@Override
 	public void disabledInit() {
-		if (Constants.updateMatchStates) {
-			Constants.currentMatchState = FRCMatchState.DISABLED;
+		Constants.currentMatchState = FRCMatchState.DISABLED;
+		if (DriverStation.getMatchTime() == 0){
+			Constants.currentMatchState = FRCMatchState.MATCHOVER;
 		}
 	}
 
@@ -114,9 +115,7 @@ public class Robot extends LoggedRobot {
 	 */
 	@Override
 	public void autonomousInit() {
-		if (Constants.updateMatchStates) {
-			Constants.currentMatchState = FRCMatchState.AUTOINIT;
-		}
+		Constants.currentMatchState = FRCMatchState.AUTOINIT;
 		m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 		// schedule the autonomous command (example)
 		if (m_autonomousCommand != null) {
@@ -127,17 +126,12 @@ public class Robot extends LoggedRobot {
 	/** This function is called periodically during autonomous. */
 	@Override
 	public void autonomousPeriodic() {
-		if (Constants.updateMatchStates) {
-			Constants.currentMatchState = FRCMatchState.AUTO;
-		}
+		Constants.currentMatchState = FRCMatchState.AUTO;
 	}
 
 	@Override
 	public void teleopInit() {
-		endgameTimer.start();
-		if (Constants.updateMatchStates) {
-			Constants.currentMatchState = FRCMatchState.TELEOPINIT;
-		}
+		Constants.currentMatchState = FRCMatchState.TELEOPINIT;
 		// This makes sure that the autonomous stops running when
 		// teleop starts running. If you want the autonomous to
 		// continue until interrupted by another command, remove
@@ -152,30 +146,24 @@ public class Robot extends LoggedRobot {
 	public void teleopPeriodic() {
 		/*An FRC teleop period takes 2 minutes and 15 seconds (135 seconds). Endgame occurs during the last 20 seconds.
 		Based on this, endgame should initialize at 115 seconds and end at 135 seconds. */
-		if (endgameTimer.get() < 115) {
-			if (Constants.updateMatchStates) {
+		if (DriverStation.isFMSAttached()){
+			if (DriverStation.getMatchTime() > 30) {
 				Constants.currentMatchState = FRCMatchState.TELEOP;
-			}
-		} else if (endgameTimer.get() == 115) {
-			if (Constants.updateMatchStates) {
+			} else if (DriverStation.getMatchTime() == 30) {
 				Constants.currentMatchState = FRCMatchState.ENDGAMEINIT;
-			}
-		} else if (endgameTimer.get() > 115) {
-			if (Constants.updateMatchStates) {
+			} else if (DriverStation.getMatchTime() < 30
+					&& DriverStation.getMatchTime() > 0) {
 				Constants.currentMatchState = FRCMatchState.ENDGAME;
-			} else {
-				if (Constants.updateMatchStates) {
-					Constants.currentMatchState = FRCMatchState.MATCHOVER;
-				}
 			}
+		}else{
+			Constants.currentMatchState = FRCMatchState.TELEOP;
 		}
+
 	}
 
 	@Override
 	public void testInit() {
-		if (Constants.updateMatchStates) {
-			Constants.currentMatchState = FRCMatchState.TESTINIT;
-		}
+		Constants.currentMatchState = FRCMatchState.TESTINIT;
 		// Cancels all running commands at the start of test mode.
 		CommandScheduler.getInstance().cancelAll();
 	}
@@ -183,9 +171,7 @@ public class Robot extends LoggedRobot {
 	/** This function is called periodically during test mode. */
 	@Override
 	public void testPeriodic() {
-		if (Constants.updateMatchStates) {
-			Constants.currentMatchState = FRCMatchState.TEST;
-		}
+		Constants.currentMatchState = FRCMatchState.TEST;
 	}
 
 	/** This function is called once when the robot is first started up. */

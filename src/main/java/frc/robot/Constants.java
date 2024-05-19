@@ -6,6 +6,8 @@ package frc.robot;
 import java.util.HashMap;
 import java.util.Map;
 
+import frc.robot.utils.drive.DriveConstants;
+
 /**
  * Anything for the e n t i r e robot goes here. Specific constants go under
  * Utils, and their respective folder for Merge purposes.
@@ -23,9 +25,7 @@ public final class Constants {
 	}
 
 	//FRCMatchState of the robot
-	public static FRCMatchState currentMatchState = FRCMatchState.NOTINMATCH;
-	//Tells code whether to not update the MatchState and stick to the default.
-	public final static boolean updateMatchStates = true;
+	public static FRCMatchState currentMatchState = FRCMatchState.DISABLED;
 
 	/**
 	 * Allows the robot to utilize switch statements to efficiently figure out
@@ -49,19 +49,25 @@ public final class Constants {
 		ENDGAMEINIT,
 		//Throughout Endgame
 		ENDGAME,
-		//When robot is disabled
+		//When robot is disabled (Default State)
 		DISABLED,
 		//Runs when the match is over (after endgame)
-		MATCHOVER,
-		//If we want the robot to not be in a match for any reason, default state 
-		NOTINMATCH
+		MATCHOVER
 	}
 
 	//put datalog constants IN THE UTIL FOR THAT FILE. 
 	public static Map<Integer, String> manCanIdsToNames() {
 		HashMap<Integer, String> map = new HashMap<>();
 		//this has to be adjusted for every block branch added!
-		//map.put(Constants.OutakeConstants.topFlywheel, "topFlywheel");
+		map.put(DriveConstants.kBackLeftDrivePort, "backLeftDrive");
+		map.put(DriveConstants.kBackLeftTurningPort, "backLeftTurn");
+		map.put(DriveConstants.kBackRightDrivePort, "backRightDrive");
+		map.put(DriveConstants.kBackRightTurningPort, "backRightTurn");
+		map.put(DriveConstants.kFrontLeftDrivePort, "frontLeftDrive");
+		map.put(DriveConstants.kFrontLeftTurningPort, "frontLeftTurn");
+		map.put(DriveConstants.kFrontRightDrivePort, "frontRightDrive");
+		map.put(DriveConstants.kFrontRightTurningPort, "frontRightTurn");
+
 		return map;
 	}
 }
