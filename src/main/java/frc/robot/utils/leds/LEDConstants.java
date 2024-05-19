@@ -22,6 +22,5 @@ public class LEDConstants {
 	}, disabledHSV = new int[] { 0, 0, 0
 	};
 	public static List<String> imageList = List.of("gif1","gif2","debug");
-	//public static List<String> imageList = List.of("/U/images/first.png","/U/images/two.png");
 	public static List<List<byte[][]> > imageLedStates = LEDs.preprocessImages(imageList);
 }
