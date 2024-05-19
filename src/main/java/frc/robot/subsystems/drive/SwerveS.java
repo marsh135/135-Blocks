@@ -34,7 +34,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 
-import frc.robot.Robot;
+import frc.robot.Constants.Mode;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import java.util.HashMap;
@@ -250,7 +250,7 @@ public class SwerveS extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		if (Robot.isSimulation()) {
+		if (Constants.currentMode == Mode.SIM) {
 			ChassisSpeeds chassisSpeed = DriveConstants.kDriveKinematics
 					.toChassisSpeeds(getModuleStates());
 			m_simYaw += chassisSpeed.omegaRadiansPerSecond * 0.02;
