@@ -87,8 +87,9 @@ public class Robot extends LoggedRobot {
 	 */
 	@Override
 	public void robotPeriodic() {
-		DataHandler.updateHandlerState(); 
-		SmartDashboard.putString("Match State", Constants.currentMatchState.name());
+		DataHandler.updateHandlerState();
+		SmartDashboard.putString("Match State",
+				Constants.currentMatchState.name());
 		// Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
 		// commands, running already-scheduled commands, removing finished or interrupted commands,
 		// and running subsystem periodic() methods.  This must be called from the robot's periodic
@@ -105,9 +106,7 @@ public class Robot extends LoggedRobot {
 	}
 
 	@Override
-	public void disabledPeriodic() {
-
-	}
+	public void disabledPeriodic() {}
 
 	/**
 	 * This autonomous runs the autonomous command selected by your
@@ -164,6 +163,10 @@ public class Robot extends LoggedRobot {
 		} else if (endgameTimer.get() > 115) {
 			if (Constants.updateMatchStates) {
 				Constants.currentMatchState = FRCMatchState.ENDGAME;
+			} else {
+				if (Constants.updateMatchStates) {
+					Constants.currentMatchState = FRCMatchState.MATCHOVER;
+				}
 			}
 		}
 	}
@@ -194,5 +197,5 @@ public class Robot extends LoggedRobot {
 
 	/** This function is called periodically whilst in simulation. */
 	@Override
-	public void simulationPeriodic() { }
+	public void simulationPeriodic() {}
 }

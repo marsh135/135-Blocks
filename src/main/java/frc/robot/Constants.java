@@ -51,6 +51,8 @@ public final class Constants {
 		ENDGAME,
 		//When robot is disabled
 		DISABLED,
+		//Runs when the match is over (after endgame)
+		MATCHOVER,
 		//If we want the robot to not be in a match for any reason, default state 
 		NOTINMATCH
 	}
