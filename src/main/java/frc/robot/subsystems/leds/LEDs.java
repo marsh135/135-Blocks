@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import frc.robot.Constants;
+import frc.robot.Constants.Mode;
 import frc.robot.utils.leds.LEDConstants;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -47,13 +48,19 @@ public class LEDs extends SubsystemBase {
 		List<List<byte[][]> > imageList = new ArrayList<>();
 		for (int i = 0; i < gifPaths.size(); i++){
 			List<byte[][]> gifImages = new ArrayList<>();
-			String gifPath = gifStorage + "\\" + gifPaths.get(i);
+			String gifPath;
+			if (Constants.currentMode == Mode.REAL){
+				gifPath = gifStorage + "/" +gifPaths.get(i);
+			}else{
+			 gifPath = gifStorage + "\\" + gifPaths.get(i);
+			}
 			List<String> filePaths = new ArrayList<>();
 			try {
             Files.walkFileTree(Paths.get(gifPath), new SimpleFileVisitor<Path>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     filePaths.add(file.toString());
+						  System.err.println(file.toString());
                     return FileVisitResult.CONTINUE;
                 }
             });
