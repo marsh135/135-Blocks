@@ -35,8 +35,7 @@ import java.util.ArrayList;
  */
 public class SimGamePiece {
 	private static Supplier<Pose2d> robotPoseSupplier = () -> new Pose2d();
-	@SuppressWarnings("unused")
-	private static int closestPieceIndex;
+	public static int closestPieceIndex;
 	//Returns the robot pose
 	public static void setRobotPoseSupplier(Supplier<Pose2d> supplier) {
 		robotPoseSupplier = supplier;
