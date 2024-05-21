@@ -19,11 +19,6 @@
           "open": true
         }
       },
-      "SPARK MAX [17]": {
-        "header": {
-          "open": true
-        }
-      },
       "SPARK MAX [30]": {
         "header": {
           "open": true
@@ -80,6 +75,15 @@
       "open": true
     },
     "Server": {
+      "open": true
+    },
+    "shuffleboard@2": {
+      "Publishers": {
+        "open": true
+      },
+      "Subscribers": {
+        "open": true
+      },
       "open": true
     },
     "visible": true
