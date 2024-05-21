@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	private final SwerveS swerveS = new SwerveS();
+	private final DataHandler dataHandler = new DataHandler();
 	private final SendableChooser<Command> autoChooser;
 
 	public static XboxController driveController = new XboxController(0);

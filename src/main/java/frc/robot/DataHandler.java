@@ -7,8 +7,16 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.IOError;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.lang.reflect.Type;
+
 /**
  * Class used for logging data. Coded as an alternative to DataLogManager (so
  * you don't get every update in NetworkTables logged, just the values you
@@ -23,7 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * the tool. You will need some knowledge in regression (r squared, residuals,
  * etc) to interpret the result.
  */
-public class DataHandler {
+public class DataHandler extends SubsystemBase {
 	private static FileOutputStream outputStream;
 	private static OutputStreamWriter outputStreamWriter;
 	private static int id = 0;
@@ -38,6 +46,7 @@ public class DataHandler {
 	private static int dumpID = 1;
 	private static boolean useNetworkTables;
 	private static String currentValue = "default";
+	private static Gson gson;
 
 	/**
 	 * Creates a new Streamwriter, designed to be contingent in case of USB
@@ -52,7 +61,7 @@ public class DataHandler {
 		}
 		outputStreamWriter = new OutputStreamWriter(outputStream);
 	}
-	
+
 	/**
 	 * This function allows you to customize the directory that you send a log to
 	 * in simulation. Designed to be used for simulations or other applications
@@ -66,37 +75,63 @@ public class DataHandler {
 	 *                     recorded.
 	 * @see DataHandler
 	 */
-	public static void setSimDisk(String directory){
+	public static void setSimDisk(String directory) {
 		DataHandler.diskName = directory;
 	}
 
 	/**
-	 * Call this in Robot.java. Starts the handler and has contingencies to use the NetworkTables, write to usb, or write to a sim disk drive
-	 * @param useNetworkTables
-	 * A boolean that states whether to write to a physical USB or use the networktables
-	 * @param simDiskName
-	 * A string that states what disk to write to in simulation
+	 * Call this in Robot.java. Starts the handler and has contingencies to use
+	 * the NetworkTables, write to usb, or write to a sim disk drive
+	 * 
+	 * @param useNetworkTables A boolean that states whether to write to a
+	 *                            physical USB or use the networktables
+	 * @param simDiskName      A string that states what disk to write to in
+	 *                            simulation
 	 */
-	public static void startHandler(boolean useNetworkTables, String simDiskDirectory){
+	public static void startHandler(boolean useNetworkTables,
+			String simDiskDirectory) {
 		DataHandler.useNetworkTables = useNetworkTables;
-		if (useNetworkTables){
-			SmartDashboard.putString("DataHandler",currentValue);
-		}
-		else {
-			if (Constants.currentMode == Constants.Mode.REAL){
+		if (!useNetworkTables){
+			if (Constants.currentMode == Constants.Mode.REAL) {
 				createLogFileOnRIOUSB();
-			}else{
+			} else {
 				setSimDisk(simDiskDirectory);
 				createLogFileOnRIOUSB();
 			}
 		}
-			
+	}
+	public DataHandler(){
+		gson = new Gson();
+	}
+	@Override
+	public void periodic() {
+		String dataHandlerJson = SmartDashboard.getString("DataHandler",
+				"default");
+		if (!dataHandlerJson.equals("default")) {
+			try {
+				// Parse JSON string
+				Type mapType = new TypeToken<Map<String, String>>() {}.getType();
+				Map<String, String> dataFromPython = gson.fromJson(dataHandlerJson,
+						mapType);
+				//check Json
+				if (dataFromPython.containsKey("motor1_speed")) {
+					double test = Double.parseDouble(dataFromPython.get("test"));
+					// Set motor1 speed, e.g., motor1.set(motor1Speed);
+			  }
+				
+				// Prepare response data
+				Map<String, String> responseData = new HashMap<>();
+				responseData.put("status", "running");
+				// Convert response data to JSON
+				String jsonResponse = gson.toJson(responseData);
+				// Send response JSON to Python
+				SmartDashboard.putString("DataHandlerResponse", jsonResponse);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
-
-
-	
-
-
+	}
 
 	/**
 	 * Creates a file on a folder called "logs" (located on the USB attached to
@@ -173,10 +208,9 @@ public class DataHandler {
 	 *                         from the values declared in the setUpLogOnUsb
 	 */
 	public static void logData(String data) {
-		if (useNetworkTables){
+		if (useNetworkTables) {
 			currentValue = data;
-		}
-		else{
+		} else {
 			//Tries writing to the file, adds an error if it doesn't work
 			try {
 				outputStreamWriter.write(data + "\r\n");
@@ -259,8 +293,6 @@ public class DataHandler {
 		logData(lineToBeSaved);
 	}
 
-
-
 	//Basically writes the entire buffer in the event the USB was disconnected. Creates a dump file to store it
 	public static void flushBuffer() {
 		File dumpFile = new File(
@@ -315,28 +347,26 @@ public class DataHandler {
 	 * createNewWriter in.
 	 */
 	public static void updateHandlerState() {
-	
-		if (!useNetworkTables){
+		if (!useNetworkTables) {
 			pingUSB();
-		flushBuffer();
-		//If the USB is disconnected and it hasn't closed the writer yet, close it
-		if (isUSBConnected == false && debounce == 0) {
-			closeWriter();
-			debounce = -1;
-		}
-		//If the USB is reconnected and the writer is closed, open a new one
-		else if (isUSBConnected == true && debounce == -1) {
-
-			createLogFileOnRIOUSB();
-			debounce = 0;
-		}
-		//If neither condition is met, do nothing.
-		else {
-			return;
+			flushBuffer();
+			//If the USB is disconnected and it hasn't closed the writer yet, close it
+			if (isUSBConnected == false && debounce == 0) {
+				closeWriter();
+				debounce = -1;
+			}
+			//If the USB is reconnected and the writer is closed, open a new one
+			else if (isUSBConnected == true && debounce == -1) {
+				createLogFileOnRIOUSB();
+				debounce = 0;
+			}
+			//If neither condition is met, do nothing.
+			else {
+				return;
 			}
 		}
 		//We are using network tables
-		else{
+		else {
 			SmartDashboard.putString("DataHandler", currentValue);
 		}
 	}
