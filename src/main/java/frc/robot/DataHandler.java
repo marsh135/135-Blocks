@@ -3,6 +3,9 @@ package frc.robot;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+
+import org.littletonrobotics.junction.Logger;
+
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.IOError;
@@ -13,8 +16,10 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.drive.SwerveS;
+
 import java.lang.reflect.Type;
 
 /**
@@ -31,7 +36,7 @@ import java.lang.reflect.Type;
  * the tool. You will need some knowledge in regression (r squared, residuals,
  * etc) to interpret the result.
  */
-public class DataHandler extends SubsystemBase {
+public class DataHandler {
 	private static FileOutputStream outputStream;
 	private static OutputStreamWriter outputStreamWriter;
 	private static int id = 0;
@@ -45,8 +50,8 @@ public class DataHandler extends SubsystemBase {
 	private static int debounce = 0;
 	private static int dumpID = 1;
 	private static boolean useNetworkTables;
-	private static String currentValue = "default";
 	private static Gson gson;
+	static Map<String, String> responseData = new HashMap<>();
 
 	/**
 	 * Creates a new Streamwriter, designed to be contingent in case of USB
@@ -91,7 +96,9 @@ public class DataHandler extends SubsystemBase {
 	public static void startHandler(boolean useNetworkTables,
 			String simDiskDirectory) {
 		DataHandler.useNetworkTables = useNetworkTables;
-		if (!useNetworkTables){
+		if (useNetworkTables) {
+			gson = new Gson();
+		} else {
 			if (Constants.currentMode == Constants.Mode.REAL) {
 				createLogFileOnRIOUSB();
 			} else {
@@ -100,39 +107,6 @@ public class DataHandler extends SubsystemBase {
 			}
 		}
 	}
-	public DataHandler(){
-		gson = new Gson();
-	}
-	@Override
-	public void periodic() {
-		String dataHandlerJson = SmartDashboard.getString("DataHandler",
-				"default");
-		if (!dataHandlerJson.equals("default")) {
-			try {
-				// Parse JSON string
-				Type mapType = new TypeToken<Map<String, String>>() {}.getType();
-				Map<String, String> dataFromPython = gson.fromJson(dataHandlerJson,
-						mapType);
-				//check Json
-				if (dataFromPython.containsKey("motor1_speed")) {
-					double test = Double.parseDouble(dataFromPython.get("test"));
-					// Set motor1 speed, e.g., motor1.set(motor1Speed);
-			  }
-				
-				// Prepare response data
-				Map<String, String> responseData = new HashMap<>();
-				responseData.put("status", "running");
-				// Convert response data to JSON
-				String jsonResponse = gson.toJson(responseData);
-				// Send response JSON to Python
-				SmartDashboard.putString("DataHandlerResponse", jsonResponse);
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
 	/**
 	 * Creates a file on a folder called "logs" (located on the USB attached to
 	 * the rio) to log all values to. If there is no folder called "logs", it
@@ -207,9 +181,10 @@ public class DataHandler extends SubsystemBase {
 	 * @param tableHeadings the array of values to be logged, can be different
 	 *                         from the values declared in the setUpLogOnUsb
 	 */
-	public static void logData(String data) {
+	public static void logData(String data, String key) {
 		if (useNetworkTables) {
-			currentValue = data;
+			responseData.put(key, data);
+			//currentValue = data;
 		} else {
 			//Tries writing to the file, adds an error if it doesn't work
 			try {
@@ -225,7 +200,7 @@ public class DataHandler extends SubsystemBase {
 		}
 	}
 
-	public static void logData(String[] data) {
+	public static void logData(String[] data, String key) {
 		//String that will be output to the writer
 		String lineToBeSaved = "";
 		//Adds each argument in the array to the string, adds a comma for separation (regression calculator uses this as well)
@@ -234,63 +209,63 @@ public class DataHandler extends SubsystemBase {
 		}
 		//Removes last comma at the end
 		lineToBeSaved = lineToBeSaved.substring(0, (lineToBeSaved.length() - 1));
-		logData(lineToBeSaved);
+		logData(lineToBeSaved, key);
 	}
 
-	public static void logData(int data) {
+	public static void logData(int data, String key) {
 		String dataString = Integer.toString(data);
-		logData(dataString);
+		logData(dataString, key);
 	}
 
-	public static void logData(int[] data) {
+	public static void logData(int[] data, String key) {
 		String lineToBeSaved = "";
 		for (int integer : data) {
 			lineToBeSaved += (Integer.toString(integer) + ",");
 		}
 		lineToBeSaved = lineToBeSaved.substring(0, (lineToBeSaved.length() - 1));
-		logData(lineToBeSaved);
+		logData(lineToBeSaved, key);
 	}
 
-	public static void logData(boolean data) {
+	public static void logData(boolean data, String key) {
 		String dataString = Boolean.toString(data);
-		logData(dataString);
+		logData(dataString, key);
 	}
 
-	public static void logData(boolean[] data) {
+	public static void logData(boolean[] data, String key) {
 		String lineToBeSaved = "";
 		for (boolean bool : data) {
 			lineToBeSaved += (Boolean.toString(bool) + ",");
 		}
 		lineToBeSaved = lineToBeSaved.substring(0, (lineToBeSaved.length() - 1));
-		logData(lineToBeSaved);
+		logData(lineToBeSaved, key);
 	}
 
-	public static void logData(double data) {
+	public static void logData(double data, String key) {
 		String dataString = Double.toString(data);
-		logData(dataString);
+		logData(dataString, key);
 	}
 
-	public static void logData(double[] data) {
+	public static void logData(double[] data, String key) {
 		String lineToBeSaved = "";
 		for (double num : data) {
 			lineToBeSaved += (Double.toString(num) + ",");
 		}
 		lineToBeSaved = lineToBeSaved.substring(0, (lineToBeSaved.length() - 1));
-		logData(lineToBeSaved);
+		logData(lineToBeSaved, key);
 	}
 
-	public static void logData(float data) {
+	public static void logData(float data, String key) {
 		String dataString = Float.toString(data);
-		logData(dataString);
+		logData(dataString, key);
 	}
 
-	public static void logData(float[] data) {
+	public static void logData(float[] data, String key) {
 		String lineToBeSaved = "";
 		for (float num : data) {
 			lineToBeSaved += (Float.toString(num) + ",");
 		}
 		lineToBeSaved = lineToBeSaved.substring(0, (lineToBeSaved.length() - 1));
-		logData(lineToBeSaved);
+		logData(lineToBeSaved, key);
 	}
 
 	//Basically writes the entire buffer in the event the USB was disconnected. Creates a dump file to store it
@@ -346,8 +321,44 @@ public class DataHandler extends SubsystemBase {
 	 * disconnected. Call this in the periodic function of the file you called
 	 * createNewWriter in.
 	 */
+	static double testCRASH = 0;
 	public static void updateHandlerState() {
-		if (!useNetworkTables) {
+		if (useNetworkTables) {
+			String dataHandlerJson = SmartDashboard.getString("DataHandler",
+					"default");
+			if (!dataHandlerJson.equals("default")) {
+				try {
+					// Parse JSON string
+					Type mapType = new TypeToken<Map<String, String>>() {}.getType();
+					Map<String, String> dataFromPython = gson
+							.fromJson(dataHandlerJson, mapType);
+					//check Json
+					if (dataFromPython.containsKey("test")) {
+						double test = Double.parseDouble(dataFromPython.get("test"));
+						if (test != testCRASH){
+							if (test != 1.0+testCRASH){
+								System.out.println("skipped...");
+							}
+						}
+						testCRASH = test;
+						SwerveS.takeOver = true;
+						RobotContainer.swerveS.setChassisSpeeds(new ChassisSpeeds(test,test,test));
+					}
+					// Prepare response data
+					responseData.put("status", "running");
+					// Convert response data to JSON
+					String jsonResponse = gson.toJson(responseData);
+					// Send response JSON to Python
+					SmartDashboard.putString("DataHandlerResponse", jsonResponse);
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		//We are not using network tables
+		else {
 			pingUSB();
 			flushBuffer();
 			//If the USB is disconnected and it hasn't closed the writer yet, close it
@@ -364,10 +375,6 @@ public class DataHandler extends SubsystemBase {
 			else {
 				return;
 			}
-		}
-		//We are using network tables
-		else {
-			SmartDashboard.putString("DataHandler", currentValue);
 		}
 	}
 }
