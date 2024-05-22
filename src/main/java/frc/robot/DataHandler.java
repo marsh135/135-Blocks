@@ -319,6 +319,7 @@ public class DataHandler {
 	 * createNewWriter in.
 	 */
 	static double testCRASH = 0;
+	static String oldModel = "";
 	public static void updateHandlerState() {
 		if (useNetworkTables) {
 			String dataHandlerJson = SmartDashboard.getString("ToRobot",
@@ -340,12 +341,15 @@ public class DataHandler {
 						testCRASH = test;
 					}
 					if (dataFromPython.containsKey("modelUpdated")){
-						String modelList = dataFromPython.get("modelUpdated"); //new data!
+						String modelList = dataFromPython.get("modelUpdated"); //get data
 						if (responseData.containsKey("shouldUpdateModel")){
 							responseData.remove("shouldUpdateModel"); //stop asking for data
 						}
-						modelList.split(",");
-						System.out.println(modelList);
+						if (!modelList.equals(oldModel)){
+							oldModel = modelList;
+							modelList.split(",");
+							System.out.println(modelList);
+						}
 					}
 					// Prepare response data
 					responseData.put("status", "running");
