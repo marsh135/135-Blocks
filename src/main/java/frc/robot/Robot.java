@@ -16,10 +16,8 @@ import frc.robot.Constants.FRCMatchState;
 import frc.robot.utils.SimGamePiece;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Notifier;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -34,7 +32,6 @@ public class Robot extends LoggedRobot {
 	final Timer endgameTimer = new Timer();
 	public static boolean isRed;
 	private boolean hasBeenEnabled;
-	private Notifier dataHandlerNotifier;
 	/**
 	 * This function is run when the robot is first started up and should be used
 	 * for any initialization code.
@@ -160,7 +157,10 @@ public class Robot extends LoggedRobot {
 		}else{
 			Constants.currentMatchState = FRCMatchState.TELEOP;
 		}
-
+		if(RobotContainer.driveController.getPOV() == 0){
+			System.err.println("UP");
+			DataHandler.logData("modelUpdate", "shouldUpdateModel");
+		}
 	}
 
 	@Override

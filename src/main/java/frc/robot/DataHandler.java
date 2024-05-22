@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
-import org.littletonrobotics.junction.Logger;
 
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -16,9 +15,7 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.subsystems.drive.SwerveS;
 
 import java.lang.reflect.Type;
 
@@ -324,7 +321,7 @@ public class DataHandler {
 	static double testCRASH = 0;
 	public static void updateHandlerState() {
 		if (useNetworkTables) {
-			String dataHandlerJson = SmartDashboard.getString("DataHandler",
+			String dataHandlerJson = SmartDashboard.getString("ToRobot",
 					"default");
 			if (!dataHandlerJson.equals("default")) {
 				try {
@@ -341,15 +338,22 @@ public class DataHandler {
 							}
 						}
 						testCRASH = test;
-						SwerveS.takeOver = true;
-						RobotContainer.swerveS.setChassisSpeeds(new ChassisSpeeds(test,test,test));
+					}
+					if (dataFromPython.containsKey("modelUpdated")){
+						String modelList = dataFromPython.get("modelUpdated"); //new data!
+						if (responseData.containsKey("shouldUpdateModel")){
+							responseData.remove("shouldUpdateModel"); //stop asking for data
+						}
+						modelList.split(",");
+						System.out.println(modelList);
 					}
 					// Prepare response data
 					responseData.put("status", "running");
 					// Convert response data to JSON
 					String jsonResponse = gson.toJson(responseData);
+					
 					// Send response JSON to Python
-					SmartDashboard.putString("DataHandlerResponse", jsonResponse);
+					SmartDashboard.putString("FromRobot", jsonResponse);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
