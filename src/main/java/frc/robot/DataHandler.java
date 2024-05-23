@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
-
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.IOError;
@@ -46,7 +45,6 @@ public class DataHandler {
 	public static boolean fileCreated = false;
 	private static int debounce = 0;
 	private static int dumpID = 1;
-	private static boolean useNetworkTables;
 	private static Gson gson;
 	static Map<String, String> responseData = new HashMap<>();
 
@@ -90,20 +88,16 @@ public class DataHandler {
 	 * @param simDiskName      A string that states what disk to write to in
 	 *                            simulation
 	 */
-	public static void startHandler(boolean useNetworkTables,
-			String simDiskDirectory) {
-		DataHandler.useNetworkTables = useNetworkTables;
-		if (useNetworkTables) {
-			gson = new Gson();
+	public static void startHandler(String simDiskDirectory) {
+		gson = new Gson();
+		if (Constants.currentMode == Constants.Mode.REAL) {
+			createLogFileOnRIOUSB();
 		} else {
-			if (Constants.currentMode == Constants.Mode.REAL) {
-				createLogFileOnRIOUSB();
-			} else {
-				setSimDisk(simDiskDirectory);
-				createLogFileOnRIOUSB();
-			}
+			setSimDisk(simDiskDirectory);
+			createLogFileOnRIOUSB();
 		}
 	}
+
 	/**
 	 * Creates a file on a folder called "logs" (located on the USB attached to
 	 * the rio) to log all values to. If there is no folder called "logs", it
@@ -179,21 +173,21 @@ public class DataHandler {
 	 *                         from the values declared in the setUpLogOnUsb
 	 */
 	public static void logData(String data, String key) {
-		if (useNetworkTables) {
-			responseData.put(key, data);
-			//currentValue = data;
-		} else {
-			//Tries writing to the file, adds an error if it doesn't work
-			try {
-				outputStreamWriter.write(data + "\r\n");
-				outputStreamWriter.flush();
-			}
-			//Catches errors
-			catch (Exception e) {
-				dataBuffer.add(data);
-			}
-			catch (IOError e) {
-			}
+		responseData.put(key, data); //send to network tables
+		logData(data); //also log the data.
+	}
+
+	public static void logData(String data) {
+		//Tries writing to the file, adds an error if it doesn't work
+		try {
+			outputStreamWriter.write(data + "\r\n");
+			outputStreamWriter.flush();
+		}
+		//Catches errors
+		catch (Exception e) {
+			dataBuffer.add(data);
+		}
+		catch (IOError e) {
 		}
 	}
 
@@ -265,6 +259,75 @@ public class DataHandler {
 		logData(lineToBeSaved, key);
 	}
 
+	//here
+	public static void logData(String[] data) {
+		//String that will be output to the writer
+		String lineToBeSaved = "";
+		//Adds each argument in the array to the string, adds a comma for separation (regression calculator uses this as well)
+		for (String heading : data) {
+			lineToBeSaved += (heading + ",");
+		}
+		//Removes last comma at the end
+		lineToBeSaved = lineToBeSaved.substring(0, (lineToBeSaved.length() - 1));
+		logData(lineToBeSaved);
+	}
+
+	public static void logData(int data) {
+		String dataString = Integer.toString(data);
+		logData(dataString);
+	}
+
+	public static void logData(int[] data) {
+		String lineToBeSaved = "";
+		for (int integer : data) {
+			lineToBeSaved += (Integer.toString(integer) + ",");
+		}
+		lineToBeSaved = lineToBeSaved.substring(0, (lineToBeSaved.length() - 1));
+		logData(lineToBeSaved);
+	}
+
+	public static void logData(boolean data) {
+		String dataString = Boolean.toString(data);
+		logData(dataString);
+	}
+
+	public static void logData(boolean[] data) {
+		String lineToBeSaved = "";
+		for (boolean bool : data) {
+			lineToBeSaved += (Boolean.toString(bool) + ",");
+		}
+		lineToBeSaved = lineToBeSaved.substring(0, (lineToBeSaved.length() - 1));
+		logData(lineToBeSaved);
+	}
+
+	public static void logData(double data) {
+		String dataString = Double.toString(data);
+		logData(dataString);
+	}
+
+	public static void logData(double[] data) {
+		String lineToBeSaved = "";
+		for (double num : data) {
+			lineToBeSaved += (Double.toString(num) + ",");
+		}
+		lineToBeSaved = lineToBeSaved.substring(0, (lineToBeSaved.length() - 1));
+		logData(lineToBeSaved);
+	}
+
+	public static void logData(float data) {
+		String dataString = Float.toString(data);
+		logData(dataString);
+	}
+
+	public static void logData(float[] data) {
+		String lineToBeSaved = "";
+		for (float num : data) {
+			lineToBeSaved += (Float.toString(num) + ",");
+		}
+		lineToBeSaved = lineToBeSaved.substring(0, (lineToBeSaved.length() - 1));
+		logData(lineToBeSaved);
+	}
+
 	//Basically writes the entire buffer in the event the USB was disconnected. Creates a dump file to store it
 	public static void flushBuffer() {
 		File dumpFile = new File(
@@ -320,72 +383,77 @@ public class DataHandler {
 	 */
 	static double previousTime = 0;
 	static String oldModel = "";
+	static String[] outputList;
+
+	/**
+	 * Get any value from the output model from Python.
+	 * 
+	 * @param index ZERO AS FIRST OUTPUT
+	 * @return IN A DOUBLE your selected index for the model outputs.
+	 */
+	public static double getValue(int index) {
+		return Double.parseDouble(outputList[index]);
+	}
+
 	public static void updateHandlerState() {
-		if (useNetworkTables) {
-			String dataHandlerJson = SmartDashboard.getString("ToRobot",
-					"default");
-			if (!dataHandlerJson.equals("default")) {
-				try {
-					// Parse JSON string
-					Type mapType = new TypeToken<Map<String, String>>() {}.getType();
-					Map<String, String> dataFromPython = gson
-							.fromJson(dataHandlerJson, mapType);
-					//check Json
-					if (dataFromPython.containsKey("time")) {
-						double currentTime = Double.parseDouble(dataFromPython.get("time"));
-						if (currentTime != previousTime){
-							if (currentTime != 1.0+previousTime){
-								System.out.println("skipped...");
-							}
-						}
-						previousTime = currentTime;
-					}
-					if (dataFromPython.containsKey("predictedAngle")){
-						double desAngle = Double.parseDouble(dataFromPython.get("predictedAngle"));
-					}
-					if (dataFromPython.containsKey("modelUpdated")){
-						String modelList = dataFromPython.get("modelUpdated"); //get data
-						if (responseData.containsKey("shouldUpdateModel")){
-							responseData.remove("shouldUpdateModel"); //stop asking for data
-						}
-						if (!modelList.equals(oldModel)){
-							oldModel = modelList;
-							modelList.split(",");
-							System.out.println(modelList);
+		String dataHandlerJson = SmartDashboard.getString("ToRobot", "default");
+		if (!dataHandlerJson.equals("default")) {
+			try {
+				// Parse JSON string
+				Type mapType = new TypeToken<Map<String, String>>() {}.getType();
+				Map<String, String> dataFromPython = gson.fromJson(dataHandlerJson,
+						mapType);
+				//check Json
+				if (dataFromPython.containsKey("time")) {
+					double currentTime = Double
+							.parseDouble(dataFromPython.get("time"));
+					if (currentTime != previousTime) {
+						if (currentTime != 1.0 + previousTime) {
+							System.out.println("skipped...");
 						}
 					}
-					// Prepare response data
-					responseData.put("status", "running");
-					// Convert response data to JSON
-					String jsonResponse = gson.toJson(responseData);
-					
-					// Send response JSON to Python
-					SmartDashboard.putString("FromRobot", jsonResponse);
+					previousTime = currentTime;
 				}
-				catch (Exception e) {
-					e.printStackTrace();
+				if (dataFromPython.containsKey("outputs")) {
+					String outputs = dataFromPython.get("outputs");
+					outputs = outputs.substring(1, outputs.length() - 2);
+					outputs = outputs.trim();
+					outputList = outputs.split(",");
+					//Remove brackets
+					System.err.println(outputList[0]);
 				}
+				if (dataFromPython.containsKey("modelUpdated")) {
+					if (responseData.containsKey("shouldUpdateModel")) {
+						responseData.remove("shouldUpdateModel"); //stop asking for data
+					}
+				}
+				// Prepare response data
+				responseData.put("status", "running");
+				// Convert response data to JSON
+				String jsonResponse = gson.toJson(responseData);
+				// Send response JSON to Python
+				SmartDashboard.putString("FromRobot", jsonResponse);
 			}
-			
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		//We are not using network tables
+		pingUSB();
+		flushBuffer();
+		//If the USB is disconnected and it hasn't closed the writer yet, close it
+		if (isUSBConnected == false && debounce == 0) {
+			closeWriter();
+			debounce = -1;
+		}
+		//If the USB is reconnected and the writer is closed, open a new one
+		else if (isUSBConnected == true && debounce == -1) {
+			createLogFileOnRIOUSB();
+			debounce = 0;
+		}
+		//If neither condition is met, do nothing.
 		else {
-			pingUSB();
-			flushBuffer();
-			//If the USB is disconnected and it hasn't closed the writer yet, close it
-			if (isUSBConnected == false && debounce == 0) {
-				closeWriter();
-				debounce = -1;
-			}
-			//If the USB is reconnected and the writer is closed, open a new one
-			else if (isUSBConnected == true && debounce == -1) {
-				createLogFileOnRIOUSB();
-				debounce = 0;
-			}
-			//If neither condition is met, do nothing.
-			else {
-				return;
-			}
+			return;
 		}
 	}
 }
