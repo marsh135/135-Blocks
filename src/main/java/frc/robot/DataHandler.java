@@ -318,7 +318,7 @@ public class DataHandler {
 	 * disconnected. Call this in the periodic function of the file you called
 	 * createNewWriter in.
 	 */
-	static double testCRASH = 0;
+	static double previousTime = 0;
 	static String oldModel = "";
 	public static void updateHandlerState() {
 		if (useNetworkTables) {
@@ -331,14 +331,17 @@ public class DataHandler {
 					Map<String, String> dataFromPython = gson
 							.fromJson(dataHandlerJson, mapType);
 					//check Json
-					if (dataFromPython.containsKey("test")) {
-						double test = Double.parseDouble(dataFromPython.get("test"));
-						if (test != testCRASH){
-							if (test != 1.0+testCRASH){
+					if (dataFromPython.containsKey("time")) {
+						double currentTime = Double.parseDouble(dataFromPython.get("time"));
+						if (currentTime != previousTime){
+							if (currentTime != 1.0+previousTime){
 								System.out.println("skipped...");
 							}
 						}
-						testCRASH = test;
+						previousTime = currentTime;
+					}
+					if (dataFromPython.containsKey("predictedAngle")){
+						double desAngle = Double.parseDouble(dataFromPython.get("predictedAngle"));
 					}
 					if (dataFromPython.containsKey("modelUpdated")){
 						String modelList = dataFromPython.get("modelUpdated"); //get data
