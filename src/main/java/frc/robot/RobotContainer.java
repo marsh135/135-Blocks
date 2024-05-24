@@ -4,8 +4,8 @@
 package frc.robot;
 
 import frc.robot.commands.drive.SwerveC;
+import frc.robot.subsystems.drive.REVSwerve.SwerveModules.REVSwerveS;
 
-import frc.robot.subsystems.drive.SwerveS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.XboxController;
 import java.util.function.BooleanSupplier;
@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
  */
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
-	public final static SwerveS swerveS = new SwerveS();
+	public final static REVSwerveS swerveS = new REVSwerveS();
 	private final SendableChooser<Command> autoChooser;
 
 	public static XboxController driveController = new XboxController(0);

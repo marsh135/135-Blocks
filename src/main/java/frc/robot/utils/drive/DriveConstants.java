@@ -5,8 +5,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
-import frc.robot.subsystems.drive.SwerveModules.CANSparkMaxSwerveModule;
-import frc.robot.subsystems.drive.SwerveModules.SwerveMotorControllers;
+import frc.robot.subsystems.drive.REVSwerve.SwerveModules.CANSparkMaxSwerveModule;
 
 public class DriveConstants {
 	/**

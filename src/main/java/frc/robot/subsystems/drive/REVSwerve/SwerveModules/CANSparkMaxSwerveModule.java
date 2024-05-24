@@ -1,8 +1,8 @@
-package frc.robot.subsystems.drive.SwerveModules;
+package frc.robot.subsystems.drive.REVSwerve.SwerveModules;
 
 // import
 // com.ctre.phoenix.sensors.CANCoder;
-import com.revrobotics.CANSparkFlex;
+import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAnalogSensor;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -10,17 +10,17 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAnalogSensor.Mode;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-
 // import
 // edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Constants;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.MotorConstantContainer;
+import frc.robot.utils.drive.SwerveMotorControllers;
 
-public class CANSparkFlexSwerveModule extends SwerveMotorControllers  {
-	private CANSparkFlex driveMotor;
-	private CANSparkFlex turningMotor;
+public class CANSparkMaxSwerveModule extends SwerveMotorControllers  {
+	private CANSparkMax driveMotor;
+	private CANSparkMax turningMotor;
 	private RelativeEncoder driveEncoder;
 	private RelativeEncoder turningEncoder;
 
@@ -31,6 +31,13 @@ public class CANSparkFlexSwerveModule extends SwerveMotorControllers  {
 	//private final CANCoder absoluteEncoder;
 
 
+	public CANSparkMaxSwerveModule(int driveMotorId, int turningMotorId,
+	boolean driveMotorReversed, boolean turningMotorReversed,
+	int absoluteEncoderId, double absoluteEncoderOffset,
+	boolean absoluteEncoderReversed, MotorConstantContainer driveMotorConstantContainer,
+	MotorConstantContainer turningKpKsKvKa) { 
+		initialize(driveMotorId, turningMotorId, driveMotorReversed, turningMotorReversed, absoluteEncoderId, absoluteEncoderOffset, absoluteEncoderReversed, driveMotorConstantContainer, turningKpKsKvKa);
+	}
 	/**Sim still needs some way to be implemented (maybe use a wrapper?)
 	 * This is literally the CANSparkMax swerve module code but I did CTRL+F and replaced CANSparkFlex with CANSparkMax -Nish
 	 * 
@@ -42,6 +49,7 @@ public class CANSparkFlexSwerveModule extends SwerveMotorControllers  {
 	 * @param absoluteEncoderOffset   Offset of Absolute Encoder in Radians
 	 * @param absoluteEncoderReversed True if Encoder is Reversed
 	 */
+	
 	@Override
 	public void initialize(int driveMotorId, int turningMotorId,
 			boolean driveMotorReversed, boolean turningMotorReversed,
@@ -67,8 +75,8 @@ public class CANSparkFlexSwerveModule extends SwerveMotorControllers  {
 		//absoluteEncoder = new AnalogInput(absoluteEncoderId);
 		//absoluteEncoder = new CANCoder(absoluteEncoderId);
 		//declares motors
-		driveMotor = new CANSparkFlex(driveMotorId, MotorType.kBrushless);
-		turningMotor = new CANSparkFlex(turningMotorId, MotorType.kBrushless);
+		driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
+		turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
 		//checks to see if they're inverted
 		driveMotor.setInverted(driveMotorReversed);
 		turningMotor.setInverted(turningMotorReversed);
