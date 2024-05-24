@@ -10,41 +10,26 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAnalogSensor.Mode;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 
 // import
 // edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.MotorConstantContainer;
 
-public class CANSparkFlexSwerveModule extends SubsystemBase {
-	private final CANSparkFlex driveMotor;
-	private final CANSparkFlex turningMotor;
-	private final RelativeEncoder driveEncoder;
-	private final RelativeEncoder turningEncoder;
-	private final PIDController turningPIDController;
-	private final PIDController drivePIDController; //not using profiled cuz no angles
-	//private SimpleMotorFeedforward turningFeedForward = null;
-	private SimpleMotorFeedforward driveFeedForward = null;
-	private final SparkAnalogSensor absoluteEncoder;
+public class CANSparkFlexSwerveModule extends SwerveMotorControllers  {
+	private CANSparkFlex driveMotor;
+	private CANSparkFlex turningMotor;
+	private RelativeEncoder driveEncoder;
+	private RelativeEncoder turningEncoder;
+
+	private double absoluteEncoderOffsetRad;
+	private boolean absoluteEncoderReversed;
+	private SparkAnalogSensor absoluteEncoder;
 	//private final AnalogInput absoluteEncoder; // Use either AnalogInput or CANCoder depending on the absolute encoder
 	//private final CANCoder absoluteEncoder;
-	private final boolean absoluteEncoderReversed;
-	private final double absoluteEncoderOffsetRad;
-	//Simulation Variables
-	double m_currentAngle;
-	private double m_simDriveEncoderPosition;
-	private double m_simDriveEncoderVelocity;
-	private double m_simAngleDifference;
-	private double m_simTurnAngleIncrement;
-	Pose2d m_pose;
-	private int m_moduleNumber;
+
 
 	/**Sim still needs some way to be implemented (maybe use a wrapper?)
 	 * This is literally the CANSparkMax swerve module code but I did CTRL+F and replaced CANSparkFlex with CANSparkMax -Nish
@@ -57,7 +42,8 @@ public class CANSparkFlexSwerveModule extends SubsystemBase {
 	 * @param absoluteEncoderOffset   Offset of Absolute Encoder in Radians
 	 * @param absoluteEncoderReversed True if Encoder is Reversed
 	 */
-	public CANSparkFlexSwerveModule(int driveMotorId, int turningMotorId,
+	@Override
+	public void initialize(int driveMotorId, int turningMotorId,
 			boolean driveMotorReversed, boolean turningMotorReversed,
 			int absoluteEncoderId, double absoluteEncoderOffset,
 			boolean absoluteEncoderReversed, MotorConstantContainer driveMotorConstantContainer,
@@ -117,7 +103,7 @@ public class CANSparkFlexSwerveModule extends SubsystemBase {
 
 		}
 	}
-
+	@Override
 	public double getDrivePosition() {
 		//returns the position of the drive wheel
 		if (Constants.currentMode == Constants.Mode.REAL) {
@@ -126,7 +112,7 @@ public class CANSparkFlexSwerveModule extends SubsystemBase {
 			return m_simDriveEncoderPosition;
 		}
 	}
-
+	@Override
 	public double getTurningPosition() {
 		//returns the heading of the swerve module (turning motor position)
 		if (Constants.currentMode == Constants.Mode.REAL) {
@@ -135,13 +121,7 @@ public class CANSparkFlexSwerveModule extends SubsystemBase {
 			return m_currentAngle;
 		}
 	}
-
-	public int getModuleNumber() { return m_moduleNumber; }
-
-	public Rotation2d getHeadingRotation2d() {
-		return Rotation2d.fromDegrees(getTurningPosition());
-	}
-
+	@Override
 	public double getDriveVelocity() {
 		//returns velocity of drive wheel
 		if (Constants.currentMode == Constants.Mode.REAL) {
@@ -150,20 +130,20 @@ public class CANSparkFlexSwerveModule extends SubsystemBase {
 			return m_simDriveEncoderVelocity;
 		}
 	}
-
+	@Override
 	public double getTurningVelocity() {
 		//returns velocity of turning motor
 		return turningEncoder.getVelocity();
 	}
-
+	@Override
 	public void setTurningTest(double volts) { turningMotor.setVoltage(volts); }
-
+	@Override
 	public void setDriveTest(double volts) {
 		double turnOutput = turningPIDController.calculate(getAbsoluteEncoderRad(), 0);
 		turningMotor.setVoltage(turnOutput);
 		driveMotor.setVoltage(volts);
 	}
-
+	@Override
 	public double getAbsoluteEncoderRad() {
 		//gets the voltage and divides by the maximum voltage to get a percent, then multiplies that percent by 2pi to get a degree heading.
 		double angle = absoluteEncoder.getVoltage()
@@ -181,59 +161,11 @@ public class CANSparkFlexSwerveModule extends SubsystemBase {
 		angle *= (absoluteEncoderReversed ? -1 : 1);
 		return angle;
 	}
-	
+	@Override
 	public void resetEncoders() {
 		//resets the encoders, (drive motor becomes zero, turning encoder becomes the module heading from the absolute encoder)
 		driveEncoder.setPosition(0);
 		turningEncoder.setPosition(getAbsoluteEncoderRad());
-	}
-
-	public SwerveModulePosition getPosition() {
-		return new SwerveModulePosition(getDrivePosition(),
-				getHeadingRotation2d());
-		//basically creates a new swervemoduleposition based on the current positions of the drive and turning encoders
-	}
-
-	public SwerveModuleState getState() {
-		//creates new swerveModuleState based on drive speed and turn motor position (speed and direction)
-		return new SwerveModuleState(getDriveVelocity(), getHeadingRotation2d());
-	}
-
-	public void setDesiredState(SwerveModuleState state) {
-		//var encoderRotation = new Rotation2d(getTurningPosition());
-		// Stops the motors if the desired state is too small
-		/* if (Math.abs(state.speedMetersPerSecond) < 0.001 && !SwerveS.autoLock) {
-		    stop();
-		    return;
-		}*/
-		// Optimizing finds the shortest path to the desired angle
-		state = SwerveModuleState.optimize(state, getState().angle);
-		
-		// Calculate the drive output from the drive PID controller.
-		final double driveOutput = drivePIDController
-				.calculate(getDriveVelocity(), state.speedMetersPerSecond);
-		final double driveFeedforward = driveFeedForward
-				.calculate(state.speedMetersPerSecond);
-
-		// Calculate the turning motor output from the turning PID controller.
-		final double turnOutput = turningPIDController
-				.calculate(getAbsoluteEncoderRad(), state.angle.getRadians());
-		//        final double turnFeedforward =
-		//         turningFeedForward.calculate(turningPIDController.getSetpoint().velocity);
-		if (Constants.currentMode == Constants.Mode.REAL) {
-			driveMotor.setVoltage(driveOutput + driveFeedforward);
-			turningMotor.set(turnOutput);
-		} else {
-			simUpdateDrivePosition(state);
-			m_currentAngle = state.angle.getDegrees();
-			//simTurnPosition(m_currentAngle);
-		}
-	}
-
-	private void simUpdateDrivePosition(SwerveModuleState state) {
-		m_simDriveEncoderVelocity = state.speedMetersPerSecond;
-		double distancePer20Ms = m_simDriveEncoderVelocity * .02;
-		m_simDriveEncoderPosition += distancePer20Ms;
 	}
 
 	@SuppressWarnings("unused") //incase we want accurate sim turn (this doesn't work right now tho!)
@@ -250,19 +182,16 @@ public class CANSparkFlexSwerveModule extends SubsystemBase {
 			}
 		}
 	}
-
+	@Override
 	public void stop() {
 		driveMotor.set(0);
 		turningMotor.set(0);
 	}
-
-	public void setModulePose(Pose2d pose) { m_pose = pose; }
-
-	public Pose2d getModulePose() { return m_pose; }
-
 	@Override
-	//TODO: Sim support 
-	public void simulationPeriodic() { //REVPhysicsSim.getInstance().run();
-	 }
+	public void setMotors(double driveOutput, double driveFeedforward,
+			double turnOutput) {
+				driveMotor.setVoltage(driveOutput + driveFeedforward);
+				turningMotor.set(turnOutput);
+	}
 }
 

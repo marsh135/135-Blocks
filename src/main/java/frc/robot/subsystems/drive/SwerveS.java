@@ -32,13 +32,12 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.Constants.Mode;
-import frc.robot.subsystems.drive.SwerveModules.CANSparkMaxSwerveModule;
+import frc.robot.subsystems.drive.SwerveModules.SwerveMotorControllers;
 import frc.robot.Robot;
 
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import java.util.HashMap;
-import java.util.Map;
 
 import frc.robot.utils.drive.DriveConstants.SwerveConstants.ModulePosition;
 import java.util.function.Supplier;
@@ -55,47 +54,10 @@ public class SwerveS extends SubsystemBase {
 	private Supplier<Pose2d> pose2dSupplier = () -> {
 		return getPose();
 	};
-	private final static HashMap<ModulePosition, CANSparkMaxSwerveModule> m_swerveModules = new HashMap<>(
-			Map.of(ModulePosition.FRONT_LEFT, new CANSparkMaxSwerveModule(
-					DriveConstants.kFrontLeftDrivePort,
-					DriveConstants.kFrontLeftTurningPort,
-					DriveConstants.kFrontLeftDriveReversed,
-					DriveConstants.kFrontLeftTurningReversed,
-					DriveConstants.kFrontLeftAbsEncoderPort,
-					DriveConstants.kFrontLeftAbsEncoderOffsetRad,
-					DriveConstants.kFrontLeftAbsEncoderReversed,
-					DriveConstants.SwerveConstants.frontLeftDriveMotorConstantContainer,
-					DriveConstants.SwerveConstants.overallTurningMotorConstantContainer),
-					ModulePosition.FRONT_RIGHT,
-					new CANSparkMaxSwerveModule(DriveConstants.kFrontRightDrivePort,
-							DriveConstants.kFrontRightTurningPort,
-							DriveConstants.kFrontRightDriveReversed,
-							DriveConstants.kFrontRightTurningReversed,
-							DriveConstants.kFrontRightAbsEncoderPort,
-							DriveConstants.kFrontRightAbsEncoderOffsetRad,
-							DriveConstants.kFrontRightAbsEncoderReversed,
-							DriveConstants.SwerveConstants.frontRightDriveMotorConstantContainer,
-							DriveConstants.SwerveConstants.overallTurningMotorConstantContainer),
-					ModulePosition.BACK_LEFT,
-					new CANSparkMaxSwerveModule(DriveConstants.kBackLeftDrivePort,
-							DriveConstants.kBackLeftTurningPort,
-							DriveConstants.kBackLeftDriveReversed,
-							DriveConstants.kBackLeftTurningReversed,
-							DriveConstants.kBackLeftAbsEncoderPort,
-							DriveConstants.kBackLeftAbsEncoderOffsetRad,
-							DriveConstants.kBackLeftAbsEncoderReversed,
-							DriveConstants.SwerveConstants.backLeftDriveMotorConstantContainer,
-							DriveConstants.SwerveConstants.overallTurningMotorConstantContainer),
-					ModulePosition.BACK_RIGHT,
-					new CANSparkMaxSwerveModule(DriveConstants.kBackRightDrivePort,
-							DriveConstants.kBackRightTurningPort,
-							DriveConstants.kBackRightDriveReversed,
-							DriveConstants.kBackRightTurningReversed,
-							DriveConstants.kBackRightAbsEncoderPort,
-							DriveConstants.kBackRightAbsEncoderOffsetRad,
-							DriveConstants.kBackRightDriveReversed,
-							DriveConstants.SwerveConstants.backLeftDriveMotorConstantContainer,
-							DriveConstants.SwerveConstants.overallTurningMotorConstantContainer)));
+	private static HashMap<ModulePosition, SwerveMotorControllers> m_swerveModules = new HashMap<>();
+	static {
+		initalizeModules();
+	}
 	private static AHRS gyro = new AHRS(Port.kUSB1);
 	//Whether the robot should be field oriented
 	public static boolean fieldOriented = true,
@@ -121,7 +83,7 @@ public class SwerveS extends SubsystemBase {
 					(state) -> Logger.recordOutput("SysIdTestState",
 							state.toString())),
 			new SysIdRoutine.Mechanism((Measure<Voltage> volts) -> {
-				for (CANSparkMaxSwerveModule module : m_swerveModules.values())
+				for (SwerveMotorControllers module : m_swerveModules.values())
 					module.setTurningTest(volts.in(Volts));
 			}, null // No log consumer, since data is recorded by URCL
 					, this));
@@ -130,7 +92,7 @@ public class SwerveS extends SubsystemBase {
 					(state) -> Logger.recordOutput("SysIdTestState",
 							state.toString())),
 			new SysIdRoutine.Mechanism((Measure<Voltage> volts) -> {
-				for (CANSparkMaxSwerveModule module : m_swerveModules.values())
+				for (SwerveMotorControllers module : m_swerveModules.values())
 					module.setDriveTest(volts.in(Volts));
 			}, null // No log consumer, since data is recorded by URCL
 					, this));
@@ -187,13 +149,68 @@ public class SwerveS extends SubsystemBase {
 		};
 	}
 
+	private static void initalizeModules() {
+		m_swerveModules.clear();
+		for (ModulePosition position : ModulePosition.values()) {
+			if (position.name() == "FRONT_LEFT") {
+				m_swerveModules.put(position,
+						DriveConstants.robotMotorControllers.initialize(
+								DriveConstants.kFrontLeftDrivePort,
+								DriveConstants.kFrontLeftTurningPort,
+								DriveConstants.kFrontLeftDriveReversed,
+								DriveConstants.kFrontLeftTurningReversed,
+								DriveConstants.kFrontLeftAbsEncoderPort,
+								DriveConstants.kFrontLeftAbsEncoderOffsetRad,
+								DriveConstants.kFrontLeftAbsEncoderReversed,
+								DriveConstants.SwerveConstants.frontLeftDriveMotorConstantContainer,
+								DriveConstants.SwerveConstants.overallTurningMotorConstantContainer));
+			} else if (position.name() == "FRONT_RIGHT") {
+				m_swerveModules.put(position,
+						DriveConstants.robotMotorControllers.initialize(
+								DriveConstants.kFrontRightDrivePort,
+								DriveConstants.kFrontRightTurningPort,
+								DriveConstants.kFrontRightDriveReversed,
+								DriveConstants.kFrontRightTurningReversed,
+								DriveConstants.kFrontRightAbsEncoderPort,
+								DriveConstants.kFrontRightAbsEncoderOffsetRad,
+								DriveConstants.kFrontRightAbsEncoderReversed,
+								DriveConstants.SwerveConstants.frontRightDriveMotorConstantContainer,
+								DriveConstants.SwerveConstants.overallTurningMotorConstantContainer));
+			} else if (position.name() == "BACK_LEFT") {
+				m_swerveModules.put(position,
+				DriveConstants.robotMotorControllers.initialize(
+						DriveConstants.kBackLeftDrivePort,
+						DriveConstants.kBackLeftTurningPort,
+						DriveConstants.kBackLeftDriveReversed,
+						DriveConstants.kBackLeftTurningReversed,
+						DriveConstants.kBackLeftAbsEncoderPort,
+						DriveConstants.kBackLeftAbsEncoderOffsetRad,
+						DriveConstants.kBackLeftAbsEncoderReversed,
+						DriveConstants.SwerveConstants.backLeftDriveMotorConstantContainer,
+						DriveConstants.SwerveConstants.overallTurningMotorConstantContainer));
+			} else if (position.name() == "BACK_RIGHT") {
+				m_swerveModules.put(position,
+				DriveConstants.robotMotorControllers.initialize(
+						DriveConstants.kBackRightDrivePort,
+						DriveConstants.kBackRightTurningPort,
+						DriveConstants.kBackRightDriveReversed,
+						DriveConstants.kBackRightTurningReversed,
+						DriveConstants.kBackRightAbsEncoderPort,
+						DriveConstants.kBackRightAbsEncoderOffsetRad,
+						DriveConstants.kBackRightAbsEncoderReversed,
+						DriveConstants.SwerveConstants.backRightDriveMotorConstantContainer,
+						DriveConstants.SwerveConstants.overallTurningMotorConstantContainer));
+			}
+		}
+	}
+
 	public SwerveS() {
 		// Waits for the RIO to finishing booting
 		new Thread(() -> {
 			try {
 				Thread.sleep(1000);
 				zeroHeading();
-				for (CANSparkMaxSwerveModule module : m_swerveModules.values())
+				for (SwerveMotorControllers module : m_swerveModules.values())
 					module.resetEncoders();
 				//limelight.getEntry("pipeline").setNumber(1);
 			}
@@ -292,7 +309,7 @@ public class SwerveS extends SubsystemBase {
 		m_ChassisSpeeds = DriveConstants.kDriveKinematics
 				.toChassisSpeeds(getModuleStates());
 		robotPosition = poseEstimator.update(getRotation2d(), m_modulePositions);
-		for (CANSparkMaxSwerveModule module : m_swerveModules.values()) {
+		for (SwerveMotorControllers module : m_swerveModules.values()) {
 			var modulePositionFromChassis = DriveConstants.kModuleTranslations[module
 					.getModuleNumber()].rotateBy(getRotation2d())
 							.plus(getPoseMeters().getTranslation());
@@ -338,7 +355,7 @@ public class SwerveS extends SubsystemBase {
 	}
 
 	public void stopModules() {
-		for (CANSparkMaxSwerveModule module : m_swerveModules.values())
+		for (SwerveMotorControllers module : m_swerveModules.values())
 			module.stop();
 	}
 	/*public void toggleAutoLock() {
@@ -359,7 +376,7 @@ public class SwerveS extends SubsystemBase {
 				.toSwerveModuleStates(speed);
 		SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates,
 				DriveConstants.kMaxSpeedMetersPerSecond);
-		for (CANSparkMaxSwerveModule module : m_swerveModules.values()) {
+		for (SwerveMotorControllers module : m_swerveModules.values()) {
 			module.setDesiredState(moduleStates[module.getModuleNumber()]);
 		}
 		Logger.recordOutput("Swerve/Display/Target Swerve Module States",
