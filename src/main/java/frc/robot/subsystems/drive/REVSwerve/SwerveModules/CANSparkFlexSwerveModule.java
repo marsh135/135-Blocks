@@ -1,8 +1,8 @@
-package frc.robot.subsystems.drive.SwerveModules;
+package frc.robot.subsystems.drive.REVSwerve.SwerveModules;
 
+import com.revrobotics.CANSparkFlex;
 // import
 // com.ctre.phoenix.sensors.CANCoder;
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAnalogSensor;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -16,10 +16,11 @@ import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Constants;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.MotorConstantContainer;
+import frc.robot.utils.drive.SwerveMotorControllers;
 
-public class CANSparkMaxSwerveModule extends SwerveMotorControllers  {
-	private CANSparkMax driveMotor;
-	private CANSparkMax turningMotor;
+public class CANSparkFlexSwerveModule extends SwerveMotorControllers  {
+	private CANSparkFlex driveMotor;
+	private CANSparkFlex turningMotor;
 	private RelativeEncoder driveEncoder;
 	private RelativeEncoder turningEncoder;
 
@@ -30,7 +31,7 @@ public class CANSparkMaxSwerveModule extends SwerveMotorControllers  {
 	//private final CANCoder absoluteEncoder;
 
 
-	public CANSparkMaxSwerveModule(int driveMotorId, int turningMotorId,
+	public CANSparkFlexSwerveModule(int driveMotorId, int turningMotorId,
 	boolean driveMotorReversed, boolean turningMotorReversed,
 	int absoluteEncoderId, double absoluteEncoderOffset,
 	boolean absoluteEncoderReversed, MotorConstantContainer driveMotorConstantContainer,
@@ -74,8 +75,8 @@ public class CANSparkMaxSwerveModule extends SwerveMotorControllers  {
 		//absoluteEncoder = new AnalogInput(absoluteEncoderId);
 		//absoluteEncoder = new CANCoder(absoluteEncoderId);
 		//declares motors
-		this.driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
-		this.turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
+		this.driveMotor = new CANSparkFlex(driveMotorId, MotorType.kBrushless);
+		this.turningMotor = new CANSparkFlex(turningMotorId, MotorType.kBrushless);
 		//checks to see if they're inverted
 		this.driveMotor.setInverted(driveMotorReversed);
 		this.turningMotor.setInverted(turningMotorReversed);

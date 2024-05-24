@@ -1,4 +1,4 @@
-package frc.robot.subsystems.drive.SwerveModules;
+package frc.robot.utils.drive;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.Constants;
-import frc.robot.utils.drive.MotorConstantContainer;
 
 public abstract class SwerveMotorControllers {
 	protected PIDController turningPIDController = null;

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.drive;
+package frc.robot.subsystems.drive.REVSwerve.SwerveModules;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -31,8 +31,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.utils.drive.DriveConstants;
+import frc.robot.utils.drive.SwerveMotorControllers;
 import frc.robot.Constants.Mode;
-import frc.robot.subsystems.drive.SwerveModules.SwerveMotorControllers;
 import frc.robot.Robot;
 
 import static edu.wpi.first.units.Units.Seconds;
@@ -50,7 +50,7 @@ import org.littletonrobotics.junction.Logger;
  * import edu.wpi.first.wpilibj2.command.InstantCommand;
  */
 
-public class SwerveS extends SubsystemBase {
+public class REVSwerveS extends SubsystemBase {
 	private Supplier<Pose2d> pose2dSupplier = () -> {
 		return getPose();
 	};
@@ -204,7 +204,7 @@ public class SwerveS extends SubsystemBase {
 		}
 	}
 
-	public SwerveS() {
+	public REVSwerveS() {
 		// Waits for the RIO to finishing booting
 		new Thread(() -> {
 			try {
@@ -217,7 +217,7 @@ public class SwerveS extends SubsystemBase {
 			catch (Exception e) {
 			}
 		}).start();
-		AutoBuilder.configureHolonomic(SwerveS::getPose, // Robot pose supplier
+		AutoBuilder.configureHolonomic(REVSwerveS::getPose, // Robot pose supplier
 				this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
 				this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
 				this::setChassisSpeeds, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
