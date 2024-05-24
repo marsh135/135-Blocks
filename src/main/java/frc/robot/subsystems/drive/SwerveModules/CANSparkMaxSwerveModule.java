@@ -1,4 +1,4 @@
-package frc.robot.subsystems.drive;
+package frc.robot.subsystems.drive.SwerveModules;
 
 // import
 // com.ctre.phoenix.sensors.CANCoder;
@@ -23,8 +23,9 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utils.drive.DriveConstants;
+import frc.robot.utils.drive.MotorConstantContainer;
 
-public class SwerveModule extends SubsystemBase {
+public class CANSparkMaxSwerveModule extends SubsystemBase {
 	private final CANSparkMax driveMotor;
 	private final CANSparkMax turningMotor;
 	private final RelativeEncoder driveEncoder;
@@ -56,15 +57,15 @@ public class SwerveModule extends SubsystemBase {
 	 * @param absoluteEncoderOffset   Offset of Absolute Encoder in Radians
 	 * @param absoluteEncoderReversed True if Encoder is Reversed
 	 */
-	public SwerveModule(int driveMotorId, int turningMotorId,
+	public CANSparkMaxSwerveModule(int driveMotorId, int turningMotorId,
 			boolean driveMotorReversed, boolean turningMotorReversed,
 			int absoluteEncoderId, double absoluteEncoderOffset,
-			boolean absoluteEncoderReversed, double[] driveKpKsKvKa,
-			double[] turningKpKsKvKa) {
+			boolean absoluteEncoderReversed, MotorConstantContainer driveMotorConstantContainer,
+			MotorConstantContainer turningKpKsKvKa) {
 		/*turningFeedForward = new SimpleMotorFeedforward(
 		 turningKpKsKvKa[1], turningKpKsKvKa[2], turningKpKsKvKa[3]);*/
-		driveFeedForward = new SimpleMotorFeedforward(driveKpKsKvKa[1],
-				driveKpKsKvKa[2], driveKpKsKvKa[3]);
+		driveFeedForward = new SimpleMotorFeedforward(driveMotorConstantContainer.getKs(),
+				driveMotorConstantContainer.getKv(), driveMotorConstantContainer.getKa());
 		if (turningMotorId == 17) {
 			m_moduleNumber = 0; //frontLeft
 		} else if (turningMotorId == 11) {
@@ -106,11 +107,10 @@ public class SwerveModule extends SubsystemBase {
 		turningPIDController = new PIDController(.5, 0, 0);
 		//makes the value loop around
 		turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
-		drivePIDController = new PIDController(driveKpKsKvKa[0], 0, 0);
+		drivePIDController = new PIDController(driveMotorConstantContainer.getP(), 0, driveMotorConstantContainer.getD());
 		if (Constants.currentMode == Constants.Mode.SIM) {
 			REVPhysicsSim.getInstance().addSparkMax(driveMotor, DCMotor.getNEO(1));
-			REVPhysicsSim.getInstance().addSparkMax(turningMotor,
-					DCMotor.getNEO(1));
+			REVPhysicsSim.getInstance().addSparkMax(turningMotor, DCMotor.getNEO(1));
 		}
 	}
 
