@@ -8,13 +8,14 @@ import frc.robot.subsystems.drive.SwerveS;
 import frc.robot.subsystems.drive.CTRESwerve.CTRESwerveS;
 import frc.robot.subsystems.drive.CTRESwerve.Telemetry;
 import frc.robot.subsystems.drive.CTRESwerve.TunerConstants;
-import frc.robot.subsystems.drive.REVSwerve.REVSwerveS;
 import frc.robot.utils.drive.DriveConstants;
-
+import frc.robot.subsystems.drive.REVSwerve.SwerveModules.REVSwerveS;
+import frc.robot.commands.leds.LEDGifC;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.XboxController;
 import java.util.function.BooleanSupplier;
-
+import frc.robot.subsystems.leds.LEDs;
+import frc.robot.utils.leds.LEDConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -22,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
 /**
  * THIS CODE REQUIRES WPILIB 2024 AND PATHPLANNER 2024 IT WILL NOT WORK
  * OTHERWISE
@@ -31,6 +31,7 @@ public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static SwerveS swerveS;
 	private Telemetry logger = null;
+	private final LEDs leds = new LEDs();
 	private final SendableChooser<Command> autoChooser;
 	public static XboxController driveController = new XboxController(0);
 	public static XboxController manipController = new XboxController(1);
@@ -63,6 +64,7 @@ public class RobotContainer {
 					"Unknown implementation type, please check DriveConstants.java!");
 		}
 		swerveS.setDefaultCommand(new SwerveC(swerveS));
+		leds.setDefaultCommand(new LEDGifC(leds, LEDConstants.imageList, 20,2).ignoringDisable(true));
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData("Auto Chooser", autoChooser);
 		// Configure the trigger bindings
