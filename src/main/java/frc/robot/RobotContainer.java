@@ -50,10 +50,10 @@ public class RobotContainer {
 	 */
 	public RobotContainer() {
 		switch (DriveConstants.vendor) {
-		case "REV":
+		case REV:
 			swerveS = new REVSwerveS();
 			break;
-		case "CTRE":
+		case CTRE:
 			logger = new Telemetry(DriveConstants.kMaxSpeedMetersPerSecond);
 			swerveS = new CTRESwerveS(TunerConstants.DrivetrainConstants, logger,
 					TunerConstants.Modules);
