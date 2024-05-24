@@ -42,6 +42,7 @@ public class DriveConstants {
 
 	//135-Blocks was tested on a chassis with all CANSparkMaxes 
 	public static MotorType robotMotorController = MotorType.NEO_SPARK_MAX;
+	public static String vendor = "CTRE";
 	public static double kChassisWidth = Units.inchesToMeters(24.25), // Distance between Left and Right wheels
 			kChassisLength = Units.inchesToMeters(24.25), // Distance betwwen Front and Back wheels
 			kDriveBaseRadius = Units.inchesToMeters(Math.sqrt(
