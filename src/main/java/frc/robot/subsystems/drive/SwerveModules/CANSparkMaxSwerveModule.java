@@ -57,16 +57,16 @@ public class CANSparkMaxSwerveModule extends SwerveMotorControllers  {
 			MotorConstantContainer turningKpKsKvKa) {
 		/*turningFeedForward = new SimpleMotorFeedforward(
 		 turningKpKsKvKa[1], turningKpKsKvKa[2], turningKpKsKvKa[3]);*/
-		driveFeedForward = new SimpleMotorFeedforward(driveMotorConstantContainer.getKs(),
+		this.driveFeedForward = new SimpleMotorFeedforward(driveMotorConstantContainer.getKs(),
 				driveMotorConstantContainer.getKv(), driveMotorConstantContainer.getKa());
 		if (turningMotorId == 17) {
-			m_moduleNumber = 0; //frontLeft
+			this.m_moduleNumber = 0; //frontLeft
 		} else if (turningMotorId == 11) {
-			m_moduleNumber = 1; //frontRight
+			this.m_moduleNumber = 1; //frontRight
 		} else if (turningMotorId == 15) {
-			m_moduleNumber = 2; //backLeft
+			this.m_moduleNumber = 2; //backLeft
 		} else if (turningMotorId == 13) {
-			m_moduleNumber = 3; //backRight
+			this.m_moduleNumber = 3; //backRight
 		}
 		//sets values of the encoder offset and whether its reversed
 		this.absoluteEncoderOffsetRad = absoluteEncoderOffset;
@@ -74,33 +74,33 @@ public class CANSparkMaxSwerveModule extends SwerveMotorControllers  {
 		//absoluteEncoder = new AnalogInput(absoluteEncoderId);
 		//absoluteEncoder = new CANCoder(absoluteEncoderId);
 		//declares motors
-		driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
-		turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
+		this.driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
+		this.turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
 		//checks to see if they're inverted
-		driveMotor.setInverted(driveMotorReversed);
-		turningMotor.setInverted(turningMotorReversed);
+		this.driveMotor.setInverted(driveMotorReversed);
+		this.turningMotor.setInverted(turningMotorReversed);
 		//sets the absolute encoder value (called this way because we have breakout boards in the motors)
-		absoluteEncoder = turningMotor.getAnalog(Mode.kAbsolute);
+		this.absoluteEncoder = turningMotor.getAnalog(Mode.kAbsolute);
 		//relative encoder declarations
-		driveEncoder = driveMotor.getEncoder();
-		turningEncoder = turningMotor.getEncoder();
+		this.driveEncoder = driveMotor.getEncoder();
+		this.turningEncoder = turningMotor.getEncoder();
 		//sets motor idle modes to break
-		driveMotor.setIdleMode(IdleMode.kBrake);
-		turningMotor.setIdleMode(IdleMode.kBrake);
+		this.driveMotor.setIdleMode(IdleMode.kBrake);
+		this.turningMotor.setIdleMode(IdleMode.kBrake);
 		//accounts for gear ratios
-		driveEncoder.setPositionConversionFactor(
+		this.driveEncoder.setPositionConversionFactor(
 				DriveConstants.SwerveConstants.kDriveEncoderRot2Meter);
-		driveEncoder.setVelocityConversionFactor(
+		this.driveEncoder.setVelocityConversionFactor(
 				DriveConstants.SwerveConstants.kDriveEncoderRPM2MeterPerSec);
-		turningEncoder.setPositionConversionFactor(
+		this.turningEncoder.setPositionConversionFactor(
 				DriveConstants.SwerveConstants.kTurningEncoderRot2Rad);
-		turningEncoder.setVelocityConversionFactor(
+		this.turningEncoder.setVelocityConversionFactor(
 				DriveConstants.SwerveConstants.kTurningEncoderRPM2RadPerSec);
 		//creates pidController, used exclusively for turning because that has to be precise
-		turningPIDController = new PIDController(.5, 0, 0);
+		this.turningPIDController = new PIDController(.5, 0, 0);
 		//makes the value loop around
-		turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
-		drivePIDController = new PIDController(driveMotorConstantContainer.getP(), 0, driveMotorConstantContainer.getD());
+		this.turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
+		this.drivePIDController = new PIDController(driveMotorConstantContainer.getP(), 0, driveMotorConstantContainer.getD());
 		if (Constants.currentMode == Constants.Mode.SIM) {
 			//TODO:Figure out simulation for this
 			/*

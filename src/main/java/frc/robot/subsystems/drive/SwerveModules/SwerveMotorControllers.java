@@ -10,16 +10,16 @@ import frc.robot.Constants;
 import frc.robot.utils.drive.MotorConstantContainer;
 
 public abstract class SwerveMotorControllers {
-	public static PIDController turningPIDController = null;
-	public static PIDController drivePIDController = null;
-	public static SimpleMotorFeedforward driveFeedForward = null;
-	public static double m_currentAngle = 0;
-	public static double m_simDriveEncoderPosition = 0;
-	public static double m_simDriveEncoderVelocity = 0;
-	public static double m_simAngleDifference = 0;
-	public static double m_simTurnAngleIncrement = 0;
-	public static Pose2d m_pose = new Pose2d();
-	public static int m_moduleNumber = 0;
+	protected PIDController turningPIDController = null;
+	protected PIDController drivePIDController = null;
+	protected SimpleMotorFeedforward driveFeedForward = null;
+	protected double m_currentAngle = 0;
+	protected double m_simDriveEncoderPosition = 0;
+	protected double m_simDriveEncoderVelocity = 0;
+ protected double m_simAngleDifference = 0;
+ protected double m_simTurnAngleIncrement = 0;
+	protected Pose2d m_pose = new Pose2d();
+	protected int m_moduleNumber = 0;
 
 	public abstract void initialize(int driveMotorId, int turningMotorId,
 			boolean driveMotorReversed, boolean turningMotorReversed,
@@ -95,7 +95,6 @@ public abstract class SwerveMotorControllers {
 			//simTurnPosition(m_currentAngle);
 		}
 	}
-
 	private void simUpdateDrivePosition(SwerveModuleState state) {
 		m_simDriveEncoderVelocity = state.speedMetersPerSecond;
 		double distancePer20Ms = m_simDriveEncoderVelocity * .02;

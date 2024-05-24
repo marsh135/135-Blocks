@@ -151,35 +151,28 @@ public class SwerveS extends SubsystemBase {
 
 	private static void initalizeModules() {
 		m_swerveModules.clear();
-		for (ModulePosition position : ModulePosition.values()) {
-			if (position.name() == "FRONT_LEFT") {
-				m_swerveModules.put(position,
-						DriveConstants.robotMotorControllers.initialize(
-								DriveConstants.kFrontLeftDrivePort,
-								DriveConstants.kFrontLeftTurningPort,
-								DriveConstants.kFrontLeftDriveReversed,
-								DriveConstants.kFrontLeftTurningReversed,
-								DriveConstants.kFrontLeftAbsEncoderPort,
-								DriveConstants.kFrontLeftAbsEncoderOffsetRad,
-								DriveConstants.kFrontLeftAbsEncoderReversed,
-								DriveConstants.SwerveConstants.frontLeftDriveMotorConstantContainer,
-								DriveConstants.SwerveConstants.overallTurningMotorConstantContainer));
-			} else if (position.name() == "FRONT_RIGHT") {
-				m_swerveModules.put(position,
-						DriveConstants.robotMotorControllers.initialize(
-								DriveConstants.kFrontRightDrivePort,
-								DriveConstants.kFrontRightTurningPort,
-								DriveConstants.kFrontRightDriveReversed,
-								DriveConstants.kFrontRightTurningReversed,
-								DriveConstants.kFrontRightAbsEncoderPort,
-								DriveConstants.kFrontRightAbsEncoderOffsetRad,
-								DriveConstants.kFrontRightAbsEncoderReversed,
-								DriveConstants.SwerveConstants.frontRightDriveMotorConstantContainer,
-								DriveConstants.SwerveConstants.overallTurningMotorConstantContainer));
-			} else if (position.name() == "BACK_LEFT") {
-				m_swerveModules.put(position,
-				DriveConstants.robotMotorControllers.initialize(
-						DriveConstants.kBackLeftDrivePort,
+		SwerveMotorControllers front_left = DriveConstants.robotMotorController
+				.initialize(DriveConstants.kFrontLeftDrivePort,
+						DriveConstants.kFrontLeftTurningPort,
+						DriveConstants.kFrontLeftDriveReversed,
+						DriveConstants.kFrontLeftTurningReversed,
+						DriveConstants.kFrontLeftAbsEncoderPort,
+						DriveConstants.kFrontLeftAbsEncoderOffsetRad,
+						DriveConstants.kFrontLeftAbsEncoderReversed,
+						DriveConstants.SwerveConstants.frontLeftDriveMotorConstantContainer,
+						DriveConstants.SwerveConstants.overallTurningMotorConstantContainer);
+		SwerveMotorControllers front_right = DriveConstants.robotMotorController
+				.initialize(DriveConstants.kFrontRightDrivePort,
+						DriveConstants.kFrontRightTurningPort,
+						DriveConstants.kFrontRightDriveReversed,
+						DriveConstants.kFrontRightTurningReversed,
+						DriveConstants.kFrontRightAbsEncoderPort,
+						DriveConstants.kFrontRightAbsEncoderOffsetRad,
+						DriveConstants.kFrontRightAbsEncoderReversed,
+						DriveConstants.SwerveConstants.frontRightDriveMotorConstantContainer,
+						DriveConstants.SwerveConstants.overallTurningMotorConstantContainer);
+		SwerveMotorControllers back_left = DriveConstants.robotMotorController
+				.initialize(DriveConstants.kBackLeftDrivePort,
 						DriveConstants.kBackLeftTurningPort,
 						DriveConstants.kBackLeftDriveReversed,
 						DriveConstants.kBackLeftTurningReversed,
@@ -187,11 +180,9 @@ public class SwerveS extends SubsystemBase {
 						DriveConstants.kBackLeftAbsEncoderOffsetRad,
 						DriveConstants.kBackLeftAbsEncoderReversed,
 						DriveConstants.SwerveConstants.backLeftDriveMotorConstantContainer,
-						DriveConstants.SwerveConstants.overallTurningMotorConstantContainer));
-			} else if (position.name() == "BACK_RIGHT") {
-				m_swerveModules.put(position,
-				DriveConstants.robotMotorControllers.initialize(
-						DriveConstants.kBackRightDrivePort,
+						DriveConstants.SwerveConstants.overallTurningMotorConstantContainer);
+		SwerveMotorControllers back_right = DriveConstants.robotMotorController
+				.initialize(DriveConstants.kBackRightDrivePort,
 						DriveConstants.kBackRightTurningPort,
 						DriveConstants.kBackRightDriveReversed,
 						DriveConstants.kBackRightTurningReversed,
@@ -199,7 +190,16 @@ public class SwerveS extends SubsystemBase {
 						DriveConstants.kBackRightAbsEncoderOffsetRad,
 						DriveConstants.kBackRightAbsEncoderReversed,
 						DriveConstants.SwerveConstants.backRightDriveMotorConstantContainer,
-						DriveConstants.SwerveConstants.overallTurningMotorConstantContainer));
+						DriveConstants.SwerveConstants.overallTurningMotorConstantContainer);
+		for (ModulePosition position : ModulePosition.values()) {
+			if (position.name() == "FRONT_LEFT") {
+				m_swerveModules.put(position, front_left);
+			} else if (position.name() == "FRONT_RIGHT") {
+				m_swerveModules.put(position, front_right);
+			} else if (position.name() == "BACK_LEFT") {
+				m_swerveModules.put(position, back_left);
+			} else if (position.name() == "BACK_RIGHT") {
+				m_swerveModules.put(position, back_right);
 			}
 		}
 	}
