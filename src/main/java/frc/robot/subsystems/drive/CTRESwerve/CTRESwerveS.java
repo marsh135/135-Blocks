@@ -46,7 +46,7 @@ public class CTRESwerveS extends SwerveDrivetrain implements DrivetrainS {
 	private Notifier m_simNotifier = null; //Checks for updates
 	private double m_lastSimTime;
 	private final SwerveRequest.ApplyChassisSpeeds AutoRequest = new SwerveRequest.ApplyChassisSpeeds();
-
+	private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
 	/**
 	 * Creates a CTRE Swerve Drivetrain
 	 * 
@@ -169,7 +169,7 @@ public class CTRESwerveS extends SwerveDrivetrain implements DrivetrainS {
 	 */
 	@Override
 	public void stopModules() {
-		new SwerveRequest.SwerveDriveBrake().apply(m_requestParameters, Modules);
+		brake.apply(m_requestParameters, Modules);
 	}
 
 	private final SwerveRequest.SysIdSwerveTranslation TranslationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
