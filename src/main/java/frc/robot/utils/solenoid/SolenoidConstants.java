@@ -2,7 +2,7 @@ package frc.robot.utils.solenoid;
 
 public class SolenoidConstants {
 	public static final int
-	singleActingSolenoidChannel = 51,
-	doubleActingSolenoidChannelForward = 52,
-	doubleActingSolenoidChannelBackward = 53;
+	singleActingSolenoidChannel = 1,
+	doubleActingSolenoidChannelForward = 2,
+	doubleActingSolenoidChannelBackward = 3;
 }

@@ -10,6 +10,7 @@ import frc.robot.subsystems.drive.CTRESwerve.Telemetry;
 import frc.robot.subsystems.drive.CTRESwerve.TunerConstants;
 import frc.robot.subsystems.drive.REVSwerve.REVSwerveS;
 import frc.robot.subsystems.drive.tank.TankS;
+import frc.robot.subsystems.solenoid.SolenoidS;
 import frc.robot.utils.drive.DriveConstants;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -34,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
+	public static SolenoidS solenoidS = new SolenoidS();
 	private Telemetry logger = null;
 	private final SendableChooser<Command> autoChooser;
 	public static XboxController driveController = new XboxController(0);

@@ -1,14 +1,20 @@
 package frc.robot.subsystems.solenoid;
 
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.solenoid.SolenoidConstants;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 
 public class SolenoidS extends SubsystemBase {
 	public static Solenoid singleSolenoid;
 	public static DoubleSolenoid doubleSolenoid;
+	public static double oscillationTime = .1;
+	public static boolean pulseDouble,pulseSingle;
+	private double lastSingle =0,lastDouble =0;
 
 	/**
 	 * Creates a new subsystem to handle solenoid sims. Holds example for a
@@ -20,9 +26,7 @@ public class SolenoidS extends SubsystemBase {
 		doubleSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH,
 				SolenoidConstants.doubleActingSolenoidChannelForward,
 				SolenoidConstants.doubleActingSolenoidChannelBackward);
-		
-		singleSolenoid.setPulseDuration(0);
-		singleSolenoid.startPulse();
+		singleSolenoid.setPulseDuration(oscillationTime);
 	}
 	/**
 	 * Sets the state of the single solenoid
@@ -30,6 +34,9 @@ public class SolenoidS extends SubsystemBase {
 	 */
 	public static void setSingleSolenoid(boolean on){
 		singleSolenoid.set(on);
+	}
+	public static void setSingleSolenoidOscillation(){
+		pulseSingle = true;
 	}
 	/**
 	 * @return the state of the single solenoid as a value (literally read the line above goober)
@@ -44,15 +51,49 @@ public class SolenoidS extends SubsystemBase {
 	public static void setDoubleSolenoid(DoubleSolenoid.Value state){
 		doubleSolenoid.set(state);
 	}
+	public static void setDoubleSolenoidOscillation(){
+		pulseDouble = true;
+	}
 	/**
 	 * 
 	 * @return the value of the solenoid (Either Value.kFoward, Value.kReverse, Value.kOff)
 	 */
 	public static DoubleSolenoid.Value getDoubleSolenoidState(){
 		return doubleSolenoid.get();
-	}	
+	}
+	public void goToValue(double heightInTime,boolean isDouble){
+		new InstantCommand(() -> {
+			Timer timer = new Timer();
+			while (timer.get() < heightInTime){
+				if (isDouble){
+					doubleSolenoid.set(Value.kForward);
+				}else{
+					singleSolenoid.set(true);
+				}
+			}
+			if(isDouble){
+				SolenoidS.pulseDouble = true;
+			}else{
+				SolenoidS.pulseSingle = true;
+			}
+		}, this).schedule();
+	}
+	public void stopSinglePulse(){
+		pulseSingle = false;
+	}
+	public void stopDoublePulse(){
+		pulseDouble = false;
+	}
 	@Override
 	public void periodic(){
-		
+		double currentTime = Timer.getFPGATimestamp();
+		if (currentTime - lastSingle > oscillationTime && pulseSingle){
+			lastSingle = currentTime;
+			singleSolenoid.startPulse();
+		}
+		if (currentTime - lastDouble > oscillationTime && pulseDouble){
+			lastDouble = currentTime;
+			doubleSolenoid.toggle();
+		}
 	}
 }
