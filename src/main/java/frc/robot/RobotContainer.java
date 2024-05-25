@@ -4,14 +4,19 @@
 package frc.robot;
 
 import frc.robot.commands.drive.SwerveC;
-import frc.robot.subsystems.drive.SwerveS;
+import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.CTRESwerve.CTRESwerveS;
 import frc.robot.subsystems.drive.CTRESwerve.Telemetry;
 import frc.robot.subsystems.drive.CTRESwerve.TunerConstants;
+import frc.robot.subsystems.drive.REVSwerve.REVSwerveS;
+import frc.robot.subsystems.drive.tank.TankS;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.subsystems.drive.REVSwerve.SwerveModules.REVSwerveS;
 import frc.robot.commands.leds.LEDGifC;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.revrobotics.CANSparkBase.IdleMode;
+
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
 import java.util.function.BooleanSupplier;
 import frc.robot.subsystems.leds.LEDs;
@@ -29,7 +34,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
  */
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
-	public static SwerveS swerveS;
+	public static DrivetrainS drivetrainS;
 	private Telemetry logger = null;
 	private final LEDs leds = new LEDs();
 	private final SendableChooser<Command> autoChooser;
@@ -51,19 +56,22 @@ public class RobotContainer {
 	 */
 	public RobotContainer() {
 		switch (DriveConstants.vendor) {
-		case REV:
-			swerveS = new REVSwerveS();
+		case REV_SWERVE:
+		drivetrainS = new REVSwerveS();
 			break;
-		case CTRE:
+		case CTRE_SWERVE:
 			logger = new Telemetry(DriveConstants.kMaxSpeedMetersPerSecond);
-			swerveS = new CTRESwerveS(TunerConstants.DrivetrainConstants, logger,
+			drivetrainS = new CTRESwerveS(TunerConstants.DrivetrainConstants, logger,
 					TunerConstants.Modules);
+			break;
+		case TANK:
+			drivetrainS = new TankS(10,11,12,13,false,false,false,false,IdleMode.kBrake,80,7.5,Units.inchesToMeters(6));
 			break;
 		default:
 			throw new IllegalArgumentException(
 					"Unknown implementation type, please check DriveConstants.java!");
 		}
-		swerveS.setDefaultCommand(new SwerveC(swerveS));
+		drivetrainS.setDefaultCommand(new SwerveC(drivetrainS));
 		leds.setDefaultCommand(new LEDGifC(leds, LEDConstants.imageList, 20,2).ignoringDisable(true));
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -73,25 +81,25 @@ public class RobotContainer {
 
 	private void configureBindings() {
 		xButtonDrive.and(isDriving())
-				.onTrue(new InstantCommand(() -> swerveS.zeroHeading()));
+				.onTrue(new InstantCommand(() -> drivetrainS.zeroHeading()));
 		//swerve DRIVE tests
 		startButtonDrive.and(povUpDrive).whileTrue(
-				swerveS.sysIdQuasistaticDrive(SysIdRoutine.Direction.kForward));
+				drivetrainS.sysIdQuasistaticDrive(SysIdRoutine.Direction.kForward));
 		startButtonDrive.and(povRightDrive).whileTrue(
-				swerveS.sysIdQuasistaticDrive(SysIdRoutine.Direction.kReverse));
+				drivetrainS.sysIdQuasistaticDrive(SysIdRoutine.Direction.kReverse));
 		startButtonDrive.and(povDownDrive).whileTrue(
-				swerveS.sysIdDynamicDrive(SysIdRoutine.Direction.kForward));
+				drivetrainS.sysIdDynamicDrive(SysIdRoutine.Direction.kForward));
 		startButtonDrive.and(povLeftDrive).whileTrue(
-				swerveS.sysIdDynamicDrive(SysIdRoutine.Direction.kReverse));
+				drivetrainS.sysIdDynamicDrive(SysIdRoutine.Direction.kReverse));
 		//swerve TURNING tests
-		selectButtonDrive.and(povUpDrive).whileTrue(
-				swerveS.sysIdQuasistaticTurn(SysIdRoutine.Direction.kForward));
+		/*selectButtonDrive.and(povUpDrive).whileTrue(
+				drivetrainS.sysIdQuasistaticTurn(SysIdRoutine.Direction.kForward));
 		selectButtonDrive.and(povRightDrive).whileTrue(
-				swerveS.sysIdQuasistaticTurn(SysIdRoutine.Direction.kReverse));
+				drivetrainS.sysIdQuasistaticTurn(SysIdRoutine.Direction.kReverse));
 		selectButtonDrive.and(povDownDrive).whileTrue(
-				swerveS.sysIdDynamicTurn(SysIdRoutine.Direction.kForward));
+				drivetrainS.sysIdDynamicTurn(SysIdRoutine.Direction.kForward));
 		selectButtonDrive.and(povLeftDrive).whileTrue(
-				swerveS.sysIdDynamicTurn(SysIdRoutine.Direction.kReverse));
+				drivetrainS.sysIdDynamicTurn(SysIdRoutine.Direction.kReverse));*/
 	}
 
 	/**
