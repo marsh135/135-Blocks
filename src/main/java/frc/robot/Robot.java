@@ -5,6 +5,8 @@ package frc.robot;
 
 import org.littletonrobotics.urcl.URCL;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -17,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -38,7 +41,6 @@ public class Robot extends LoggedRobot {
 	public void robotInit() {
 		//To check for endgame
 		//Below may be redudant
-		//PortForwarder.add(5801, "photonvision.local",5801);
 		// Instantiate our RobotContainer.  This will perform all our button bindings, and put our
 		// autonomous chooser on the dashboard
 		Logger.recordMetadata("ProjectName", "The Chef"); // Set a metadata value
@@ -100,6 +102,7 @@ public class Robot extends LoggedRobot {
 		if (DriverStation.getMatchTime() == 0){
 			Constants.currentMatchState = FRCMatchState.MATCHOVER;
 		}
+
 	}
 
 	@Override
@@ -155,10 +158,11 @@ public class Robot extends LoggedRobot {
 			Constants.currentMatchState = FRCMatchState.TELEOP;
 		}
 		if(RobotContainer.driveController.getPOV() == 0){
-			System.err.println("UP");
+			//System.err.println("UP");
 			DataHandler.logData("[4.5,25.4]", "shouldUpdateModel");
 		}
 		if(RobotContainer.manipController.getAButton()){
+			System.out.println("A");
 			DataHandler.logData("4.5","modelDistance");
 		}
 	}
