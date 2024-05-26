@@ -5,7 +5,6 @@ package frc.robot;
 
 import org.littletonrobotics.urcl.URCL;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -29,7 +28,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 public class Robot extends LoggedRobot {
 	private Command m_autonomousCommand;
 	private RobotContainer m_robotContainer;
-	final Timer endgameTimer = new Timer();
 	public static boolean isRed;
 	private boolean hasBeenEnabled;
 	/**
@@ -39,9 +37,8 @@ public class Robot extends LoggedRobot {
 	@Override
 	public void robotInit() {
 		//To check for endgame
-		//Redundancy is redundant
-		endgameTimer.reset();
-		endgameTimer.start();
+		//Below may be redudant
+		//PortForwarder.add(5801, "photonvision.local",5801);
 		// Instantiate our RobotContainer.  This will perform all our button bindings, and put our
 		// autonomous chooser on the dashboard
 		Logger.recordMetadata("ProjectName", "The Chef"); // Set a metadata value
