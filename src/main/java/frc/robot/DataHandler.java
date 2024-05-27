@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
@@ -480,12 +481,16 @@ public class DataHandler {
 				if(responseData.containsKey("modelDistance")){
 					responseData.remove("modelDistance");
 				}
-				String outputs = receivedData.get("outputs").getAsString();
-				outputs = outputs.substring(1, outputs.length() - 2);
-				outputs = outputs.trim();
-				outputList = outputs.split(",");
+				String rawData = receivedData.get("outputs").getAsString();
+				rawData = rawData.replace("[", "").replace("]","").trim();
+				String[] outputs = rawData.split("\\s+");
+				List<Double> outputList = new ArrayList<>();
+				for (String numberString : outputs){
+					outputList.add(Double.parseDouble(numberString));
+				}
+				System.out.println(outputList);
+				
 				//Remove brackets
-				System.err.println(outputList[0]);
 			}
 			responseData.put("status", "running");
 			// Prepare response JSON
