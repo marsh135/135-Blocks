@@ -11,7 +11,6 @@ import frc.robot.subsystems.drive.CTRESwerve.TunerConstants;
 import frc.robot.subsystems.drive.REVSwerve.REVSwerveS;
 import frc.robot.subsystems.drive.tank.TankS;
 import frc.robot.utils.drive.DriveConstants;
-import frc.robot.subsystems.drive.REVSwerve.SwerveModules.REVSwerveS;
 import frc.robot.commands.leds.LEDGifC;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.revrobotics.CANSparkBase.IdleMode;
