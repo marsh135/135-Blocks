@@ -13,6 +13,7 @@ This is designed so that the only files that need changing to combine different 
 - Custom Neural Network API for Orange Pi 5
 - AdvantageKit
   - Game piece simulation
+- Custom motor constant holder for crash-prevention
 
 ### Directory Structure
 Preferably, do NOT touch any of the `drive/*` contents, as that could cause a merge error!
