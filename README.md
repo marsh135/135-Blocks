@@ -42,6 +42,13 @@ An example branch directory could be:
 	Main.java
 	Robot.java
 	RobotContainer.java
+
+ 
+## Usage
+
+Refer to the [PyDriverStation](https://github.com/Team135BlackKnights/PyDriverStation) repository for instructions on how to use the API for the neural network.
+
+
 ## Blocks
 ## Cameras, Photon-Vision, and Limelight
 
@@ -53,6 +60,9 @@ This block contains:
   - Decreases trust if a tag provides incorrect estimates.
   - Increases trust back to 100% if a tag improves over time.
 
+### Commands
+- `DriveToAITarget`: Use pipeline zero on the limelight, and aim towards it and accelerate towards it until a desired distance is achieved. Maps speeds so that it doesn't stop suddenly at the end. Piecewise speed (Fast until within 15 inches, slow down to desired distance from there)
+  
 ### Simulation
 Works entirely in simulation. Access the cameras via your browser:
 
@@ -60,8 +70,9 @@ Works entirely in simulation. Access the cameras via your browser:
 - `localhost:1192/stream.mjpg`
 - `localhost:1194/stream.mjpg`
 - `localhost:1196/stream.mjpg`
-
+  
 Add these to Shuffleboard for ease of access!
+
 
 ## State Space
 
@@ -71,13 +82,20 @@ This block contains:
   - Flywheel
   - Arm
   - Elevator (cascade lifts, telescoping arms)
-
+    
+### Commands
+- `ArmC`: Move the arm to a desired macro position, or move it via a joystick, and hold there.
+- `ElevatorC`: Move the elevator to a desired macro position, or move it via a joystick, and hold there.
+- `FlywheelC`: Accelerate the wheels to a desired RPM, or using a joystick, *returning to zero when let go*.
+  
 ### Simulation
-All mechanisms work in simulation and require SysId constants. 
+All mechanisms work in simulation and **require** SysId constants. 
 
-For more details, refer to the [WPILib System Identification documentation](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/system-identification/viewing-diagnostics.html).
+### Notes
+For more details on System Identification, refer to the [WPILib System Identification documentation](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/system-identification/index.html).
+For more details on State Space, refer to the [WPILib State Space Documentation](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-intro.html).
 
-# LED_Code
+## LED_Code
 
 This block contains:
 
@@ -87,19 +105,16 @@ This block contains:
   - Displaying patterns like rainbows, breathing effects, and constant colors.
 
 ### Commands
-
-- `LEDGifC`: Efficiently displays any image in a specified folder on the USB stick.
-- `LEDSineWaveC`: Handles various LED patterns with minimal processing overhead.
-- `LEDBreathingC`: Breathes a certain color, gradually increasing and decreasing brightness.
+- `LEDGifC`: Efficiently displays any image in a specified folder on the USB stick, at a given interval. Loops after the last photo.
+- `LEDSineWaveC`: Displays a sin wave that moves through all the LEDS, at a given interval and color.
+- `LEDBreathingC`: Breathes a certain color, gradually increasing and decreasing brightness, at a given interval.
 - `LEDConstantColorC`: Displays a constant color.
 - `LEDRainbowC`: Cycles through the rainbow at a given interval.
 
 ### Note
-
-The system saves images so that if the USB is unplugged during the match, the last known state is preserved.
+The system saves images on boot, so that if the USB is unplugged during the match, no problems occur.
 
 ### Simulation
-
 All LED patterns are supported in simulation.
 
 
@@ -109,9 +124,4 @@ This block contains:
 
 - Pre-made single-acting and double-acting solenoids.
 - A (questionable) function to hold pneumatic cylinders at certain positions using a bang-bang PID-like controller.
-
-## Usage
-Refer to the [PyDriverStation](https://github.com/Team135BlackKnights/PyDriverStation) repository for instructions on how to use the API for the neural network.
-
-## Additional Resources
-- For SysId constants used in State Space mechanisms, refer to the [WPILib System Identification documentation](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/system-identification/viewing-diagnostics.html).
+  
