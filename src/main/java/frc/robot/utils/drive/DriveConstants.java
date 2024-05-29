@@ -40,7 +40,7 @@ public class DriveConstants {
 		MotorConstantContainer turningKpKsKvKa);
   }
   	public enum driveTrainType{
-		CTRE_SWERVE,REV_SWERVE,TANK
+		CTRE_SWERVE,REV_SWERVE,TANK,MECANUM
 	}
 	public static boolean fieldOriented = true;
 	//135-Blocks was tested on a chassis with all CANSparkMaxes 
