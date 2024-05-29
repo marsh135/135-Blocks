@@ -107,7 +107,12 @@ public class DataHandler {
 				}
 			}
 			System.err.println(port + "GOOD!");
-			PortForwarder.add(port, "localhost", port);
+			PortForwarder.add(port, "10.1.35.2", port);
+			PortForwarder.add(port,"0.0.0.0",port);
+			PortForwarder.add(port,"localhost",port);
+			PortForwarder.add(5801,"10.1.35.5",5801);
+			PortForwarder.add(port, "10.1.35.11", port);
+			PortForwarder.add(port, "photonvision.local", port);
 			serverSocket.setSoTimeout(1);
 		}
 		catch (Exception e) {
