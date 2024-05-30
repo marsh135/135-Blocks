@@ -72,6 +72,7 @@ public class RobotContainer {
 		case REV_MECANUM:
 			//Placeholder values
 			drivetrainS = new REVMecanumS(10, 11, 12, 13, 80, new MotorConstantContainer(1, 1, 1, 0, 0), new MotorConstantContainer(1, 1, 1, 0, 0), new MotorConstantContainer(1, 1, 1, 0, 0), new MotorConstantContainer(1, 1, 1, 0, 0), 7.5,Units.inchesToMeters(6) , 10);
+			break;
 		default:
 			throw new IllegalArgumentException(
 					"Unknown implementation type, please check DriveConstants.java!");
