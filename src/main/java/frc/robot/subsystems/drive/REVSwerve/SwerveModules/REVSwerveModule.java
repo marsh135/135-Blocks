@@ -26,30 +26,31 @@ import frc.robot.Constants;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.MotorConstantContainer;
 
-public class REVSwerveModule extends SubsystemBase  {
+public class REVSwerveModule extends SubsystemBase {
 	private CANSparkBase driveMotor;
 	private CANSparkBase turningMotor;
 	private RelativeEncoder driveEncoder;
 	private RelativeEncoder turningEncoder;
-
 	private double absoluteEncoderOffsetRad;
 	private boolean absoluteEncoderReversed;
 	private SparkAnalogSensor absoluteEncoder;
-	protected PIDController turningPIDController = null;
-	protected PIDController drivePIDController = null;
-	protected SimpleMotorFeedforward driveFeedForward = null;
-	protected double m_currentAngle = 0;
-	protected double m_simDriveEncoderPosition = 0;
-	protected double m_simDriveEncoderVelocity = 0;
- protected double m_simAngleDifference = 0;
- protected double m_simTurnAngleIncrement = 0;
-	protected Pose2d m_pose = new Pose2d();
-	protected int m_moduleNumber = 0;
+	private PIDController turningPIDController = null;
+	private PIDController drivePIDController = null;
+	private SimpleMotorFeedforward driveFeedForward = null;
+	private double m_currentAngle = 0;
+	private double m_simDriveEncoderPosition = 0;
+	private double m_simDriveEncoderVelocity = 0;
+	private double m_simAngleDifference = 0;
+	private double m_simTurnAngleIncrement = 0;
+	private Pose2d m_pose = new Pose2d();
+	private int m_moduleNumber = 0;
 
 	//private final AnalogInput absoluteEncoder; // Use either AnalogInput or CANCoder depending on the absolute encoder
 	//private final CANCoder absoluteEncoder;
-	/**Sim still needs some way to be implemented (maybe use a wrapper?)
-	 * is literally the CANSparkMax swerve module code but I did CTRL+F and replaced CANSparkFlex with CANSparkMax -Nish
+	/**
+	 * Sim still needs some way to be implemented (maybe use a wrapper?) is
+	 * literally the CANSparkMax swerve module code but I did CTRL+F and replaced
+	 * CANSparkFlex with CANSparkMax -Nish
 	 * 
 	 * @param driveMotorId            Drive CANSparkFlex Motor ID
 	 * @param turningMotorId          Turning CANSparkFlex Motor ID
@@ -59,16 +60,18 @@ public class REVSwerveModule extends SubsystemBase  {
 	 * @param absoluteEncoderOffset   Offset of Absolute Encoder in Radians
 	 * @param absoluteEncoderReversed True if Encoder is Reversed
 	 */
-	
-	 public REVSwerveModule(int driveMotorId, int turningMotorId,
+	public REVSwerveModule(int driveMotorId, int turningMotorId,
 			boolean driveMotorReversed, boolean turningMotorReversed,
 			int absoluteEncoderId, double absoluteEncoderOffset,
-			boolean absoluteEncoderReversed, MotorConstantContainer driveMotorConstantContainer,
+			boolean absoluteEncoderReversed,
+			MotorConstantContainer driveMotorConstantContainer,
 			MotorConstantContainer turningKpKsKvKa) {
 		/*turningFeedForward = new SimpleMotorFeedforward(
 		 turningKpKsKvKa[1], turningKpKsKvKa[2], turningKpKsKvKa[3]);*/
-		driveFeedForward = new SimpleMotorFeedforward(driveMotorConstantContainer.getKs(),
-				driveMotorConstantContainer.getKv(), driveMotorConstantContainer.getKa());
+		driveFeedForward = new SimpleMotorFeedforward(
+				driveMotorConstantContainer.getKs(),
+				driveMotorConstantContainer.getKv(),
+				driveMotorConstantContainer.getKa());
 		if (turningMotorId == 17) {
 			m_moduleNumber = 0; //frontLeft
 		} else if (turningMotorId == 11) {
@@ -85,19 +88,18 @@ public class REVSwerveModule extends SubsystemBase  {
 		//absoluteEncoder = new CANCoder(absoluteEncoderId);
 		//declares motors
 		switch (DriveConstants.robotMotorController) {
-			case NEO_SPARK_MAX:
-				System.err.println("Detected Spark Max");
-				driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
-				turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
-				break;
-			case VORTEX_SPARK_FLEX:
-				System.err.println("Detected Spark Flex");
-				driveMotor = new CANSparkFlex(driveMotorId, MotorType.kBrushless);
-				turningMotor = new CANSparkFlex(turningMotorId, MotorType.kBrushless);
-			default:
+		case NEO_SPARK_MAX:
+			System.err.println("Detected Spark Max");
+			driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
+			turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
+			break;
+		case VORTEX_SPARK_FLEX:
+			System.err.println("Detected Spark Flex");
+			driveMotor = new CANSparkFlex(driveMotorId, MotorType.kBrushless);
+			turningMotor = new CANSparkFlex(turningMotorId, MotorType.kBrushless);
+		default:
 			break;
 		}
-
 		//checks to see if they're inverted
 		driveMotor.setInverted(driveMotorReversed);
 		turningMotor.setInverted(turningMotorReversed);
@@ -122,8 +124,10 @@ public class REVSwerveModule extends SubsystemBase  {
 		turningPIDController = new PIDController(.5, 0, 0);
 		//makes the value loop around
 		turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
-		drivePIDController = new PIDController(driveMotorConstantContainer.getP(), 0, driveMotorConstantContainer.getD());
+		drivePIDController = new PIDController(driveMotorConstantContainer.getP(),
+				0, driveMotorConstantContainer.getD());
 	}
+
 	public double getDrivePosition() {
 		//returns the position of the drive wheel
 		if (Constants.currentMode == Constants.Mode.REAL) {
@@ -132,6 +136,7 @@ public class REVSwerveModule extends SubsystemBase  {
 			return m_simDriveEncoderPosition;
 		}
 	}
+
 	public double getTurningPosition() {
 		//returns the heading of the swerve module (turning motor position)
 		if (Constants.currentMode == Constants.Mode.REAL) {
@@ -140,6 +145,7 @@ public class REVSwerveModule extends SubsystemBase  {
 			return m_currentAngle;
 		}
 	}
+
 	public double getDriveVelocity() {
 		//returns velocity of drive wheel
 		if (Constants.currentMode == Constants.Mode.REAL) {
@@ -148,16 +154,21 @@ public class REVSwerveModule extends SubsystemBase  {
 			return m_simDriveEncoderVelocity;
 		}
 	}
+
 	public double getTurningVelocity() {
 		//returns velocity of turning motor
 		return turningEncoder.getVelocity();
 	}
+
 	public void setTurningTest(double volts) { turningMotor.setVoltage(volts); }
+
 	public void setDriveTest(double volts) {
-		double turnOutput = turningPIDController.calculate(getAbsoluteEncoderRad(), 0);
+		double turnOutput = turningPIDController
+				.calculate(getAbsoluteEncoderRad(), 0);
 		turningMotor.setVoltage(turnOutput);
 		driveMotor.setVoltage(volts);
 	}
+
 	public double getAbsoluteEncoderRad() {
 		//gets the voltage and divides by the maximum voltage to get a percent, then multiplies that percent by 2pi to get a degree heading.
 		double angle = absoluteEncoder.getVoltage()
@@ -175,6 +186,7 @@ public class REVSwerveModule extends SubsystemBase  {
 		angle *= (absoluteEncoderReversed ? -1 : 1);
 		return angle;
 	}
+
 	public void resetEncoders() {
 		//resets the encoders, (drive motor becomes zero, turning encoder becomes the module heading from the absolute encoder)
 		driveEncoder.setPosition(0);
@@ -195,18 +207,20 @@ public class REVSwerveModule extends SubsystemBase  {
 			}
 		}
 	}
+
 	public void stop() {
 		driveMotor.set(0);
 		turningMotor.set(0);
 	}
+
 	public void setMotors(double driveOutput, double driveFeedforward,
 			double turnOutput) {
-				driveMotor.setVoltage(driveOutput + driveFeedforward);
-				turningMotor.set(turnOutput);
+		driveMotor.setVoltage(driveOutput + driveFeedforward);
+		turningMotor.set(turnOutput);
 	}
-	public int getModuleNumber(){
-		return m_moduleNumber;
-	}
+
+	public int getModuleNumber() { return m_moduleNumber; }
+
 	public Rotation2d getHeadingRotation2d() {
 		return Rotation2d.fromDegrees(getTurningPosition());
 	}
@@ -249,6 +263,7 @@ public class REVSwerveModule extends SubsystemBase  {
 			//simTurnPosition(m_currentAngle);
 		}
 	}
+
 	private void simUpdateDrivePosition(SwerveModuleState state) {
 		m_simDriveEncoderVelocity = state.speedMetersPerSecond;
 		double distancePer20Ms = m_simDriveEncoderVelocity * .02;
@@ -259,4 +274,3 @@ public class REVSwerveModule extends SubsystemBase  {
 
 	public Pose2d getModulePose() { return m_pose; }
 }
-

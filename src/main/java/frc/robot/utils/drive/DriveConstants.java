@@ -18,8 +18,8 @@ public class DriveConstants {
 	}
 	public static boolean fieldOriented = true;
 	//135-Blocks was tested on a chassis with all CANSparkMaxes 
-	public static MotorVendor robotMotorController = MotorVendor.VORTEX_SPARK_FLEX; //ONLY IF USING REV!
-	public static driveTrainType vendor = driveTrainType.CTRE_SWERVE;
+	public static MotorVendor robotMotorController = MotorVendor.NEO_SPARK_MAX; //ONLY IF USING REV!
+	public static driveTrainType vendor = driveTrainType.REV_SWERVE;
 	public static final double kChassisWidth = Units.inchesToMeters(24.25), // Distance between Left and Right wheels
 			kChassisLength = Units.inchesToMeters(24.25), // Distance betwwen Front and Back wheels
 			kDriveBaseRadius = Units.inchesToMeters(Math.sqrt(
@@ -72,7 +72,7 @@ public class DriveConstants {
 
 	public static class SwerveConstants {
 		public static double kWheelDiameter = Units.inchesToMeters(3.873),
-				kDriveMotorGearRatio = 1 / 6.75, kTurningMotorGearRatio = (7 / 150),
+				kDriveMotorGearRatio = 6.75, kTurningMotorGearRatio = 150/7,
 				kDriveEncoderRot2Meter = kDriveMotorGearRatio * Math.PI
 						* kWheelDiameter,
 				kDriveEncoderRPM2MeterPerSec = kDriveEncoderRot2Meter / 60,
