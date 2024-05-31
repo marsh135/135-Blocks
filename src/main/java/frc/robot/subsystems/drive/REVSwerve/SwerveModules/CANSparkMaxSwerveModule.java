@@ -10,6 +10,9 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAnalogSensor.Mode;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkFlex;
+
 // import
 // edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
@@ -19,8 +22,8 @@ import frc.robot.utils.drive.MotorConstantContainer;
 import frc.robot.utils.drive.SwerveMotorControllers;
 
 public class CANSparkMaxSwerveModule extends SwerveMotorControllers  {
-	private CANSparkMax driveMotor;
-	private CANSparkMax turningMotor;
+	private CANSparkBase driveMotor;
+	private CANSparkBase turningMotor;
 	private RelativeEncoder driveEncoder;
 	private RelativeEncoder turningEncoder;
 
@@ -75,8 +78,18 @@ public class CANSparkMaxSwerveModule extends SwerveMotorControllers  {
 		//absoluteEncoder = new AnalogInput(absoluteEncoderId);
 		//absoluteEncoder = new CANCoder(absoluteEncoderId);
 		//declares motors
-		this.driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
-		this.turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
+		switch (DriveConstants.robotMotorController) {
+			case NEO_SPARK_MAX:
+				this.driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
+				this.turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
+				break;
+			case VORTEX_SPARK_FLEX:
+				this.driveMotor = new CANSparkFlex(driveMotorId, MotorType.kBrushless);
+				this.turningMotor = new CANSparkFlex(turningMotorId, MotorType.kBrushless);
+			default:
+			break;
+		}
+
 		//checks to see if they're inverted
 		this.driveMotor.setInverted(driveMotorReversed);
 		this.turningMotor.setInverted(turningMotorReversed);
