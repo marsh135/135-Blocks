@@ -89,7 +89,7 @@ public class TankS implements DrivetrainS {
 	private final LinearSystem<N2, N2, N2> m_drivetrainSystem = LinearSystemId
 			.identifyDrivetrainSystem(2.1, .1, 95, 1); //Placeholders.
 	private DifferentialDrivetrainSim drivetrainSim = new DifferentialDrivetrainSim(
-			m_drivetrainSystem, DCMotor.getNEO(4),7.5,DriveConstants.kChassisWidth,DriveConstants.SwerveConstants.kWheelDiameter/2,null);
+			m_drivetrainSystem, DCMotor.getNEO(4),7.5,DriveConstants.kChassisWidth,DriveConstants.TrainConstants.kWheelDiameter/2,null);
 	 double m_currentAngle = 0;
 	 double m_simLeftDriveEncoderPosition = 0;
 	 double m_simLeftDriveEncoderVelocity = 0;
