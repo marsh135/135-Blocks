@@ -40,19 +40,13 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.drive.DrivetrainS;
-import frc.robot.utils.SimGamePiece;
 import frc.robot.utils.drive.DriveConstants;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
-import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.Logger;
 
 public class CTREMecanumS implements DrivetrainS {
 	private static Pigeon2 pigeon = new Pigeon2(30);
-	private Supplier<Pose2d> pose2dSupplier = () -> {
-		return getPose();
-	};
 	private static final TalonFX[] motors = {
 			new TalonFX(DriveConstants.kFrontLeftDrivePort),
 			new TalonFX(DriveConstants.kFrontRightDrivePort),
@@ -124,9 +118,7 @@ public class CTREMecanumS implements DrivetrainS {
 						new ReplanningConfig(true, true) // Default path replanning config. See the API for the options here
 				), () -> Robot.isRed, this // Reference to this subsystem to set requirements
 		);
-		if (Constants.currentMode == Constants.Mode.SIM) {
-			SimGamePiece.setRobotPoseSupplier(pose2dSupplier);
-		}
+
 	}
 
 	public double[] getWheelPositionMeters() {
@@ -184,7 +176,6 @@ public class CTREMecanumS implements DrivetrainS {
 		updateWheelPositions();
 		poseEstimator.update(getRotation2d(), wheelPositions);
 		pose = poseEstimator.getEstimatedPosition();
-		System.out.println(wheelPositions);
 		robotField.setRobotPose(getPose());
 		SmartDashboard.putData(robotField);
 		PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {

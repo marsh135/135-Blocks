@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -114,21 +115,21 @@ public class TankS implements DrivetrainS {
 		rightMasterEncoder = rightMaster.getEncoder();
 		rightFollowerEncoder = rightFollower.getEncoder();
 		leftMasterEncoder
-				.setPositionConversionFactor(1 / gearing * kWheelRadiusMeters);
+				.setPositionConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
 		leftMasterEncoder
-				.setVelocityConversionFactor(1 / gearing * kWheelRadiusMeters);
+				.setVelocityConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
 		leftFollowerEncoder
-				.setPositionConversionFactor(1 / gearing * kWheelRadiusMeters);
+				.setPositionConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
 		leftFollowerEncoder
-				.setVelocityConversionFactor(1 / gearing * kWheelRadiusMeters);
+				.setVelocityConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
 		rightMasterEncoder
-				.setPositionConversionFactor(1 / gearing * kWheelRadiusMeters);
+				.setPositionConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
 		rightMasterEncoder
-				.setVelocityConversionFactor(1 / gearing * kWheelRadiusMeters);
+				.setVelocityConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
 		rightFollowerEncoder
-				.setPositionConversionFactor(1 / gearing * kWheelRadiusMeters);
+				.setPositionConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
 		rightFollowerEncoder
-				.setVelocityConversionFactor(1 / gearing * kWheelRadiusMeters);
+				.setVelocityConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
 		leftMaster.setInverted(leftMasterInverted);
 		leftFollower.setInverted(leftFollowerInverted);
 		rightMaster.setInverted(rightMasterInverted);
@@ -238,6 +239,24 @@ public class TankS implements DrivetrainS {
 		}
 		robotField.setRobotPose(getPose());
 		SmartDashboard.putData(robotField);
+		PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
+			// Do whatever you want with the pose here
+			Logger.recordOutput("Odometry/CurrentPose", pose);
+			robotField.setRobotPose(pose);
+		});
+		// Logging callback for target robot pose
+		PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
+			// Do whatever you want with the pose here
+			Logger.recordOutput("Odometry/TrajectorySetpoint", pose);
+			robotField.getObject("target pose").setPose(pose);
+		});
+		// Logging callback for the active path, this is sent as a list of poses
+		PathPlannerLogging.setLogActivePathCallback((poses) -> {
+			// Do whatever you want with the poses here
+			Logger.recordOutput("Odometry/Trajectory",
+					poses.toArray(new Pose2d[poses.size()]));
+			robotField.getObject("path").setPoses(poses);
+		});
 	}
 
 	private DifferentialDriveWheelSpeeds getWheelSpeeds() {

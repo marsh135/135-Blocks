@@ -43,8 +43,6 @@ import static edu.wpi.first.units.Units.Volts;
 import java.util.HashMap;
 
 import frc.robot.utils.drive.DriveConstants.TrainConstants.ModulePosition;
-import java.util.function.Supplier;
-import frc.robot.utils.SimGamePiece;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -54,9 +52,6 @@ import org.littletonrobotics.junction.Logger;
  */
 
 public class REVSwerveS extends SubsystemBase implements DrivetrainS {
-	private Supplier<Pose2d> pose2dSupplier = () -> {
-		return getPose();
-	};
 	private static HashMap<ModulePosition, REVSwerveModule> m_swerveModules = new HashMap<>();
 	static {
 		initalizeModules();
@@ -242,9 +237,6 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 		SmartDashboard.putNumber("D Gain AutoLock", kD);
 		SmartDashboard.putNumber("Distance AutoLock", kDistanceMultipler);
 		autoLockController = new PIDController(kP, kI, kD);*/
-		if (Constants.currentMode == Constants.Mode.SIM) {
-			SimGamePiece.setRobotPoseSupplier(pose2dSupplier);
-		}
 	}
 
 	@Override
