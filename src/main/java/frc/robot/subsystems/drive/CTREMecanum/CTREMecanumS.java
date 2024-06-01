@@ -1,10 +1,14 @@
 package frc.robot.subsystems.drive.CTREMecanum;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
@@ -57,10 +61,10 @@ public class CTREMecanumS implements DrivetrainS {
 	};
 	private static double dtSeconds = 0.02;
 	MecanumDriveKinematics kinematics = new MecanumDriveKinematics(
-			DriveConstants.kModuleTranslations[2],
 			DriveConstants.kModuleTranslations[0],
-			DriveConstants.kModuleTranslations[3],
-			DriveConstants.kModuleTranslations[1]);
+			DriveConstants.kModuleTranslations[1],
+			DriveConstants.kModuleTranslations[2],
+			DriveConstants.kModuleTranslations[3]);
 	MecanumDriveWheelSpeeds wheelSpeeds = new MecanumDriveWheelSpeeds(0, 0, 0,
 			0);
 	private static final DCMotorSim[] motorSimModels = {
@@ -73,18 +77,11 @@ public class CTREMecanumS implements DrivetrainS {
 			new DCMotorSim(DCMotor.getKrakenX60Foc(1),
 					DriveConstants.TrainConstants.kDriveMotorGearRatio, 0.001)
 	};
-	final VelocityDutyCycle[] motorRequests = {
-		new VelocityDutyCycle(0),
-		new VelocityDutyCycle(0),
-		new VelocityDutyCycle(0),
-		new VelocityDutyCycle(0)
-	};
-	//final VelocityDutyCycle m_motorRequest = new VelocityDutyCycle(0);
-	MecanumDriveWheelPositions wheelPositions = new MecanumDriveWheelPositions(
-			0, 0, 0, 0);
-
+	private final VelocityDutyCycle m_motorRequest = new VelocityDutyCycle(0);
+	MecanumDriveWheelPositions wheelPositions = new MecanumDriveWheelPositions(0,
+			0, 0, 0);
 	public Pose2d pose = new Pose2d(0, 0, getRotation2d());
-		Field2d robotField = new Field2d();
+	Field2d robotField = new Field2d();
 	MecanumDrivePoseEstimator poseEstimator = new MecanumDrivePoseEstimator(
 			kinematics, getRotation2d(), wheelPositions, pose);
 	private final VoltageOut m_voltReq = new VoltageOut(0.0);
@@ -104,7 +101,17 @@ public class CTREMecanumS implements DrivetrainS {
 			}, null, this));
 
 	public CTREMecanumS() {
-		//TODO: handle making motors.
+		for (TalonFX motor : motors) {
+			var talonFXConfigurator = motor.getConfigurator();
+			TalonFXConfiguration motorConfig = new TalonFXConfiguration();
+			motorConfig.CurrentLimits.StatorCurrentLimitEnable = false;
+			motorConfig.CurrentLimits.StatorCurrentLimit = 1000;
+			motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+			motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+			motorConfig.Feedback.SensorToMechanismRatio = DriveConstants.TrainConstants.kDriveEncoderRot2Meter;
+			motorConfig.Slot0.kP = .02;
+			talonFXConfigurator.apply(motorConfig);
+		}
 		AutoBuilder.configureHolonomic(this::getPose, // Robot pose supplier
 				this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
 				this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
@@ -122,7 +129,7 @@ public class CTREMecanumS implements DrivetrainS {
 		}
 	}
 
-	public static double[] getWheelPositionMeters() {
+	public double[] getWheelPositionMeters() {
 		return new double[] { motors[0].getPosition().getValueAsDouble(),
 				motors[1].getPosition().getValueAsDouble(),
 				motors[2].getPosition().getValueAsDouble(),
@@ -130,13 +137,22 @@ public class CTREMecanumS implements DrivetrainS {
 		};
 	}
 
-	public  void updateWheelPositions() {
+	public void updateWheelPositions() {
 		double[] wheelPos = getWheelPositionMeters();
 		wheelPositions.frontLeftMeters = wheelPos[0];
 		wheelPositions.frontRightMeters = wheelPos[1];
-		wheelPositions.rearRightMeters = wheelPos[2];
+		wheelPositions.rearLeftMeters = wheelPos[2];
 		wheelPositions.rearRightMeters = wheelPos[3];
 	}
+
+	private double metersPerSecondToRotationsPerSecond(
+			double velocityMetersPerSecond) {
+		double wheelCircumferenceMeters = Math.PI
+				* DriveConstants.TrainConstants.kWheelDiameter;
+		return (velocityMetersPerSecond / wheelCircumferenceMeters)
+				* DriveConstants.TrainConstants.kDriveMotorGearRatio;
+	}
+	public Rotation2d LastAngle = new Rotation2d();
 
 	@Override
 	public void setChassisSpeeds(ChassisSpeeds speeds) {
@@ -148,8 +164,18 @@ public class CTREMecanumS implements DrivetrainS {
 				wheelSpeeds.rearLeftMetersPerSecond,
 				wheelSpeeds.rearRightMetersPerSecond
 		};
+		if (Constants.currentMode == Constants.Mode.SIM){
+			Pigeon2SimState gyroSim = pigeon.getSimState();
+			double angleChange = speeds.omegaRadiansPerSecond * dtSeconds;
+			LastAngle = LastAngle.plus(Rotation2d.fromRadians(angleChange));
+			gyroSim.setRawYaw(LastAngle.getDegrees());
+		}
 		for (int i = 0; i < motors.length; i++) {
-			motors[i].setControl(motorRequests[i].withVelocity(velocities[i]));
+			double velocityRotationsPerSecond = metersPerSecondToRotationsPerSecond(
+					velocities[i]);
+			// Set the motor control to the converted velocity
+			motors[i].setControl(
+					m_motorRequest.withVelocity(velocityRotationsPerSecond));
 		}
 	}
 
@@ -158,9 +184,9 @@ public class CTREMecanumS implements DrivetrainS {
 		updateWheelPositions();
 		poseEstimator.update(getRotation2d(), wheelPositions);
 		pose = poseEstimator.getEstimatedPosition();
+		System.out.println(wheelPositions);
 		robotField.setRobotPose(getPose());
 		SmartDashboard.putData(robotField);
-		//SmartDashboard.putData(CameraS.getEstimatedField());
 		PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
 			// Do whatever you want with the pose here
 			Logger.recordOutput("Odometry/CurrentPose", pose);
@@ -182,7 +208,7 @@ public class CTREMecanumS implements DrivetrainS {
 		if (Constants.currentMode == Constants.Mode.SIM) {
 			for (int i = 0; i < motors.length; i++) {
 				var motorSim = motors[i].getSimState();
-				SmartDashboard.putNumber(String.valueOf(i), motorSim.getMotorVoltage());
+				motorSim.setSupplyVoltage(12);
 				motorSimModels[i].setInputVoltage(motorSim.getMotorVoltage());
 				motorSimModels[i].update(dtSeconds);
 				motorSim.setRawRotorPosition(
@@ -215,7 +241,7 @@ public class CTREMecanumS implements DrivetrainS {
 	@Override
 	public void stopModules() {
 		for (int i = 0; i < motors.length; i++) {
-			motors[i].setControl(motorRequests[i].withVelocity(0));
+			motors[i].setControl(m_motorRequest.withVelocity(0));
 		}
 	}
 
