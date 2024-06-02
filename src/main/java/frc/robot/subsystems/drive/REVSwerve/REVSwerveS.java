@@ -52,6 +52,7 @@ import org.littletonrobotics.junction.Logger;
  */
 
 public class REVSwerveS extends SubsystemBase implements DrivetrainS {
+	private static SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(DriveConstants.kModuleTranslations[0],DriveConstants.kModuleTranslations[1], DriveConstants.kModuleTranslations[2],DriveConstants.kModuleTranslations[3]);
 	private static HashMap<ModulePosition, REVSwerveModule> m_swerveModules = new HashMap<>();
 	static {
 		initalizeModules();
@@ -62,12 +63,12 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	public Pose2d robotPosition = new Pose2d(0, 0, getRotation2d());
 	Field2d robotField = new Field2d();
 	// LIST MODULES IN THE SAME EXACT ORDER USED WHEN DECLARING SwerveDriveKinematics
-	ChassisSpeeds m_ChassisSpeeds = DriveConstants.kDriveKinematics
+	ChassisSpeeds m_ChassisSpeeds = kDriveKinematics
 			.toChassisSpeeds(getModuleStates());
 	static Vector<N3> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
 	static Vector<N3> visionStdDevs = VecBuilder.fill(1, 1, 1);
 	public SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
-			DriveConstants.kDriveKinematics, getRotation2d(), getModulePositions(),
+			kDriveKinematics, getRotation2d(), getModulePositions(),
 			robotPosition, stateStdDevs, visionStdDevs);
 	SwerveModulePosition[] m_modulePositions = getModulePositions();
 	private double m_simYaw;
@@ -261,7 +262,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	@Override
 	public void periodic() {
 		if (Constants.currentMode == Mode.SIM) {
-			ChassisSpeeds chassisSpeed = DriveConstants.kDriveKinematics
+			ChassisSpeeds chassisSpeed = kDriveKinematics
 					.toChassisSpeeds(getModuleStates());
 			m_simYaw += chassisSpeed.omegaRadiansPerSecond * 0.02;
 			int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
@@ -305,7 +306,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 		*/
 		m_modulePositions = getModulePositions();
 		// LIST MODULES IN THE SAME EXACT ORDER USED WHEN DECLARING SwerveDriveKinematics
-		m_ChassisSpeeds = DriveConstants.kDriveKinematics
+		m_ChassisSpeeds = kDriveKinematics
 				.toChassisSpeeds(getModuleStates());
 		robotPosition = poseEstimator.update(getRotation2d(), m_modulePositions);
 		for (REVSwerveModule module : m_swerveModules.values()) {
@@ -382,7 +383,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 
 	@Override
 	public void setChassisSpeeds(ChassisSpeeds speed) {
-		SwerveModuleState[] moduleStates = DriveConstants.kDriveKinematics
+		SwerveModuleState[] moduleStates = kDriveKinematics
 				.toSwerveModuleStates(speed);
 		SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates,
 				DriveConstants.kMaxSpeedMetersPerSecond);

@@ -23,8 +23,8 @@ import com.revrobotics.CANSparkFlex;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.MotorConstantContainer;
 import frc.robot.utils.drive.DriveConstants;
-import frc.robot.utils.drive.MotorConstantContainer;
 
 public class REVSwerveModule extends SubsystemBase {
 	private CANSparkBase driveMotor;
@@ -48,9 +48,6 @@ public class REVSwerveModule extends SubsystemBase {
 	//private final AnalogInput absoluteEncoder; // Use either AnalogInput or CANCoder depending on the absolute encoder
 	//private final CANCoder absoluteEncoder;
 	/**
-	 * Sim still needs some way to be implemented (maybe use a wrapper?) is
-	 * literally the CANSparkMax swerve module code but I did CTRL+F and replaced
-	 * CANSparkFlex with CANSparkMax -Nish
 	 * 
 	 * @param driveMotorId            Drive CANSparkFlex Motor ID
 	 * @param turningMotorId          Turning CANSparkFlex Motor ID

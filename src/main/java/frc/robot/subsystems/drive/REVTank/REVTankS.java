@@ -1,4 +1,4 @@
-package frc.robot.subsystems.drive.Tank;
+package frc.robot.subsystems.drive.REVTank;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -44,7 +44,7 @@ import frc.robot.utils.drive.DriveConstants;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
-public class TankS implements DrivetrainS {
+public class REVTankS implements DrivetrainS {
 	private Pose2d pose = new Pose2d();
 	private static AHRS gyro = new AHRS();
 	private DifferentialDrivePoseEstimator poseEstimator;
@@ -88,7 +88,7 @@ public class TankS implements DrivetrainS {
 	 double dtSeconds = 0.02;
 	 double kDriveEncoderRot2Meter, maxSpeed;
 	Field2d robotField = new Field2d();
-	public TankS(int leftMasterID, int leftFollowerID, int rightMasterID,
+	public REVTankS(int leftMasterID, int leftFollowerID, int rightMasterID,
 			int rightFollowerID, boolean leftMasterInverted,
 			boolean leftFollowerInverted, boolean rightMasterInverted,
 			boolean rightFollowerInverted, IdleMode idleMode, int maxAmps,

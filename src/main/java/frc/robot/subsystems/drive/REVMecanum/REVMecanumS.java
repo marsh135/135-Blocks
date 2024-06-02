@@ -1,4 +1,4 @@
-package frc.robot.subsystems.drive.Mecanum;
+package frc.robot.subsystems.drive.REVMecanum;
 
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
@@ -47,7 +47,6 @@ import edu.wpi.first.wpilibj.SerialPort.Port;
 import frc.robot.utils.drive.DriveConstants;
 
 public class REVMecanumS implements DrivetrainS {
-	//TODO: mecanum sim, pathPlanner support
 	private static CANSparkBase[] sparkMotors = new CANSparkBase[4];
 	private static int[] motorIDs;
 	Field2d robotField = new Field2d();
@@ -172,7 +171,6 @@ public class REVMecanumS implements DrivetrainS {
 	@Override
 	public void periodic() {
 		drivePoseEstimator.update(getRotation2d(), getWheelPositions());
-		System.err.println(driveKinematics.toChassisSpeeds(getWheelSpeeds()));
 		robotField.setRobotPose(getPose());
 		SmartDashboard.putData(robotField);
 		if (Constants.currentMode == Constants.Mode.SIM) {
@@ -188,7 +186,6 @@ public class REVMecanumS implements DrivetrainS {
 	@Override
 	public void setChassisSpeeds(ChassisSpeeds speeds) {
 		MecanumDriveWheelSpeeds indSpeeds = driveKinematics.toWheelSpeeds(speeds);
-		System.err.println(speeds + "\n" + maxDriveVelMetersPerSec);
 		indSpeeds.desaturate(maxDriveVelMetersPerSec);
 		sparkMotors[0].set(indSpeeds.frontLeftMetersPerSecond/maxDriveVelMetersPerSec);
 		sparkMotors[1].set(indSpeeds.frontRightMetersPerSecond/maxDriveVelMetersPerSec);
