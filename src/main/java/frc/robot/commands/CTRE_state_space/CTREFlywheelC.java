@@ -25,7 +25,7 @@ public class CTREFlywheelC extends Command {
 				.getLeftTriggerAxis() > CTRESpaceConstants.Controls.kDeadband) {
 			flywheelSpeed = RobotContainer.manipController.getLeftTriggerAxis()
 					* CTRESpaceConstants.Flywheel.maxRPM;
-		} else if (CTRESpaceConstants.Controls.setButton.getAsBoolean()) {
+		} else if (CTRESpaceConstants.Controls.goto4000Button.getAsBoolean()) {
 			flywheelSpeed = 4000;
 		} else {
 			flywheelSpeed = 0;

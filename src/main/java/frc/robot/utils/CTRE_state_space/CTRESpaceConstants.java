@@ -15,12 +15,13 @@ public class CTRESpaceConstants {
 	public class Controls {
 		/* Enter any non-button controls here.
 		 * Left trigger is used for RPM speed. 0-0 1-7100.
-		 * Right trigger is used for arm Speed 0-0 1-maxArmSpeed.
+		 * Right stick is used for arm Speed 0-0 1-maxArmSpeed.
+		 * Left stick is used for elevator Speed 0-0 1-maxElevatorSpeed.
 		 */
 		public static double kDeadband = 0.1, kArmDeadband = 0.1,
 				armMoveSpeed = .01, elevatorMoveSpeed = 1;
-		public static JoystickButton setButton = new JoystickButton(
-				RobotContainer.manipController, 3), //x
+		public static JoystickButton goto4000Button = new JoystickButton(
+				RobotContainer.manipController, 5), //left bumper
 				go45Button = new JoystickButton(RobotContainer.manipController, 1), //a
 				go0Button = new JoystickButton(RobotContainer.manipController, 2), //b
 				go2ftButton = new JoystickButton(RobotContainer.manipController, 3), //x
@@ -37,16 +38,16 @@ public class CTRESpaceConstants {
 	}
 
 	public class Arm {
-		public static boolean inverted = false;
+		public static InvertedValue inverted = InvertedValue.CounterClockwise_Positive;
 		public static NeutralModeValue mode = NeutralModeValue.Brake;
 		public static int kMotorID = 30;
 		public static MotorConstantContainer armValueHolder = new MotorConstantContainer(
 				.001, .001, .001, 0, 0); //must have position set in SysId
-		public static double m_KalmanModelPosition = .015,
+		public static double m_KalmanModelPosition = .015,statorCurrentLimit = 150,
 				m_KalmanModelVelocity = .17, m_KalmanEncoder = 0.01,
 				m_LQRQelmsPosition = 1, m_LQRQelmsVelocity = 10, m_LQRRVolts = 12,
-				armGearing = 1.5, maxSpeed = DCMotor.getNEO(1).freeSpeedRadPerSec,
-				maxAcceleration = DCMotor.getNEO(1).freeSpeedRadPerSec / 2,
+				armGearing = 1.5, maxSpeed = DCMotor.getKrakenX60Foc(1).freeSpeedRadPerSec,
+				maxAcceleration = DCMotor.getKrakenX60Foc(1).freeSpeedRadPerSec / 2,
 				startingPosition = Units.degreesToRadians(0),
 				maxPosition = Units.degreesToRadians(90),
 				armLength = Units.inchesToMeters(5),
