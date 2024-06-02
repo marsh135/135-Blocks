@@ -13,6 +13,8 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.hal.SimDouble;
+import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -22,53 +24,43 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
+import frc.robot.Constants.Mode;
 import frc.robot.Robot;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.utils.drive.DriveConstants;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
-import java.util.function.Supplier;
 
 public class TankS implements DrivetrainS {
-	private Supplier<Pose2d> pose2dSupplier = () -> {
-		return getPose();
-	};
-	private Supplier<ChassisSpeeds> chassisSpeedsSupplier = () -> {
-		return getChassisSpeeds();
-	};
 	private Pose2d pose = new Pose2d();
 	private static AHRS gyro = new AHRS();
 	private DifferentialDrivePoseEstimator poseEstimator;
 	private static CANSparkBase[] motors = new CANSparkBase[4];
 	private static RelativeEncoder[] encoders = new RelativeEncoder[4];
-
+	private static final DCMotorSim[] motorSimModels = new DCMotorSim[4];
 	private DifferentialDriveKinematics differentialDriveKinematics = new DifferentialDriveKinematics(
 			DriveConstants.kChassisLength);
 	private DifferentialDriveWheelPositions wheelPositions;
 	private DifferentialDriveWheelSpeeds wheelSpeeds;
-	private static final DCMotorSim[] motorSimModels = {
-			new DCMotorSim(DCMotor.getNEO(1),
-					DriveConstants.TrainConstants.kDriveMotorGearRatio, 0.001),
-			new DCMotorSim(DCMotor.getNEO(1),
-					DriveConstants.TrainConstants.kDriveMotorGearRatio, 0.001),
-			new DCMotorSim(DCMotor.getNEO(1),
-					DriveConstants.TrainConstants.kDriveMotorGearRatio, 0.001),
-			new DCMotorSim(DCMotor.getNEO(1),
-					DriveConstants.TrainConstants.kDriveMotorGearRatio, 0.001)
-	};
 	Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1)); //for going FROM ZERO PER SECOND
 	Measure<Voltage> holdVoltage = Volts.of(4);
 	Measure<Time> timeout = Seconds.of(10);
@@ -91,38 +83,47 @@ public class TankS implements DrivetrainS {
 			}, null // No log consumer, since data is recorded by URCL
 					, this));
 	//Divide the kVLinear by wheelspeed!
-		 double m_currentAngle = 0;
+
+	double m_currentAngle = 0;
 	 double m_simLeftDriveEncoderPosition = 0;
 	 double m_simLeftDriveEncoderVelocity = 0;
 	 double m_simRightDriveEncoderPosition = 0;
 	 double m_simRightDriveEncoderVelocity = 0;
 	 double m_simAngleDifference = 0;
 	 double m_simTurnAngleIncrement = 0;
+	 double dtSeconds = 0.02;
+	 double kDriveEncoderRot2Meter, maxSpeed;
 	Field2d robotField = new Field2d();
 	public TankS(int leftMasterID, int leftFollowerID, int rightMasterID,
 			int rightFollowerID, boolean leftMasterInverted,
 			boolean leftFollowerInverted, boolean rightMasterInverted,
 			boolean rightFollowerInverted, IdleMode idleMode, int maxAmps,
-			double gearing, double kWheelRadiusMeters) {
+			double gearing, double kWheelDiameterMeters) {
 		int[] motorIDs = {leftMasterID, leftFollowerID, rightMasterID, rightFollowerID};
 		boolean[] motorsInverted = {leftMasterInverted, leftFollowerInverted, rightMasterInverted, rightFollowerInverted};
 		for (int i = 0; i <4; i++){
 			switch (DriveConstants.robotMotorController) {
 				case NEO_SPARK_MAX:
 				motors[i] = new CANSparkMax(motorIDs[i], MotorType.kBrushless);
+				motorSimModels[i] = new DCMotorSim(DCMotor.getNEO(1), gearing, .001);
+				this.maxSpeed = (5676 / 60.0) / gearing * (Math.PI * kWheelDiameterMeters);
 					break;
 				case VORTEX_SPARK_FLEX:
 				motors[i] = new CANSparkFlex(motorIDs[i], MotorType.kBrushless);
+				motorSimModels[i] = new DCMotorSim(DCMotor.getNeoVortex(1), gearing, .001);
+				this.maxSpeed = (6784 / 60.0) / gearing * (Math.PI * kWheelDiameterMeters);
+
 				break;
 				default:
 					break;
 			}
+			 kDriveEncoderRot2Meter = gearing * Math.PI* kWheelDiameterMeters;
 			encoders[i] = motors[i].getEncoder();
-			encoders[i].setPositionConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
-			encoders[i].setVelocityConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
+			encoders[i].setPositionConversionFactor(kDriveEncoderRot2Meter);
+			encoders[i].setVelocityConversionFactor(kDriveEncoderRot2Meter);
 			motors[i].setInverted(motorsInverted[i]);
-			if (i%2 == 0){
-				motors[i+1].follow(motors[i]);
+			if (i%2 == 1){
+				motors[i].follow(motors[i-1]);
 			}
 			motors[i].setIdleMode(idleMode);
 			motors[i].enableVoltageCompensation(12);
@@ -136,8 +137,8 @@ public class TankS implements DrivetrainS {
 		poseEstimator = new DifferentialDrivePoseEstimator(
 				differentialDriveKinematics, getRotation2d(), getLeftMeters(),
 				getRightMeters(), pose);
-		AutoBuilder.configureLTV(pose2dSupplier, this::resetPose,
-				chassisSpeedsSupplier, this::setChassisSpeeds, .02,
+		AutoBuilder.configureLTV(this::getPose, this::resetPose,
+				this::getChassisSpeeds, this::setChassisSpeeds, .02,
 				new ReplanningConfig(true, true), () -> Robot.isRed, this);
 	}
 
@@ -149,33 +150,21 @@ public class TankS implements DrivetrainS {
 	}
 
 	private double getLeftMeters() {
-		if (Constants.currentMode == Constants.Mode.SIM) {
-			return m_simLeftDriveEncoderPosition;
-		}
 		return (encoders[0].getPosition()
 				+ encoders[1].getPosition()) / 2;
 	}
 
 	private double getRightMeters() {
-		if (Constants.currentMode == Constants.Mode.SIM) {
-			return m_simRightDriveEncoderPosition;
-		}
 		return (encoders[2].getPosition()
 				+ encoders[3].getPosition()) / 2;
 	}
 
 	private double getLeftVelocity() {
-		if (Constants.currentMode == Constants.Mode.SIM) {
-			return m_simLeftDriveEncoderVelocity;
-		}
 		return (encoders[0].getVelocity()
 				+ encoders[1].getVelocity()) / 2;
 	}
 
 	private double getRightVelocity() {
-		if (Constants.currentMode == Constants.Mode.SIM) {
-			return m_simRightDriveEncoderVelocity;
-		}
 		return (encoders[2].getVelocity()
 				+ encoders[3].getVelocity()) / 2;
 	}
@@ -187,24 +176,31 @@ public class TankS implements DrivetrainS {
 	public void setChassisSpeeds(ChassisSpeeds speeds) {
 		DifferentialDriveWheelSpeeds wheelSpeeds = differentialDriveKinematics
 				.toWheelSpeeds(speeds);
-		wheelSpeeds.desaturate(DriveConstants.kMaxSpeedMetersPerSecond);
+		wheelSpeeds.desaturate(maxSpeed);
 		double leftVelocity = wheelSpeeds.leftMetersPerSecond
-				/ DriveConstants.kMaxSpeedMetersPerSecond;
+				/ maxSpeed;
 		double rightVelocity = wheelSpeeds.rightMetersPerSecond
-				/ DriveConstants.kMaxSpeedMetersPerSecond;
+				/ maxSpeed;
 		motors[0].set(leftVelocity);
 		motors[2].set(rightVelocity);
+		m_currentAngle += speeds.omegaRadiansPerSecond * 0.02;
+			int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
+			SimDouble angle = new SimDouble(
+					SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
+			// NavX expects clockwise positive, but sim outputs clockwise negative
+			angle.set(Math.IEEEremainder(-Units.radiansToDegrees(m_currentAngle), 360));
+			//m_pigeon.getSimCollection().setRawHeading(-Units.radiansToDegrees(m_simYaw));
 	}
-
-
 	@Override
 	public void periodic() {
 		wheelPositions = getWheelPositions();
 		wheelSpeeds = getWheelSpeeds();
 		pose = poseEstimator.update(getRotation2d(), getWheelPositions());
 		if (Constants.currentMode == Constants.Mode.SIM) {
-			for (int i = 0; i < motors.length; i++){
-
+			for (int i=0; i < 4; i+=2){
+				motorSimModels[i].setInputVoltage(motors[i].get()*12);
+				motorSimModels[i].update(dtSeconds);
+				encoders[i].setPosition(motorSimModels[i].getAngularPositionRotations());
 			}
 		}
 		robotField.setRobotPose(getPose());
@@ -247,7 +243,6 @@ public class TankS implements DrivetrainS {
 	@Override
 	public void resetPose(Pose2d pose) {
 		poseEstimator.resetPosition(getRotation2d(), wheelPositions, pose);
-		//drivetrainSim.setPose(pose);
 	}
 
 	@Override
