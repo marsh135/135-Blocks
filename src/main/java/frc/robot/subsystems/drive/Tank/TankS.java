@@ -6,6 +6,8 @@ import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
+import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -20,17 +22,13 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -53,18 +51,10 @@ public class TankS implements DrivetrainS {
 	};
 	private Pose2d pose = new Pose2d();
 	private static AHRS gyro = new AHRS();
-	private static CANSparkMax leftMaster;
-	private static CANSparkMax leftFollower;
-	private static CANSparkMax rightMaster;
-	private static CANSparkMax rightFollower;
-	private static RelativeEncoder leftMasterEncoder;
-	private static RelativeEncoder leftFollowerEncoder;
-	private static RelativeEncoder rightMasterEncoder;
-	private static RelativeEncoder rightFollowerEncoder;
 	private DifferentialDrivePoseEstimator poseEstimator;
-	private CANSparkMax[] motors = { leftMaster, leftFollower, rightMaster,
-		rightFollower
-};
+	private static CANSparkBase[] motors = new CANSparkBase[4];
+	private static RelativeEncoder[] encoders = new RelativeEncoder[4];
+
 	private DifferentialDriveKinematics differentialDriveKinematics = new DifferentialDriveKinematics(
 			DriveConstants.kChassisLength);
 	private DifferentialDriveWheelPositions wheelPositions;
@@ -87,8 +77,8 @@ public class TankS implements DrivetrainS {
 					(state) -> Logger.recordOutput("SysIdTestState",
 							state.toString())),
 			new SysIdRoutine.Mechanism((Measure<Voltage> volts) -> {
-				leftMaster.setVoltage(volts.in(Volts));
-				rightMaster.setVoltage(volts.in(Volts));
+				motors[0].setVoltage(volts.in(Volts));
+				motors[2].setVoltage(volts.in(Volts));
 			}, null // No log consumer, since data is recorded by URCL
 					, this));
 	SysIdRoutine sysIdRoutineTurn = new SysIdRoutine(
@@ -96,8 +86,8 @@ public class TankS implements DrivetrainS {
 					(state) -> Logger.recordOutput("SysIdTestState",
 							state.toString())),
 			new SysIdRoutine.Mechanism((Measure<Voltage> volts) -> {
-				leftMaster.setVoltage(-volts.in(Volts));
-				rightMaster.setVoltage(volts.in(Volts));
+				motors[0].setVoltage(-volts.in(Volts));
+				motors[2].setVoltage(volts.in(Volts));
 			}, null // No log consumer, since data is recorded by URCL
 					, this));
 	//Divide the kVLinear by wheelspeed!
@@ -114,44 +104,33 @@ public class TankS implements DrivetrainS {
 			boolean leftFollowerInverted, boolean rightMasterInverted,
 			boolean rightFollowerInverted, IdleMode idleMode, int maxAmps,
 			double gearing, double kWheelRadiusMeters) {
-		leftMaster = new CANSparkMax(leftMasterID, MotorType.kBrushless);
-		leftFollower = new CANSparkMax(leftFollowerID, MotorType.kBrushless);
-		rightMaster = new CANSparkMax(rightMasterID, MotorType.kBrushless);
-		rightFollower = new CANSparkMax(rightFollowerID, MotorType.kBrushless);
-		leftFollower.follow(leftMaster);
-		rightFollower.follow(rightMaster);
-		leftMasterEncoder = leftMaster.getEncoder();
-		leftFollowerEncoder = leftFollower.getEncoder();
-		rightMasterEncoder = rightMaster.getEncoder();
-		rightFollowerEncoder = rightFollower.getEncoder();
-		leftMasterEncoder
-				.setPositionConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
-		leftMasterEncoder
-				.setVelocityConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
-		leftFollowerEncoder
-				.setPositionConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
-		leftFollowerEncoder
-				.setVelocityConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
-		rightMasterEncoder
-				.setPositionConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
-		rightMasterEncoder
-				.setVelocityConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
-		rightFollowerEncoder
-				.setPositionConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
-		rightFollowerEncoder
-				.setVelocityConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
-		leftMaster.setInverted(leftMasterInverted);
-		leftFollower.setInverted(leftFollowerInverted);
-		rightMaster.setInverted(rightMasterInverted);
-		rightFollower.setInverted(rightFollowerInverted);
-
-		for (CANSparkMax motor : motors) {
-			motor.setIdleMode(idleMode);
-			motor.enableVoltageCompensation(12);
-			motor.setSmartCurrentLimit(maxAmps, maxAmps);
-			motor.clearFaults();
-			motor.burnFlash();
+		int[] motorIDs = {leftMasterID, leftFollowerID, rightMasterID, rightFollowerID};
+		boolean[] motorsInverted = {leftMasterInverted, leftFollowerInverted, rightMasterInverted, rightFollowerInverted};
+		for (int i = 0; i <4; i++){
+			switch (DriveConstants.robotMotorController) {
+				case NEO_SPARK_MAX:
+				motors[i] = new CANSparkMax(motorIDs[i], MotorType.kBrushless);
+					break;
+				case VORTEX_SPARK_FLEX:
+				motors[i] = new CANSparkFlex(motorIDs[i], MotorType.kBrushless);
+				break;
+				default:
+					break;
+			}
+			encoders[i] = motors[i].getEncoder();
+			encoders[i].setPositionConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
+			encoders[i].setVelocityConversionFactor(DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
+			motors[i].setInverted(motorsInverted[i]);
+			if (i%2 == 0){
+				motors[i+1].follow(motors[i]);
+			}
+			motors[i].setIdleMode(idleMode);
+			motors[i].enableVoltageCompensation(12);
+			motors[i].setSmartCurrentLimit(maxAmps, maxAmps);
+			motors[i].clearFaults();
+			motors[i].burnFlash();
 		}
+
 		SmartDashboard.putNumber("ROBOT HEADING TANK",
 				getRotation2d().getRadians());
 		poseEstimator = new DifferentialDrivePoseEstimator(
@@ -173,32 +152,32 @@ public class TankS implements DrivetrainS {
 		if (Constants.currentMode == Constants.Mode.SIM) {
 			return m_simLeftDriveEncoderPosition;
 		}
-		return (leftMasterEncoder.getPosition()
-				+ leftFollowerEncoder.getPosition()) / 2;
+		return (encoders[0].getPosition()
+				+ encoders[1].getPosition()) / 2;
 	}
 
 	private double getRightMeters() {
 		if (Constants.currentMode == Constants.Mode.SIM) {
 			return m_simRightDriveEncoderPosition;
 		}
-		return (rightMasterEncoder.getPosition()
-				+ rightFollowerEncoder.getPosition()) / 2;
+		return (encoders[2].getPosition()
+				+ encoders[3].getPosition()) / 2;
 	}
 
 	private double getLeftVelocity() {
 		if (Constants.currentMode == Constants.Mode.SIM) {
 			return m_simLeftDriveEncoderVelocity;
 		}
-		return (leftMasterEncoder.getVelocity()
-				+ leftFollowerEncoder.getVelocity()) / 2;
+		return (encoders[0].getVelocity()
+				+ encoders[1].getVelocity()) / 2;
 	}
 
 	private double getRightVelocity() {
 		if (Constants.currentMode == Constants.Mode.SIM) {
 			return m_simRightDriveEncoderVelocity;
 		}
-		return (rightMasterEncoder.getVelocity()
-				+ rightFollowerEncoder.getVelocity()) / 2;
+		return (encoders[2].getVelocity()
+				+ encoders[3].getVelocity()) / 2;
 	}
 
 	/**
@@ -213,8 +192,8 @@ public class TankS implements DrivetrainS {
 				/ DriveConstants.kMaxSpeedMetersPerSecond;
 		double rightVelocity = wheelSpeeds.rightMetersPerSecond
 				/ DriveConstants.kMaxSpeedMetersPerSecond;
-		leftMaster.set(leftVelocity);
-		rightMaster.set(rightVelocity);
+		motors[0].set(leftVelocity);
+		motors[2].set(rightVelocity);
 	}
 
 
