@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
+	public static SolenoidS solenoidS = new SolenoidS();
 	private Telemetry logger = null;
 	private final SendableChooser<Command> autoChooser;
 	public static XboxController driveController = new XboxController(0);
