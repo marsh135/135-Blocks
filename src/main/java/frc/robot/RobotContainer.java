@@ -9,6 +9,7 @@ import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumS;
 import frc.robot.subsystems.drive.CTRESwerve.CTRESwerveS;
 import frc.robot.subsystems.drive.CTRESwerve.Telemetry;
 import frc.robot.subsystems.drive.CTRESwerve.TunerConstants;
+import frc.robot.subsystems.drive.CTRETank.CTRETankS;
 import frc.robot.subsystems.drive.REVMecanum.REVMecanumS;
 import frc.robot.subsystems.drive.REVSwerve.REVSwerveS;
 
@@ -85,9 +86,17 @@ public class RobotContainer {
 			}
 			break;
 		case TANK:
+		switch (DriveConstants.robotMotorController) {
+			case CTRE_MOTORS:
+			drivetrainS = new CTRETankS();
+			break;
+			case NEO_SPARK_MAX:
+			case VORTEX_SPARK_FLEX:
 			drivetrainS = new REVTankS(10, 11, 12, 13, false, false, false, false,
 					IdleMode.kBrake, 80, 7.5, Units.inchesToMeters(6));
 			break;
+		}
+		break;
 		case MECANUM:
 			switch (DriveConstants.robotMotorController) {
 			case CTRE_MOTORS:

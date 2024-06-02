@@ -10,8 +10,8 @@ import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
 
 public class DriveConstants {
 	//
-	public static MotorVendor robotMotorController = MotorVendor.NEO_SPARK_MAX;
-	public static driveTrainType driveType = driveTrainType.SWERVE;
+	public static MotorVendor robotMotorController = MotorVendor.CTRE_MOTORS;
+	public static driveTrainType driveType = driveTrainType.TANK;
 
 	/**
 	 * What motors and motorContollers are we using

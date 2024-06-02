@@ -72,7 +72,6 @@ public class CTRETankS implements DrivetrainS {
 			DriveConstants.kChassisLength);
 	private DifferentialDriveWheelPositions wheelPositions;
 	private DifferentialDriveWheelSpeeds wheelSpeeds;
-	private DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, getRotation2d(), getLeftMeters(), getRightMeters(), getPose());
 	Field2d robotField = new Field2d();
 	public Pose2d pose = new Pose2d(0, 0, getRotation2d());
 	private final VelocityDutyCycle m_motorRequest = new VelocityDutyCycle(0);
@@ -90,6 +89,7 @@ public class CTRETankS implements DrivetrainS {
 				leftLeader.setControl(m_voltReq.withOutput(volts.in(Volts)));
 				rightLeader.setControl(m_voltReq.withOutput(volts.in(Volts)));
 			}, null, this));
+	private DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, getRotation2d(), getLeftMeters(), getRightMeters(), getPose());
 
 	public CTRETankS() {
 		//do main motors
@@ -170,7 +170,8 @@ public class CTRETankS implements DrivetrainS {
 			var motorSim = motors[i].getSimState();
 			motorSim.setSupplyVoltage(12);
 			motorSimModels[i].setInputVoltage(motorSim.getMotorVoltage());
-			motorSimModels[i].update(dtSeconds);
+			//There is probably a *2 somewhere, which is causing this .01 instead of .02. Do not remove the TF2 Coconut Solution™.
+			motorSimModels[i].update(dtSeconds/2);
 			motorSim.setRawRotorPosition(
 					motorSimModels[i].getAngularPositionRotations());
 			motorSim.setRotorVelocity(Units.radiansToRotations(

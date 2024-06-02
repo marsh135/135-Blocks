@@ -39,7 +39,6 @@ import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.REVSwerve.SwerveModules.REVSwerveModule;
 import frc.robot.Robot;
 
-
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import java.util.HashMap;
@@ -49,15 +48,12 @@ import frc.robot.utils.drive.DriveConstants.TrainConstants.ModulePosition;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-
 public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	private static Translation2d[] kModuleTranslations;
-	private static double kMaxSpeedMetersPerSecond,
-	kDriveBaseRadius;
+	private static double kMaxSpeedMetersPerSecond, kDriveBaseRadius;
 	private static REVModuleConstantContainer[] REVModuleConstantContainers = new REVModuleConstantContainer[4];
-	private static SwerveDriveKinematics kDriveKinematics; 
-	private  HashMap<ModulePosition, REVSwerveModule> m_swerveModules = new HashMap<>();
-
+	private static SwerveDriveKinematics kDriveKinematics;
+	private HashMap<ModulePosition, REVSwerveModule> m_swerveModules = new HashMap<>();
 	private static AHRS gyro = new AHRS(Port.kUSB1);
 	//Whether the robot should be field oriented
 	//Whether the swerve drivetrain should be taken over by our auto drive to note feature (in the Vision branch)
@@ -91,15 +87,32 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 					module.setDriveTest(volts.in(Volts));
 			}, null // No log consumer, since data is recorded by URCL
 					, this));
-	public REVSwerveS(REVModuleConstantContainer[] moduleConstantContainers, double maxSpeed, double driveBaseRadius) {
+
+	/**
+	 * Creates a new REVSwerve Drivetrain with 8 CANSparkMaxes or 8
+	 * CANSparkFlexes
+	 * 
+	 * @param moduleConstantContainers the moduleConstantContainers for each
+	 *                                    module as an array of {frontLeft,
+	 *                                    frontRight, backLeft, backRight}
+	 * @param maxSpeed                 the max speed of the drivetrain
+	 * @param driveBaseRadius          the radius of the drivetrain
+	 */
+	public REVSwerveS(REVModuleConstantContainer[] moduleConstantContainers,
+			double maxSpeed, double driveBaseRadius) {
 		REVModuleConstantContainers = moduleConstantContainers;
 		initalizeModules();
-		kModuleTranslations = new Translation2d[]{moduleConstantContainers[0].getTranslation2d(),moduleConstantContainers[1].getTranslation2d(),moduleConstantContainers[2].getTranslation2d(),moduleConstantContainers[3].getTranslation2d()};
+		kModuleTranslations = new Translation2d[] {
+				moduleConstantContainers[0].getTranslation2d(),
+				moduleConstantContainers[1].getTranslation2d(),
+				moduleConstantContainers[2].getTranslation2d(),
+				moduleConstantContainers[3].getTranslation2d()
+		};
 		kDriveKinematics = new SwerveDriveKinematics(kModuleTranslations);
 		m_ChassisSpeeds = kDriveKinematics.toChassisSpeeds(getModuleStates());
-		poseEstimator = new SwerveDrivePoseEstimator(
-			kDriveKinematics, getRotation2d(), getModulePositions(),
-			robotPosition, stateStdDevs, visionStdDevs);
+		poseEstimator = new SwerveDrivePoseEstimator(kDriveKinematics,
+				getRotation2d(), getModulePositions(), robotPosition, stateStdDevs,
+				visionStdDevs);
 		m_modulePositions = getModulePositions();
 		kMaxSpeedMetersPerSecond = maxSpeed;
 		kDriveBaseRadius = driveBaseRadius;
@@ -186,14 +199,14 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 
 	private void initalizeModules() {
 		m_swerveModules.clear();
-		REVSwerveModule front_left = new REVSwerveModule(REVModuleConstantContainers[0]
-				);
-		REVSwerveModule front_right = new REVSwerveModule(REVModuleConstantContainers[1]
-				);
-		REVSwerveModule back_left = new REVSwerveModule(REVModuleConstantContainers[2]
-				);
-		REVSwerveModule back_right = new REVSwerveModule(REVModuleConstantContainers[3]
-				);
+		REVSwerveModule front_left = new REVSwerveModule(
+				REVModuleConstantContainers[0]);
+		REVSwerveModule front_right = new REVSwerveModule(
+				REVModuleConstantContainers[1]);
+		REVSwerveModule back_left = new REVSwerveModule(
+				REVModuleConstantContainers[2]);
+		REVSwerveModule back_right = new REVSwerveModule(
+				REVModuleConstantContainers[3]);
 		for (ModulePosition position : ModulePosition.values()) {
 			if (position.name() == "FRONT_LEFT") {
 				m_swerveModules.put(position, front_left);
@@ -206,13 +219,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 			}
 		}
 	}
-	/**
-	 * Creates a new REVSwerve Drivetrain with 8 CANSparkMaxes or 8 CANSparkFlexes
-	 * @param moduleConstantContainers the moduleConstantContainers for each module as an array of {frontLeft, frontRight, backLeft, backRight}
-	 * @param maxSpeed the max speed of the drivetrain
-	 * @param driveBaseRadius the radius of the drivetrain
-	 */
-	
+
 	@Override
 	public void zeroHeading() {
 		debounce = 0;
@@ -251,8 +258,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 				getPose().getRotation().getDegrees());
 		m_modulePositions = getModulePositions();
 		// LIST MODULES IN THE SAME EXACT ORDER USED WHEN DECLARING SwerveDriveKinematics
-		m_ChassisSpeeds = kDriveKinematics
-				.toChassisSpeeds(getModuleStates());
+		m_ChassisSpeeds = kDriveKinematics.toChassisSpeeds(getModuleStates());
 		robotPosition = poseEstimator.update(getRotation2d(), m_modulePositions);
 		for (REVSwerveModule module : m_swerveModules.values()) {
 			var modulePositionFromChassis = kModuleTranslations[module
