@@ -29,6 +29,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -61,10 +62,23 @@ public class TankS implements DrivetrainS {
 	private static RelativeEncoder rightMasterEncoder;
 	private static RelativeEncoder rightFollowerEncoder;
 	private DifferentialDrivePoseEstimator poseEstimator;
+	private CANSparkMax[] motors = { leftMaster, leftFollower, rightMaster,
+		rightFollower
+};
 	private DifferentialDriveKinematics differentialDriveKinematics = new DifferentialDriveKinematics(
 			DriveConstants.kChassisLength);
 	private DifferentialDriveWheelPositions wheelPositions;
 	private DifferentialDriveWheelSpeeds wheelSpeeds;
+	private static final DCMotorSim[] motorSimModels = {
+			new DCMotorSim(DCMotor.getNEO(1),
+					DriveConstants.TrainConstants.kDriveMotorGearRatio, 0.001),
+			new DCMotorSim(DCMotor.getNEO(1),
+					DriveConstants.TrainConstants.kDriveMotorGearRatio, 0.001),
+			new DCMotorSim(DCMotor.getNEO(1),
+					DriveConstants.TrainConstants.kDriveMotorGearRatio, 0.001),
+			new DCMotorSim(DCMotor.getNEO(1),
+					DriveConstants.TrainConstants.kDriveMotorGearRatio, 0.001)
+	};
 	Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1)); //for going FROM ZERO PER SECOND
 	Measure<Voltage> holdVoltage = Volts.of(4);
 	Measure<Time> timeout = Seconds.of(10);
@@ -87,11 +101,7 @@ public class TankS implements DrivetrainS {
 			}, null // No log consumer, since data is recorded by URCL
 					, this));
 	//Divide the kVLinear by wheelspeed!
-	private final LinearSystem<N2, N2, N2> m_drivetrainSystem = LinearSystemId
-			.identifyDrivetrainSystem(2.1, .1, 95, 1); //Placeholders.
-	private DifferentialDrivetrainSim drivetrainSim = new DifferentialDrivetrainSim(
-			m_drivetrainSystem, DCMotor.getNEO(4),7.5,DriveConstants.kChassisWidth,DriveConstants.TrainConstants.kWheelDiameter/2,null);
-	 double m_currentAngle = 0;
+		 double m_currentAngle = 0;
 	 double m_simLeftDriveEncoderPosition = 0;
 	 double m_simLeftDriveEncoderVelocity = 0;
 	 double m_simRightDriveEncoderPosition = 0;
@@ -134,9 +144,7 @@ public class TankS implements DrivetrainS {
 		leftFollower.setInverted(leftFollowerInverted);
 		rightMaster.setInverted(rightMasterInverted);
 		rightFollower.setInverted(rightFollowerInverted);
-		CANSparkMax[] motors = { leftMaster, leftFollower, rightMaster,
-				rightFollower
-		};
+
 		for (CANSparkMax motor : motors) {
 			motor.setIdleMode(idleMode);
 			motor.enableVoltageCompensation(12);
@@ -207,19 +215,8 @@ public class TankS implements DrivetrainS {
 				/ DriveConstants.kMaxSpeedMetersPerSecond;
 		leftMaster.set(leftVelocity);
 		rightMaster.set(rightVelocity);
-		if (Constants.currentMode == Constants.Mode.SIM) {
-			simUpdateDrivePosition(wheelSpeeds);
-		}
 	}
 
-	private void simUpdateDrivePosition(DifferentialDriveWheelSpeeds speeds) {
-		m_simLeftDriveEncoderVelocity = speeds.leftMetersPerSecond;
-		double distancePer20MsL = m_simLeftDriveEncoderVelocity * .02;
-		m_simLeftDriveEncoderVelocity += distancePer20MsL;
-		m_simRightDriveEncoderVelocity = speeds.rightMetersPerSecond;
-		double distancePer20MsR = m_simRightDriveEncoderVelocity * .02;
-		m_simRightDriveEncoderVelocity += distancePer20MsR;
-	}
 
 	@Override
 	public void periodic() {
@@ -227,15 +224,9 @@ public class TankS implements DrivetrainS {
 		wheelSpeeds = getWheelSpeeds();
 		pose = poseEstimator.update(getRotation2d(), getWheelPositions());
 		if (Constants.currentMode == Constants.Mode.SIM) {
-			drivetrainSim.setInputs(
-					leftMaster.get() * 12,
-					rightMaster.get() * 12);
-			drivetrainSim.update(0.02);
-			m_simLeftDriveEncoderPosition = drivetrainSim.getLeftPositionMeters();
-			m_simLeftDriveEncoderVelocity = drivetrainSim.getLeftVelocityMetersPerSecond();
-			m_simRightDriveEncoderPosition = drivetrainSim.getRightPositionMeters();
-			m_simRightDriveEncoderVelocity = drivetrainSim.getRightVelocityMetersPerSecond();
-			m_currentAngle = drivetrainSim.getHeading().getDegrees();
+			for (int i = 0; i < motors.length; i++){
+
+			}
 		}
 		robotField.setRobotPose(getPose());
 		SmartDashboard.putData(robotField);
@@ -277,7 +268,7 @@ public class TankS implements DrivetrainS {
 	@Override
 	public void resetPose(Pose2d pose) {
 		poseEstimator.resetPosition(getRotation2d(), wheelPositions, pose);
-		drivetrainSim.setPose(pose);
+		//drivetrainSim.setPose(pose);
 	}
 
 	@Override
