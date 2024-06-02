@@ -92,7 +92,7 @@ public class RobotContainer {
 						new MotorConstantContainer(1, 1, 1, 0, 0),
 						new MotorConstantContainer(1, 1, 1, 0, 0),
 						new MotorConstantContainer(1, 1, 1, 0, 0), 7.5,
-						Units.inchesToMeters(6), 10);
+						Units.inchesToMeters(6), 4);
 				break;
 			}
 			break;

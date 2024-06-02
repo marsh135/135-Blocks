@@ -119,7 +119,7 @@ public class REVMecanumS implements DrivetrainS {
 	 *                                            motor
 	 * @param backLeftMotorConstantContainer   constants for the back right motor
 	 * @param backRightMotorConstantContainer  constants for the back left motor
-	 * @param gearing                          gearing of the motor
+	 * @param gearing                          gearing of the motor (>1 is a reduction)
 	 * @param kWheelRadiusMeters               radius of the wheel in meters
 	 * @param maxDriveVelMetersPerSec          maximum drive speed in meters per
 	 *                                            second
@@ -131,7 +131,6 @@ public class REVMecanumS implements DrivetrainS {
 			MotorConstantContainer backLeftMotorConstantContainer,
 			MotorConstantContainer backRightMotorConstantContainer, double gearing,
 			double kWheelRadiusMeters, double maxDriveVelMetersPerSec) {
-		REVMecanumS.maxDriveVelMetersPerSec = maxDriveVelMetersPerSec;
 		wheelConstantContainers = new MotorConstantContainer[] {
 				frontLeftMotorConstantContainer, frontRightMotorConstantContainer,
 				backLeftMotorConstantContainer, backRightMotorConstantContainer
@@ -160,7 +159,9 @@ public class REVMecanumS implements DrivetrainS {
 			sparkMotors[i].burnFlash();
 			wheelRelativeEncoders[i] = sparkMotors[i].getEncoder();
 			wheelRelativeEncoders[i]
-					.setPositionConversionFactor(1 / gearing * kWheelRadiusMeters);
+					.setPositionConversionFactor((1 / gearing )* kWheelRadiusMeters * Math.PI);
+			wheelRelativeEncoders[i].setVelocityConversionFactor((1 / gearing )* kWheelRadiusMeters * Math.PI);
+
 			wheelFilters[i] = new KalmanFilter<N2, N1, N2>(Nat.N2(), Nat.N2(),
 					linearSystems[i], VecBuilder.fill(3, 3), VecBuilder.fill(.03, 3),
 					.02);
@@ -201,7 +202,7 @@ public class REVMecanumS implements DrivetrainS {
 				new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
 						new PIDConstants(10, 0.0, 0.0), // Translation PID constants // We didn't have the chance to optimize PID constants so there will be some error in autonomous until these values are fixed
 						new PIDConstants(5, 0.0, 0.0), // Rotation PID constants
-						DriveConstants.kMaxSpeedMetersPerSecond, // Max module speed, in m/s
+						maxDriveVelMetersPerSec, // Max module speed, in m/s
 						DriveConstants.kDriveBaseRadius, // Drive base radius in meters. Distance from robot center to furthest module.
 						new ReplanningConfig(true, true) // Default path replanning config. See the API for the options here
 				), () -> Robot.isRed, this // Reference to this subsystem to set requirements
@@ -244,13 +245,14 @@ public class REVMecanumS implements DrivetrainS {
 
 	@Override
 	public void periodic() {
+
 		SmartDashboard.putNumber("X", driveKinematics.toChassisSpeeds(getWheelSpeeds()).omegaRadiansPerSecond);
 		drivePoseEstimator.update(getRotation2d(), getWheelPositions());
 		robotField.setRobotPose(getPose());
 		SmartDashboard.putData(robotField);
 		for (int i = 0; i < 4; i++) {
-			wheelSystemLoops[i].setNextR(VecBuilder.fill(desiredVelocities[i],
-					currentPositions[i] + desiredVelocities[i] * .2));
+			wheelSystemLoops[i].setNextR(VecBuilder.fill(desiredVelocities[i],(
+					currentPositions[i] + desiredVelocities[i] * .2)%(2*Math.PI)));
 			switch (Constants.currentMode) {
 			case REAL:
 				wheelSystemLoops[i].correct(
@@ -278,8 +280,10 @@ public class REVMecanumS implements DrivetrainS {
 
 	@Override
 	public void setChassisSpeeds(ChassisSpeeds speeds) {
-		System.out.println(speeds.vxMetersPerSecond);
 		MecanumDriveWheelSpeeds indSpeeds = driveKinematics.toWheelSpeeds(speeds);
+
+		indSpeeds.desaturate(maxDriveVelMetersPerSec);
+		System.out.println(indSpeeds.frontLeftMetersPerSecond);
 		desiredVelocities[0] = indSpeeds.frontLeftMetersPerSecond;
 		desiredVelocities[1] = indSpeeds.frontRightMetersPerSecond;
 		desiredVelocities[2] = indSpeeds.rearLeftMetersPerSecond;
