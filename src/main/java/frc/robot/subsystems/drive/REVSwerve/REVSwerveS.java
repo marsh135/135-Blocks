@@ -56,7 +56,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	kDriveBaseRadius;
 	private static REVModuleConstantContainer[] REVModuleConstantContainers = new REVModuleConstantContainer[4];
 	private static SwerveDriveKinematics kDriveKinematics; 
-	private static HashMap<ModulePosition, REVSwerveModule> m_swerveModules = new HashMap<>();
+	private  HashMap<ModulePosition, REVSwerveModule> m_swerveModules = new HashMap<>();
 
 	private static AHRS gyro = new AHRS(Port.kUSB1);
 	//Whether the robot should be field oriented
@@ -94,12 +94,13 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	public REVSwerveS(REVModuleConstantContainer[] moduleConstantContainers, double maxSpeed, double driveBaseRadius) {
 		REVModuleConstantContainers = moduleConstantContainers;
 		initalizeModules();
+		kModuleTranslations = new Translation2d[]{moduleConstantContainers[0].getTranslation2d(),moduleConstantContainers[1].getTranslation2d(),moduleConstantContainers[2].getTranslation2d(),moduleConstantContainers[3].getTranslation2d()};
+		kDriveKinematics = new SwerveDriveKinematics(kModuleTranslations);
 		m_ChassisSpeeds = kDriveKinematics.toChassisSpeeds(getModuleStates());
 		poseEstimator = new SwerveDrivePoseEstimator(
 			kDriveKinematics, getRotation2d(), getModulePositions(),
 			robotPosition, stateStdDevs, visionStdDevs);
 		m_modulePositions = getModulePositions();
-		kDriveKinematics = new SwerveDriveKinematics(new Translation2d[]{moduleConstantContainers[0].getTranslation2d(),moduleConstantContainers[1].getTranslation2d(),moduleConstantContainers[2].getTranslation2d(),moduleConstantContainers[3].getTranslation2d()});
 		kMaxSpeedMetersPerSecond = maxSpeed;
 		kDriveBaseRadius = driveBaseRadius;
 		// Waits for the RIO to finishing booting
@@ -174,7 +175,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 		};
 	}
 
-	public static SwerveModulePosition[] getModulePositions() {
+	public SwerveModulePosition[] getModulePositions() {
 		return new SwerveModulePosition[] {
 				m_swerveModules.get(ModulePosition.FRONT_LEFT).getPosition(),
 				m_swerveModules.get(ModulePosition.FRONT_RIGHT).getPosition(),
@@ -183,7 +184,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 		};
 	}
 
-	private static void initalizeModules() {
+	private void initalizeModules() {
 		m_swerveModules.clear();
 		REVSwerveModule front_left = new REVSwerveModule(REVModuleConstantContainers[0]
 				);

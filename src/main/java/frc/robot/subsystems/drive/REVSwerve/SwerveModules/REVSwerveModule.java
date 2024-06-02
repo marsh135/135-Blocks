@@ -60,18 +60,19 @@ public class REVSwerveModule extends SubsystemBase {
 		position = container.getModulePosition();
 		switch (position) {
 		case FRONT_LEFT:
-			m_moduleNumber = 0;
+		this.m_moduleNumber = 0;
 			break;
 		case FRONT_RIGHT:
-			m_moduleNumber = 1;
+		this.m_moduleNumber = 1;
 			break;
 		case BACK_LEFT:
-			m_moduleNumber = 2;
+			this.m_moduleNumber = 2;
 			break;
 		case BACK_RIGHT:
-			m_moduleNumber = 3;
+		this.m_moduleNumber = 3;
 			break;
 		default:
+		this.m_moduleNumber = -1;
 			break;
 		}
 		/*turningFeedForward = new SimpleMotorFeedforward(

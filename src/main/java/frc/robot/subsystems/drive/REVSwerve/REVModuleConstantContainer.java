@@ -3,12 +3,12 @@ import frc.robot.utils.MotorConstantContainer;
 import frc.robot.utils.drive.DriveConstants.TrainConstants.ModulePosition;
 import edu.wpi.first.math.geometry.Translation2d;
 public class REVModuleConstantContainer {
-	private static int[] moduleConstantContainerInts;
-	private static boolean[] moduleConstantContainerBools;
-	private static double moduleAbsEncOffset;
-	private static ModulePosition modulePosition;
-	private static MotorConstantContainer[] moduleMotorConstants;
-	private static Translation2d moduleTranslation;
+	private  int[] moduleConstantContainerInts;
+	private  boolean[] moduleConstantContainerBools;
+	private  double moduleAbsEncOffset;
+	private  ModulePosition m_modulePosition;
+	private  MotorConstantContainer[] moduleMotorConstants;
+	private  Translation2d moduleTranslation;
 	/**
 	 * Wrapper class designed to hold all the constants for a rev swerve module in the 135-blocks framework
 	 * @param driveMotorID the CAN ID of the drive motor
@@ -33,6 +33,7 @@ public class REVModuleConstantContainer {
 				moduleConstantContainerBools = new boolean[]{driveMotorReversed,turningMotorReversed,absoluteEncoderReversed};
 				moduleMotorConstants = new MotorConstantContainer[]{driveMotorConstantContainer,turningMotorConstantContainer};
 				moduleAbsEncOffset = absoluteEncoderOffset;
+				m_modulePosition = modulePosition;
 				moduleTranslation = moduleTranslation2d;
 			}
 	public int getDriveMotorID(){
@@ -60,7 +61,7 @@ public class REVModuleConstantContainer {
 		return moduleAbsEncOffset;
 	 }
 	public ModulePosition getModulePosition(){
-		return modulePosition;
+		return m_modulePosition;
 	}		
 	public Translation2d getTranslation2d(){
 		return moduleTranslation;
