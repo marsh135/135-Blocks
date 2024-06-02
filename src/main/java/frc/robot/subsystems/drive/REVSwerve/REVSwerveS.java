@@ -64,14 +64,11 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	public Pose2d robotPosition = new Pose2d(0, 0, getRotation2d());
 	Field2d robotField = new Field2d();
 	// LIST MODULES IN THE SAME EXACT ORDER USED WHEN DECLARING SwerveDriveKinematics
-	ChassisSpeeds m_ChassisSpeeds = kDriveKinematics
-			.toChassisSpeeds(getModuleStates());
+	ChassisSpeeds m_ChassisSpeeds;
 	static Vector<N3> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
 	static Vector<N3> visionStdDevs = VecBuilder.fill(1, 1, 1);
-	public SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
-			kDriveKinematics, getRotation2d(), getModulePositions(),
-			robotPosition, stateStdDevs, visionStdDevs);
-	SwerveModulePosition[] m_modulePositions = getModulePositions();
+	public SwerveDrivePoseEstimator poseEstimator;
+	SwerveModulePosition[] m_modulePositions;
 	private double m_simYaw;
 	Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1)); //for going FROM ZERO PER SECOND
 	Measure<Voltage> holdVoltage = Volts.of(8);
@@ -94,6 +91,42 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 					module.setDriveTest(volts.in(Volts));
 			}, null // No log consumer, since data is recorded by URCL
 					, this));
+	public REVSwerveS(REVModuleConstantContainer[] moduleConstantContainers, double maxSpeed, double driveBaseRadius) {
+		REVModuleConstantContainers = moduleConstantContainers;
+		initalizeModules();
+		m_ChassisSpeeds = kDriveKinematics.toChassisSpeeds(getModuleStates());
+		poseEstimator = new SwerveDrivePoseEstimator(
+			kDriveKinematics, getRotation2d(), getModulePositions(),
+			robotPosition, stateStdDevs, visionStdDevs);
+		m_modulePositions = getModulePositions();
+		kDriveKinematics = new SwerveDriveKinematics(new Translation2d[]{moduleConstantContainers[0].getTranslation2d(),moduleConstantContainers[1].getTranslation2d(),moduleConstantContainers[2].getTranslation2d(),moduleConstantContainers[3].getTranslation2d()});
+		kMaxSpeedMetersPerSecond = maxSpeed;
+		kDriveBaseRadius = driveBaseRadius;
+		// Waits for the RIO to finishing booting
+		new Thread(() -> {
+			try {
+				Thread.sleep(1000);
+				zeroHeading();
+				for (REVSwerveModule module : m_swerveModules.values())
+					module.resetEncoders();
+				//limelight.getEntry("pipeline").setNumber(1);
+			}
+			catch (Exception e) {
+			}
+		}).start();
+		AutoBuilder.configureHolonomic(this::getPose, // Robot pose supplier
+				this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+				this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+				this::setChassisSpeeds, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+				new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+						new PIDConstants(10, 0.0, 0.0), // Translation PID constants // We didn't have the chance to optimize PID constants so there will be some error in autonomous until these values are fixed
+						new PIDConstants(5, 0.0, 0.0), // Rotation PID constants
+						kMaxSpeedMetersPerSecond, // Max module speed, in m/s
+						kDriveBaseRadius, // Drive base radius in meters. Distance from robot center to furthest module.
+						new ReplanningConfig(true, true) // Default path replanning config. See the API for the options here
+				), () -> Robot.isRed, this // Reference to this subsystem to set requirements
+		);
+	}
 
 	/**
 	 * Returns a command that will execute a quasistatic test in the given
@@ -178,38 +211,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	 * @param maxSpeed the max speed of the drivetrain
 	 * @param driveBaseRadius the radius of the drivetrain
 	 */
-	public REVSwerveS(REVModuleConstantContainer[] moduleConstantContainers, double maxSpeed, double driveBaseRadius) {
-		REVModuleConstantContainers = moduleConstantContainers;
-		initalizeModules();
-		kDriveKinematics = new SwerveDriveKinematics(new Translation2d[]{moduleConstantContainers[0].getTranslation2d(),moduleConstantContainers[1].getTranslation2d(),moduleConstantContainers[2].getTranslation2d(),moduleConstantContainers[3].getTranslation2d()});
-		kMaxSpeedMetersPerSecond = maxSpeed;
-		kDriveBaseRadius = driveBaseRadius;
-		// Waits for the RIO to finishing booting
-		new Thread(() -> {
-			try {
-				Thread.sleep(1000);
-				zeroHeading();
-				for (REVSwerveModule module : m_swerveModules.values())
-					module.resetEncoders();
-				//limelight.getEntry("pipeline").setNumber(1);
-			}
-			catch (Exception e) {
-			}
-		}).start();
-		AutoBuilder.configureHolonomic(this::getPose, // Robot pose supplier
-				this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
-				this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-				this::setChassisSpeeds, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-				new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-						new PIDConstants(10, 0.0, 0.0), // Translation PID constants // We didn't have the chance to optimize PID constants so there will be some error in autonomous until these values are fixed
-						new PIDConstants(5, 0.0, 0.0), // Rotation PID constants
-						kMaxSpeedMetersPerSecond, // Max module speed, in m/s
-						kDriveBaseRadius, // Drive base radius in meters. Distance from robot center to furthest module.
-						new ReplanningConfig(true, true) // Default path replanning config. See the API for the options here
-				), () -> Robot.isRed, this // Reference to this subsystem to set requirements
-		);
-	}
-
+	
 	@Override
 	public void zeroHeading() {
 		debounce = 0;

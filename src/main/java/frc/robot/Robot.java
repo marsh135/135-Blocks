@@ -43,10 +43,9 @@ public class Robot extends LoggedRobot {
 	 */
 	@Override
 	public void robotInit() {
+		m_robotContainer = new RobotContainer();
 		PortForwarder.add(22, "orangepi@photonvision.local", 22);
 		PortForwarder.add(22, "photonvision.local", 22);
-		//To check for endgame
-		//Below may be redudant
 		// Instantiate our RobotContainer.  This will perform all our button bindings, and put our
 		// autonomous chooser on the dashboard
 		Logger.recordMetadata("ProjectName", "The Chef"); // Set a metadata value
@@ -73,7 +72,6 @@ public class Robot extends LoggedRobot {
 		DriverStation.startDataLog(DataLogManager.getLog());
 		Logger.registerURCL(URCL.startExternal(Constants.manCanIdsToNames()));
 		Logger.start();
-		m_robotContainer = new RobotContainer();
 		DataHandler.startHandler("C:");
 		SmartDashboard.putString("QUEUED TEST", runningTest.toString());
 	}
