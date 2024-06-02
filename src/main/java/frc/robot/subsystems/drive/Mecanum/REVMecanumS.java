@@ -3,13 +3,10 @@ package frc.robot.subsystems.drive.Mecanum;
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -40,9 +37,7 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkFlex;
-import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
@@ -50,10 +45,6 @@ import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.SerialPort.Port;
 import frc.robot.utils.drive.DriveConstants;
-import frc.robot.utils.drive.MotorConstantContainer;
-import edu.wpi.first.math.system.LinearSystemLoop;
-import edu.wpi.first.math.controller.LinearQuadraticRegulator;
-import edu.wpi.first.math.estimator.KalmanFilter;
 
 public class REVMecanumS implements DrivetrainS {
 	//TODO: mecanum sim, pathPlanner support
@@ -66,12 +57,8 @@ public class REVMecanumS implements DrivetrainS {
 	private static AHRS gyro;
 	private static MecanumDriveKinematics driveKinematics;
 	private static MecanumDrivePoseEstimator drivePoseEstimator;
-	private static MotorConstantContainer[] wheelConstantContainers = new MotorConstantContainer[4];
 	private static double maxDriveVelMetersPerSec;
-	private static double[] desiredVelocities = { 0, 0, 0, 0
-	};
-	private static double[] currentPositions = { 0, 0, 0, 0
-	};
+
 	private static Pose2d pose = new Pose2d(0, 0, new Rotation2d(0));
 	Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1)); //for going FROM ZERO PER SECOND
 	Measure<Voltage> holdVoltage = Volts.of(4);
@@ -106,27 +93,15 @@ public class REVMecanumS implements DrivetrainS {
 	 * @param frontRightID                     front right motor id
 	 * @param backLeftID                       back left motor id
 	 * @param backRightID                      back right motor id
-	 * @param frontLeftMotorConstantContainer  constants for the front left motor
-	 * @param frontRightMotorConstantContainer constants for the front right
-	 *                                            motor
-	 * @param backLeftMotorConstantContainer   constants for the back right motor
-	 * @param backRightMotorConstantContainer  constants for the back left motor
 	 * @param gearing                          gearing of the motor (>1 is a reduction)
 	 * @param kWheelDiameterMeters               radius of the wheel in meters
 	 * @param maxDriveVelMetersPerSec          maximum drive speed in meters per
 	 *                                            second
 	 */
 	public REVMecanumS(int frontLeftID, int frontRightID, int backLeftID,
-			int backRightID, int maxAmps,
-			MotorConstantContainer frontLeftMotorConstantContainer,
-			MotorConstantContainer frontRightMotorConstantContainer,
-			MotorConstantContainer backLeftMotorConstantContainer,
-			MotorConstantContainer backRightMotorConstantContainer, double gearing,
+			int backRightID, int maxAmps, double gearing,
 			double kWheelDiameterMeters) {
-		wheelConstantContainers = new MotorConstantContainer[] {
-				frontLeftMotorConstantContainer, frontRightMotorConstantContainer,
-				backLeftMotorConstantContainer, backRightMotorConstantContainer
-		};
+
 		motorIDs = new int[] { frontLeftID, frontRightID, backLeftID, backRightID
 		};
 		for (int i = 0; i < 4; i++) {
@@ -196,15 +171,15 @@ public class REVMecanumS implements DrivetrainS {
 
 	@Override
 	public void periodic() {
-
-		SmartDashboard.putNumber("X", driveKinematics.toChassisSpeeds(getWheelSpeeds()).omegaRadiansPerSecond);
 		drivePoseEstimator.update(getRotation2d(), getWheelPositions());
+		System.err.println(driveKinematics.toChassisSpeeds(getWheelSpeeds()));
 		robotField.setRobotPose(getPose());
 		SmartDashboard.putData(robotField);
 		if (Constants.currentMode == Constants.Mode.SIM) {
 			for (int i=0; i < 4; i++){
 				motorSims[i].setInputVoltage(sparkMotors[i].get()*12);
-				motorSims[i].update(.02);
+				//There is probably a *2 somewhere, which is causing this .01 instead of .02. Do not remove the TF2 Coconut Solution™.
+				motorSims[i].update(.01);
 				wheelRelativeEncoders[i].setPosition(motorSims[i].getAngularPositionRotations());
 			}
 		}
@@ -213,7 +188,7 @@ public class REVMecanumS implements DrivetrainS {
 	@Override
 	public void setChassisSpeeds(ChassisSpeeds speeds) {
 		MecanumDriveWheelSpeeds indSpeeds = driveKinematics.toWheelSpeeds(speeds);
-		System.err.println(speeds);
+		System.err.println(speeds + "\n" + maxDriveVelMetersPerSec);
 		indSpeeds.desaturate(maxDriveVelMetersPerSec);
 		sparkMotors[0].set(indSpeeds.frontLeftMetersPerSecond/maxDriveVelMetersPerSec);
 		sparkMotors[1].set(indSpeeds.frontRightMetersPerSecond/maxDriveVelMetersPerSec);

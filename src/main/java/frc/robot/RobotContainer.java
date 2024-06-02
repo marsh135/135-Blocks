@@ -13,7 +13,6 @@ import frc.robot.subsystems.drive.Mecanum.REVMecanumS;
 import frc.robot.subsystems.drive.REVSwerve.REVSwerveS;
 import frc.robot.subsystems.drive.Tank.TankS;
 import frc.robot.utils.drive.DriveConstants;
-import frc.robot.utils.drive.MotorConstantContainer;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -87,11 +86,7 @@ public class RobotContainer {
 				break;
 			case NEO_SPARK_MAX:
 			case VORTEX_SPARK_FLEX:
-				drivetrainS = new REVMecanumS(10, 11, 12, 13, 80,
-						new MotorConstantContainer(1, 1, 1, 0, 0),
-						new MotorConstantContainer(1, 1, 1, 0, 0),
-						new MotorConstantContainer(1, 1, 1, 0, 0),
-						new MotorConstantContainer(1, 1, 1, 0, 0), 7.5,
+				drivetrainS = new REVMecanumS(10, 11, 12, 13, 80, 7.5,
 						Units.inchesToMeters(6));
 				break;
 			}
