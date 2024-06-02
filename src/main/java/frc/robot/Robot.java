@@ -43,7 +43,6 @@ public class Robot extends LoggedRobot {
 	 */
 	@Override
 	public void robotInit() {
-		m_robotContainer = new RobotContainer();
 		PortForwarder.add(22, "orangepi@photonvision.local", 22);
 		PortForwarder.add(22, "photonvision.local", 22);
 		// Instantiate our RobotContainer.  This will perform all our button bindings, and put our
@@ -72,6 +71,7 @@ public class Robot extends LoggedRobot {
 		DriverStation.startDataLog(DataLogManager.getLog());
 		Logger.registerURCL(URCL.startExternal(Constants.manCanIdsToNames()));
 		Logger.start();
+		m_robotContainer = new RobotContainer();
 		DataHandler.startHandler("C:");
 		SmartDashboard.putString("QUEUED TEST", runningTest.toString());
 	}
