@@ -91,12 +91,12 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	/**
 	 * Creates a new REVSwerve Drivetrain with 8 CANSparkMaxes or 8
 	 * CANSparkFlexes
-	 * 
-	 * @param moduleConstantContainers the moduleConstantContainers for each
-	 *                                    module as an array of {frontLeft,
-	 *                                    frontRight, backLeft, backRight}
 	 * @param maxSpeed                 the max speed of the drivetrain
 	 * @param driveBaseRadius          the radius of the drivetrain
+	 * @param moduleConstantContainers the moduleConstantContainers for each
+	 *                                    module as an array of {frontLeft,
+	 *                                    frontRight, backLeft, backRight} @see REVModuleConstantContainer
+	 * 
 	 */
 	public REVSwerveS(REVModuleConstantContainer[] moduleConstantContainers,
 			double maxSpeed, double driveBaseRadius) {

@@ -10,6 +10,7 @@ import frc.robot.subsystems.drive.CTRESwerve.CTRESwerveS;
 import frc.robot.subsystems.drive.CTRESwerve.Telemetry;
 import frc.robot.subsystems.drive.CTRESwerve.TunerConstants;
 import frc.robot.subsystems.drive.CTRETank.CTRETankS;
+import frc.robot.subsystems.drive.REVMecanum.REVMecanumConstantContainer;
 import frc.robot.subsystems.drive.REVMecanum.REVMecanumS;
 import frc.robot.subsystems.drive.REVSwerve.REVSwerveS;
 
@@ -18,6 +19,8 @@ import frc.robot.utils.drive.DriveConstants;
 
 import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
 import frc.robot.utils.drive.DriveConstants.REVSwerveModuleContainers;
+import frc.robot.utils.drive.DriveConstants.TrainConstants;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -104,8 +107,9 @@ public class RobotContainer {
 				break;
 			case NEO_SPARK_MAX:
 			case VORTEX_SPARK_FLEX:
-				drivetrainS = new REVMecanumS(10, 11, 12, 13, 80, 7.5,
-						Units.inchesToMeters(6));
+			//10, 11, 12, 13, 80, 7.5,
+
+				drivetrainS = new REVMecanumS(new REVMecanumConstantContainer(10, 11, 12, 13, 80, 7.5, TrainConstants.kWheelDiameter, DriveConstants.kModuleTranslations, Units.inchesToMeters(6)));
 				break;
 			}
 			break;

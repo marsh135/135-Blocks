@@ -3,12 +3,12 @@ import frc.robot.utils.MotorConstantContainer;
 import frc.robot.utils.drive.DriveConstants.TrainConstants.ModulePosition;
 import edu.wpi.first.math.geometry.Translation2d;
 public class REVModuleConstantContainer {
-	private  int[] moduleConstantContainerInts;
-	private  boolean[] moduleConstantContainerBools;
-	private  double moduleAbsEncOffset;
-	private  ModulePosition m_modulePosition;
-	private  MotorConstantContainer[] moduleMotorConstants;
-	private  Translation2d moduleTranslation;
+	private int[] moduleConstantContainerInts;
+	private boolean[] moduleConstantContainerBools;
+	private double moduleAbsEncOffset;
+	private ModulePosition m_modulePosition;
+	private MotorConstantContainer[] moduleMotorConstants;
+	private Translation2d moduleTranslation;
 	/**
 	 * Wrapper class designed to hold all the constants for a rev swerve module in the 135-blocks framework
 	 * @param driveMotorID the CAN ID of the drive motor
