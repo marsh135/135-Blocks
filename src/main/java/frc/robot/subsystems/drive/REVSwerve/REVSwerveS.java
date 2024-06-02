@@ -8,6 +8,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.hal.SimDouble;
@@ -38,6 +39,7 @@ import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.REVSwerve.SwerveModules.REVSwerveModule;
 import frc.robot.Robot;
 
+
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import java.util.HashMap;
@@ -46,17 +48,16 @@ import frc.robot.utils.drive.DriveConstants.TrainConstants.ModulePosition;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-/*
- * uncomment for autolock import edu.wpi.first.math.controller.PIDController;
- * import edu.wpi.first.wpilibj2.command.InstantCommand;
- */
+
 
 public class REVSwerveS extends SubsystemBase implements DrivetrainS {
-	private static SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(DriveConstants.kModuleTranslations[0],DriveConstants.kModuleTranslations[1], DriveConstants.kModuleTranslations[2],DriveConstants.kModuleTranslations[3]);
+	private static Translation2d[] kModuleTranslations;
+	private static double kMaxSpeedMetersPerSecond,
+	kDriveBaseRadius;
+	private static REVModuleConstantContainer[] REVModuleConstantContainers = new REVModuleConstantContainer[4];
+	private static SwerveDriveKinematics kDriveKinematics; 
 	private static HashMap<ModulePosition, REVSwerveModule> m_swerveModules = new HashMap<>();
-	static {
-		initalizeModules();
-	}
+
 	private static AHRS gyro = new AHRS(Port.kUSB1);
 	//Whether the robot should be field oriented
 	//Whether the swerve drivetrain should be taken over by our auto drive to note feature (in the Vision branch)
@@ -151,46 +152,14 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 
 	private static void initalizeModules() {
 		m_swerveModules.clear();
-		REVSwerveModule front_left = new REVSwerveModule(
-				DriveConstants.kFrontLeftDrivePort,
-				DriveConstants.kFrontLeftTurningPort,
-				DriveConstants.kFrontLeftDriveReversed,
-				DriveConstants.kFrontLeftTurningReversed,
-				DriveConstants.kFrontLeftAbsEncoderPort,
-				DriveConstants.kFrontLeftAbsEncoderOffsetRad,
-				DriveConstants.kFrontLeftAbsEncoderReversed,
-				DriveConstants.TrainConstants.frontLeftDriveMotorConstantContainer,
-				DriveConstants.TrainConstants.overallTurningMotorConstantContainer);
-		REVSwerveModule front_right = new REVSwerveModule(
-				DriveConstants.kFrontRightDrivePort,
-				DriveConstants.kFrontRightTurningPort,
-				DriveConstants.kFrontRightDriveReversed,
-				DriveConstants.kFrontRightTurningReversed,
-				DriveConstants.kFrontRightAbsEncoderPort,
-				DriveConstants.kFrontRightAbsEncoderOffsetRad,
-				DriveConstants.kFrontRightAbsEncoderReversed,
-				DriveConstants.TrainConstants.frontRightDriveMotorConstantContainer,
-				DriveConstants.TrainConstants.overallTurningMotorConstantContainer);
-		REVSwerveModule back_left = new REVSwerveModule(
-				DriveConstants.kBackLeftDrivePort,
-				DriveConstants.kBackLeftTurningPort,
-				DriveConstants.kBackLeftDriveReversed,
-				DriveConstants.kBackLeftTurningReversed,
-				DriveConstants.kBackLeftAbsEncoderPort,
-				DriveConstants.kBackLeftAbsEncoderOffsetRad,
-				DriveConstants.kBackLeftAbsEncoderReversed,
-				DriveConstants.TrainConstants.backLeftDriveMotorConstantContainer,
-				DriveConstants.TrainConstants.overallTurningMotorConstantContainer);
-		REVSwerveModule back_right = new REVSwerveModule(
-				DriveConstants.kBackRightDrivePort,
-				DriveConstants.kBackRightTurningPort,
-				DriveConstants.kBackRightDriveReversed,
-				DriveConstants.kBackRightTurningReversed,
-				DriveConstants.kBackRightAbsEncoderPort,
-				DriveConstants.kBackRightAbsEncoderOffsetRad,
-				DriveConstants.kBackRightAbsEncoderReversed,
-				DriveConstants.TrainConstants.backRightDriveMotorConstantContainer,
-				DriveConstants.TrainConstants.overallTurningMotorConstantContainer);
+		REVSwerveModule front_left = new REVSwerveModule(REVModuleConstantContainers[0]
+				);
+		REVSwerveModule front_right = new REVSwerveModule(REVModuleConstantContainers[1]
+				);
+		REVSwerveModule back_left = new REVSwerveModule(REVModuleConstantContainers[2]
+				);
+		REVSwerveModule back_right = new REVSwerveModule(REVModuleConstantContainers[3]
+				);
 		for (ModulePosition position : ModulePosition.values()) {
 			if (position.name() == "FRONT_LEFT") {
 				m_swerveModules.put(position, front_left);
@@ -203,8 +172,18 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 			}
 		}
 	}
-
-	public REVSwerveS() {
+	/**
+	 * Creates a new REVSwerve Drivetrain with 8 CANSparkMaxes or 8 CANSparkFlexes
+	 * @param moduleConstantContainers the moduleConstantContainers for each module as an array of {frontLeft, frontRight, backLeft, backRight}
+	 * @param maxSpeed the max speed of the drivetrain
+	 * @param driveBaseRadius the radius of the drivetrain
+	 */
+	public REVSwerveS(REVModuleConstantContainer[] moduleConstantContainers, double maxSpeed, double driveBaseRadius) {
+		REVModuleConstantContainers = moduleConstantContainers;
+		initalizeModules();
+		kDriveKinematics = new SwerveDriveKinematics(new Translation2d[]{moduleConstantContainers[0].getTranslation2d(),moduleConstantContainers[1].getTranslation2d(),moduleConstantContainers[2].getTranslation2d(),moduleConstantContainers[3].getTranslation2d()});
+		kMaxSpeedMetersPerSecond = maxSpeed;
+		kDriveBaseRadius = driveBaseRadius;
 		// Waits for the RIO to finishing booting
 		new Thread(() -> {
 			try {
@@ -224,20 +203,11 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 				new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
 						new PIDConstants(10, 0.0, 0.0), // Translation PID constants // We didn't have the chance to optimize PID constants so there will be some error in autonomous until these values are fixed
 						new PIDConstants(5, 0.0, 0.0), // Rotation PID constants
-						DriveConstants.kMaxSpeedMetersPerSecond, // Max module speed, in m/s
-						DriveConstants.kDriveBaseRadius, // Drive base radius in meters. Distance from robot center to furthest module.
+						kMaxSpeedMetersPerSecond, // Max module speed, in m/s
+						kDriveBaseRadius, // Drive base radius in meters. Distance from robot center to furthest module.
 						new ReplanningConfig(true, true) // Default path replanning config. See the API for the options here
 				), () -> Robot.isRed, this // Reference to this subsystem to set requirements
 		);
-		/*kP = DriveConstants.kP;
-		kI = DriveConstants.kI;
-		kD = DriveConstants.kD;
-		kDistanceMultipler = DriveConstants.kDistanceMultipler;
-		SmartDashboard.putNumber("P Gain AutoLock", kP);
-		SmartDashboard.putNumber("I Gain AutoLock", kI);
-		SmartDashboard.putNumber("D Gain AutoLock", kD);
-		SmartDashboard.putNumber("Distance AutoLock", kDistanceMultipler);
-		autoLockController = new PIDController(kP, kI, kD);*/
 	}
 
 	@Override
@@ -276,41 +246,13 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 		//SmartDashboard.putBoolean("Auto Lock", autoLock);
 		SmartDashboard.putNumber("Robot Heading (getPose)",
 				getPose().getRotation().getDegrees());
-		/* 
-		double p = SmartDashboard.getNumber("P Gain AutoLock",
-				DriveConstants.kP);
-		double i = SmartDashboard.getNumber("I Gain AutoLock",
-				DriveConstants.kI);
-		double d = SmartDashboard.getNumber("D Gain AutoLock",
-				DriveConstants.kD);
-		double distance = SmartDashboard.getNumber("Distance AutoLock",
-				DriveConstants.kDistanceMultipler);
-		if ((p != kP)) {
-			autoLockController.setP(p);
-			kP = p;
-		}
-		if ((i != kI)) {
-			autoLockController.setI(i);
-			kI = i;
-		}
-		if ((d != kD)) {
-			autoLockController.setD(d);
-			kD = d;
-		}
-		if ((distance != kDistanceMultipler)) {
-			kDistanceMultipler = distance;
-		}
-		autoLockController.setP(kP / Math.abs((1 +
-				(DriveConstants.kDistanceMultipler * getPoseMeters().getX()))));
-		// larger the distance, lower the P so not crazy
-		*/
 		m_modulePositions = getModulePositions();
 		// LIST MODULES IN THE SAME EXACT ORDER USED WHEN DECLARING SwerveDriveKinematics
 		m_ChassisSpeeds = kDriveKinematics
 				.toChassisSpeeds(getModuleStates());
 		robotPosition = poseEstimator.update(getRotation2d(), m_modulePositions);
 		for (REVSwerveModule module : m_swerveModules.values()) {
-			var modulePositionFromChassis = DriveConstants.kModuleTranslations[module
+			var modulePositionFromChassis = kModuleTranslations[module
 					.getModuleNumber()].rotateBy(getRotation2d())
 							.plus(getPoseMeters().getTranslation());
 			module.setModulePose(new Pose2d(modulePositionFromChassis,
@@ -318,7 +260,6 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 		}
 		robotField.setRobotPose(getPose());
 		SmartDashboard.putData(robotField);
-		//SmartDashboard.putData(CameraS.getEstimatedField());
 		PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
 			// Do whatever you want with the pose here
 			Logger.recordOutput("Odometry/CurrentPose", pose);
@@ -368,14 +309,6 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 		for (REVSwerveModule module : m_swerveModules.values())
 			module.stop();
 	}
-	/*public void toggleAutoLock() {
-		autoLockController.reset();
-		autoLock = !autoLock;
-	}
-	
-	public InstantCommand toggleAutoLockCommand() {
-		return new InstantCommand(this::toggleAutoLock, this);
-	}*/
 
 	public Pose2d getPoseMeters() {
 		return poseEstimator.getEstimatedPosition();
@@ -386,7 +319,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 		SwerveModuleState[] moduleStates = kDriveKinematics
 				.toSwerveModuleStates(speed);
 		SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates,
-				DriveConstants.kMaxSpeedMetersPerSecond);
+				kMaxSpeedMetersPerSecond);
 		for (REVSwerveModule module : m_swerveModules.values()) {
 			module.setDesiredState(moduleStates[module.getModuleNumber()]);
 		}

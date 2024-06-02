@@ -4,29 +4,31 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import frc.robot.MotorConstantContainer;
+import frc.robot.utils.MotorConstantContainer;
+import frc.robot.utils.drive.DriveConstants.TrainConstants.ModulePosition;
+import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
 
 public class DriveConstants {
 	//
 	public static MotorVendor robotMotorController = MotorVendor.NEO_SPARK_MAX;
-	public static driveTrainType driveType = driveTrainType.MECANUM;
+	public static driveTrainType driveType = driveTrainType.SWERVE;
+
 	/**
 	 * What motors and motorContollers are we using
 	 */
 	public enum MotorVendor {
 		NEO_SPARK_MAX, VORTEX_SPARK_FLEX, CTRE_MOTORS
 	}
+
 	/**
 	 * The drivetrain type
 	 */
 	public enum driveTrainType {
 		SWERVE, TANK, MECANUM
 	}
-	
 
 	public static boolean fieldOriented = true;
 	//135-Blocks was tested on a chassis with all CANSparkMaxes, as well as all Kraken-x60s.
-	
 	public static final double kChassisWidth = Units.inchesToMeters(24.25), // Distance between Left and Right wheels
 			kChassisLength = Units.inchesToMeters(24.25), // Distance betwwen Front and Back wheels
 			kDriveBaseRadius = Units.inchesToMeters(Math.sqrt(
@@ -74,11 +76,12 @@ public class DriveConstants {
 
 	public static class TrainConstants {
 		/**
-	 * Which swerve module it is (SWERVE EXCLUSIVE)
-	 */
-	public enum ModulePosition {
-		FRONT_LEFT, FRONT_RIGHT, BACK_LEFT, BACK_RIGHT
-	}
+		 * Which swerve module it is (SWERVE EXCLUSIVE)
+		 */
+		public enum ModulePosition {
+			FRONT_LEFT, FRONT_RIGHT, BACK_LEFT, BACK_RIGHT
+		}
+
 		public static double kWheelDiameter = Units.inchesToMeters(3.873),
 				kDriveMotorGearRatio = 6.75, kTurningMotorGearRatio = 150 / 7,
 				kDriveEncoderRot2Meter = kDriveMotorGearRatio * Math.PI
@@ -137,5 +140,52 @@ public class DriveConstants {
 				new Pose3d(Units.inchesToMeters(534.5), Units.inchesToMeters(276),
 						Units.inchesToMeters(1), new Rotation3d(0, 0, 0)), // RED TOP
 		};
+	}
+
+	public static interface REVSwerveModuleContainers {
+		public static REVModuleConstantContainer frontLeftConstantContainer = new REVModuleConstantContainer(
+				DriveConstants.kFrontLeftDrivePort,
+				DriveConstants.kFrontLeftTurningPort,
+				DriveConstants.kFrontLeftDriveReversed,
+				DriveConstants.kFrontLeftTurningReversed,
+				DriveConstants.kFrontLeftAbsEncoderOffsetRad,
+				DriveConstants.kFrontLeftAbsEncoderReversed,
+				ModulePosition.FRONT_LEFT,
+				DriveConstants.TrainConstants.frontLeftDriveMotorConstantContainer,
+				DriveConstants.TrainConstants.overallTurningMotorConstantContainer,
+				kModuleTranslations[0]),
+				frontRightConstantContainer = new REVModuleConstantContainer(
+						DriveConstants.kFrontRightDrivePort,
+						DriveConstants.kFrontRightTurningPort,
+						DriveConstants.kFrontRightDriveReversed,
+						DriveConstants.kFrontRightTurningReversed,
+						DriveConstants.kFrontRightAbsEncoderOffsetRad,
+						DriveConstants.kFrontRightAbsEncoderReversed,
+						ModulePosition.FRONT_RIGHT,
+						DriveConstants.TrainConstants.frontRightDriveMotorConstantContainer,
+						DriveConstants.TrainConstants.overallTurningMotorConstantContainer,
+						kModuleTranslations[1]),
+				backLeftConstantContainer = new REVModuleConstantContainer(
+						DriveConstants.kBackLeftDrivePort,
+						DriveConstants.kBackLeftTurningPort,
+						DriveConstants.kBackLeftDriveReversed,
+						DriveConstants.kBackLeftTurningReversed,
+						DriveConstants.kBackLeftAbsEncoderOffsetRad,
+						DriveConstants.kBackLeftAbsEncoderReversed,
+						ModulePosition.BACK_LEFT,
+						DriveConstants.TrainConstants.backLeftDriveMotorConstantContainer,
+						DriveConstants.TrainConstants.overallTurningMotorConstantContainer,
+						kModuleTranslations[2]),
+				backRightConstantContainer = new REVModuleConstantContainer(
+						DriveConstants.kBackRightDrivePort,
+						DriveConstants.kBackRightTurningPort,
+						DriveConstants.kBackRightDriveReversed,
+						DriveConstants.kBackRightTurningReversed,
+						DriveConstants.kBackRightAbsEncoderOffsetRad,
+						DriveConstants.kBackRightAbsEncoderReversed,
+						ModulePosition.BACK_RIGHT,
+						DriveConstants.TrainConstants.backRightDriveMotorConstantContainer,
+						DriveConstants.TrainConstants.overallTurningMotorConstantContainer,
+						kModuleTranslations[3]);
 	}
 }
