@@ -128,7 +128,9 @@ This block contains:
 
 
  ## Wrappers
+ 
  All blocks need two wrappers to be used in order to function:
-  -MotorConstantContainer: A wrapper that holds characterization values (ks, kv, ka, kp, kd) of a particualr motor. Throws an error if incorrect value is input. Used for state-space models and drivetrain simulation.
+ 
+  -`MotorConstantContainer`: A wrapper that holds characterization values (ks, kv, ka, kp, kd) of a particualr motor. Throws an error if incorrect value is input. Used for state-space models and drivetrain simulation.
   -Individual drivetrain constant containers: Constant containers that hold values necessary to create a drivetrain to know which constants are needed
   
