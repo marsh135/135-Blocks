@@ -191,7 +191,8 @@ public class Robot extends LoggedRobot {
 		}
 		if (RobotContainer.manipController.getAButton()) {
 			System.out.println("A");
-			DataHandler.logData("4.5", "modelDistance");
+			DataHandler.logData("log","pressedB");
+			//DataHandler.logData("4.5", "modelDistance");
 		}
 	}
 

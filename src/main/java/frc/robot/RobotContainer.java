@@ -15,12 +15,12 @@ import frc.robot.subsystems.drive.CTRETank.CTRETankS;
 import frc.robot.subsystems.drive.REVMecanum.REVMecanumConstantContainer;
 import frc.robot.subsystems.drive.REVMecanum.REVMecanumS;
 import frc.robot.subsystems.drive.REVSwerve.REVSwerveS;
+import frc.robot.subsystems.drive.REVSwerve.SwerveModules.REVSwerveModuleContainers;
 import frc.robot.subsystems.drive.REVTank.REVTankConstantContainer;
 import frc.robot.subsystems.drive.REVTank.REVTankS;
 import frc.robot.utils.drive.DriveConstants;
 
 import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
-import frc.robot.utils.drive.DriveConstants.REVSwerveModuleContainers;
 import frc.robot.utils.drive.DriveConstants.TrainConstants;
 
 import com.ctre.phoenix6.SignalLogger;
