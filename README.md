@@ -48,7 +48,7 @@ An example branch directory could be:
 ## Usage
 
 Refer to the [PyDriverStation](https://github.com/Team135BlackKnights/PyDriverStation) repository for instructions on how to use the API for the neural network.
-
+ 
 
 ## Blocks
 ## Cameras, Photon-Vision, and Limelight
@@ -125,4 +125,12 @@ This block contains:
 
 - Pre-made single-acting and double-acting solenoids.
 - A (questionable) function to hold pneumatic cylinders at certain positions using a bang-bang PID-like controller.
+
+
+ ## Wrappers
+ 
+ All blocks need two wrappers to be used in order to function:
+ 
+  -`MotorConstantContainer`: A wrapper that holds characterization values (ks, kv, ka, kp, kd) of a particualr motor. Throws an error if incorrect value is input. Used for state-space models and drivetrain simulation.
+  -Individual drivetrain constant containers: Constant containers that hold values necessary to create a drivetrain to know which constants are needed
   
