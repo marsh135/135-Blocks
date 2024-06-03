@@ -13,7 +13,7 @@ import frc.robot.subsystems.drive.CTRETank.CTRETankS;
 import frc.robot.subsystems.drive.REVMecanum.REVMecanumConstantContainer;
 import frc.robot.subsystems.drive.REVMecanum.REVMecanumS;
 import frc.robot.subsystems.drive.REVSwerve.REVSwerveS;
-
+import frc.robot.subsystems.drive.REVTank.REVTankConstantContainer;
 import frc.robot.subsystems.drive.REVTank.REVTankS;
 import frc.robot.utils.drive.DriveConstants;
 
@@ -95,8 +95,8 @@ public class RobotContainer {
 			break;
 			case NEO_SPARK_MAX:
 			case VORTEX_SPARK_FLEX:
-			drivetrainS = new REVTankS(10, 11, 12, 13, false, false, false, false,
-					IdleMode.kBrake, 80, 7.5, Units.inchesToMeters(6));
+			//10, 11, 12, 13, false, false, false, false, IdleMode.kBrake, 80, 7.5, Units.inchesToMeters(6)
+			drivetrainS = new REVTankS(new REVTankConstantContainer(10, 11, 12, 13, false, false, false, false, IdleMode.kBrake, 80, 7.5, Units.inchesToMeters(6), DriveConstants.kChassisLength));
 			break;
 		}
 		break;
