@@ -45,9 +45,9 @@ import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import java.util.function.BooleanSupplier;
 
-public class CTREArmS extends SubsystemBase {
+public class CTRESingleJointedArmS extends SubsystemBase {
 	//initalize motors
-	private TalonFX armMotor = new TalonFX(CTRESpaceConstants.Arm.kMotorID);
+	private TalonFX armMotor = new TalonFX(CTRESpaceConstants.SingleJointedArm.kMotorID);
 	//update cycle time
 	public static double dtSeconds = .02; //20 ms
 	//live tuning, only enabled in Debug.
@@ -84,95 +84,95 @@ private final SysIdRoutine sysIdRoutine =
    );
 	//using sysId
 	/*
-	 * All Arm Statespace uses an N2 at the first position, because we care about velocity AND position of the arm.
+	 * All SingleJointedArm Statespace uses an N2 at the first position, because we care about velocity AND position of the SingleJointedarm.
 	 * First position in the Nat is for Position, second is Velocity.
 	 */
-	//private final LinearSystem<N2,N1,N1> m_armPlant = 
-	//   LinearSystemId.createSingleJointedArmSystem(DCMotor.getKrakenX60Foc(1), SingleJointedArmSim.estimateMOI(Units.inchesToMeters(10), Units.lbsToKilograms(6)), 150);
-	private final LinearSystem<N2, N1, N1> m_armPlant = LinearSystemId
-			.identifyPositionSystem(CTRESpaceConstants.Arm.armValueHolder.getKv(),
-					CTRESpaceConstants.Arm.armValueHolder.getKa());
+	//private final LinearSystem<N2,N1,N1> m_SingleJointedarmPlant = 
+	//   LinearSystemId.createSingleJointedSingleJointedArmSystem(DCMotor.getKrakenX60Foc(1), SingleJointedSingleJointedArmSim.estimateMOI(Units.inchesToMeters(10), Units.lbsToKilograms(6)), 150);
+	private final LinearSystem<N2, N1, N1> m_SingleJointedArmPlant = LinearSystemId
+			.identifyPositionSystem(CTRESpaceConstants.SingleJointedArm.armValueHolder.getKv(),
+					CTRESpaceConstants.SingleJointedArm.armValueHolder.getKa());
 	private final KalmanFilter<N2, N1, N1> m_observer = new KalmanFilter<>(
-			Nat.N2(), Nat.N1(), m_armPlant,
-			VecBuilder.fill(CTRESpaceConstants.Arm.m_KalmanModelPosition,
-					CTRESpaceConstants.Arm.m_KalmanModelVelocity),
-			VecBuilder.fill(CTRESpaceConstants.Arm.m_KalmanEncoder), dtSeconds);
+			Nat.N2(), Nat.N1(), m_SingleJointedArmPlant,
+			VecBuilder.fill(CTRESpaceConstants.Elevator.m_KalmanModelPosition,
+					CTRESpaceConstants.SingleJointedArm.m_KalmanModelVelocity),
+			VecBuilder.fill(CTRESpaceConstants.SingleJointedArm.m_KalmanEncoder), dtSeconds);
 	private final LinearQuadraticRegulator<N2, N1, N1> m_controller = new LinearQuadraticRegulator<>(
-			m_armPlant,
-			VecBuilder.fill(CTRESpaceConstants.Arm.m_LQRQelmsPosition,
-					CTRESpaceConstants.Arm.m_LQRQelmsVelocity),
-			VecBuilder.fill(CTRESpaceConstants.Arm.m_LQRRVolts), dtSeconds);
+			m_SingleJointedArmPlant,
+			VecBuilder.fill(CTRESpaceConstants.SingleJointedArm.m_LQRQelmsPosition,
+					CTRESpaceConstants.SingleJointedArm.m_LQRQelmsVelocity),
+			VecBuilder.fill(CTRESpaceConstants.SingleJointedArm.m_LQRRVolts), dtSeconds);
 	// lower if using notifiers.
 	// The state-space loop combines a controller, observer, feedforward and plant for easy control.
 	private final LinearSystemLoop<N2, N1, N1> m_loop = new LinearSystemLoop<>(
-			m_armPlant, m_controller, m_observer, 12.0, dtSeconds);
+			m_SingleJointedArmPlant, m_controller, m_observer, 12.0, dtSeconds);
 	private static double m_velocity, m_oldPosition, m_position;
 	/**
-	 * Create a TrapezoidProfile, which holds constraints and states of our arm,
-	 * allowing smooth motion control for the arm. Created with constraints based
+	 * Create a TrapezoidProfile, which holds constraints and states of our SingleJointedarm,
+	 * allowing smooth motion control for the SingleJointedarm. Created with constraints based
 	 * on the motor's free speed, but this will vary for every system, try tuning
 	 * these.
 	 */
 	private final TrapezoidProfile m_profile = new TrapezoidProfile(
-			new TrapezoidProfile.Constraints(CTRESpaceConstants.Arm.maxSpeed, //placeholder
-					CTRESpaceConstants.Arm.maxAcceleration));
+			new TrapezoidProfile.Constraints(CTRESpaceConstants.SingleJointedArm.maxSpeed, //placeholder
+					CTRESpaceConstants.SingleJointedArm.maxAcceleration));
 	private TrapezoidProfile.State m_lastProfiledReference = new TrapezoidProfile.State();
-	//set our starting position for the arm
+	//set our starting position for the SingleJointedarm
 	/*
 	 * TrapezoidProfile States are basically just a position in rads with a velocity in Rad/s
 	 * Here, we provide our starting position.
 	 */
 	private static TrapezoidProfile.State goal = new TrapezoidProfile.State(
-			CTRESpaceConstants.Arm.startingPosition, 0);
+			CTRESpaceConstants.SingleJointedArm.startingPosition, 0);
 	/**
-	 * Constructs a single-jointed arm simulation with the given parameters.
+	 * Constructs a single-jointed SingleJointedarm simulation with the given parameters.
 	 * 
-	 * @param armGearing       The gearing ratio of the arm. >1 means reduction.
-	 * @param armLength        The length of the arm (in meters)
-	 * @param minPosition      The minimum allowed position of the arm (in
+	 * @param SingleJointedarmGearing       The gearing ratio of the SingleJointedarm. >1 means reduction.
+	 * @param SingleJointedarmLength        The length of the SingleJointedarm (in meters)
+	 * @param minPosition      The minimum allowed position of the SingleJointedarm (in
 	 *                            radians).
-	 * @param maxPosition      The maximum allowed position of the arm (in
+	 * @param maxPosition      The maximum allowed position of the SingleJointedarm (in
 	 *                            radians).
-	 * @param startingPosition The initial position of the arm (in radians).
+	 * @param startingPosition The initial position of the SingleJointedarm (in radians).
 	 *                            Calculates the position, velocity, and
-	 *                            acceleration of the arm based on the applied
+	 *                            acceleration of the SingleJointedarm based on the applied
 	 *                            motor voltage and time step. Provides current
 	 *                            position, velocity, and voltage outputs for
 	 *                            monitoring and control purposes.
 	 */
-	private SingleJointedArmSim simArm = new SingleJointedArmSim(m_armPlant,
-			DCMotor.getKrakenX60Foc(1), CTRESpaceConstants.Arm.armGearing,
-			CTRESpaceConstants.Arm.armLength,
-			CTRESpaceConstants.Arm.startingPosition,
-			CTRESpaceConstants.Arm.maxPosition, false,
-			CTRESpaceConstants.Arm.startingPosition);
-	// Create a Mechanism2d display of an Arm with a fixed ArmTower and moving Arm.
+	private SingleJointedArmSim simArm = new SingleJointedArmSim(m_SingleJointedArmPlant,
+			DCMotor.getKrakenX60Foc(1), CTRESpaceConstants.SingleJointedArm.armGearing,
+			CTRESpaceConstants.SingleJointedArm.armLength,
+			CTRESpaceConstants.SingleJointedArm.startingPosition,
+			CTRESpaceConstants.SingleJointedArm.maxPosition, false,
+			CTRESpaceConstants.SingleJointedArm.startingPosition);
+	// Create a Mechanism2d display of an SingleJointedArm with a fixed SingleJointedArmTower and moving SingleJointedArm.
 	/*
-	 * Mechanism2d is really just an output of the robot, used to debug arm movement in simulation.
-	 * the Mech2d itself is the "canvas" the mechanisms (like arms) are put on. It will always be your chassis.
+	 * Mechanism2d is really just an output of the robot, used to debug SingleJointedarm movement in simulation.
+	 * the Mech2d itself is the "canvas" the mechanisms (like SingleJointedarms) are put on. It will always be your chassis.
 	 * A Root2d is the point at which the mechanism rotates, or starts at. Elevators are different, but here we
 	 * simply get it's X and Y according to the robot, then make that the root.
 	 * Finally, we make the Ligament itself, and append this to the root point, basically putting an object at
 	 * an origin point RELATIVE to the robot
-	 * It takes the current position of the arm, and is the only thing updated constantly because of that
+	 * It takes the current position of the SingleJointedarm, and is the only thing updated constantly because of that
 	 */
 	private final Mechanism2d m_mech2d = new Mechanism2d(
 			DriveConstants.kChassisWidth, DriveConstants.kChassisLength);
-	private final MechanismRoot2d m_armPivot = m_mech2d.getRoot("ArmPivot",
-			CTRESpaceConstants.Arm.physicalX, CTRESpaceConstants.Arm.physicalY);
-	private final MechanismLigament2d m_arm = m_armPivot.append(
-			new MechanismLigament2d("Arm", CTRESpaceConstants.Arm.armLength,
+	private final MechanismRoot2d m_SingleJointedarmPivot = m_mech2d.getRoot("SingleJointedArmPivot",
+			CTRESpaceConstants.SingleJointedArm.physicalX, CTRESpaceConstants.SingleJointedArm.physicalY);
+	private final MechanismLigament2d m_SingleJointedarm = m_SingleJointedarmPivot.append(
+			new MechanismLigament2d("SingleJointedArm", CTRESpaceConstants.SingleJointedArm.armLength,
 					Units.radiansToDegrees(m_lastProfiledReference.position), 1, new Color8Bit(Color.kYellow)));
 
-	public CTREArmS() {
-		//initalize arm motor
+	public CTRESingleJointedArmS() {
+		//initalize SingleJointedarm motor
 		var talonFXConfigurator = armMotor.getConfigurator();
 		TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 		motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-		motorConfig.CurrentLimits.StatorCurrentLimit = CTRESpaceConstants.Arm.statorCurrentLimit;
-		motorConfig.MotorOutput.Inverted = CTRESpaceConstants.Arm.inverted;
-		motorConfig.MotorOutput.NeutralMode = CTRESpaceConstants.Arm.mode;
-		motorConfig.Feedback.SensorToMechanismRatio = CTRESpaceConstants.Arm.armGearing;
+		motorConfig.CurrentLimits.StatorCurrentLimit = CTRESpaceConstants.SingleJointedArm.statorCurrentLimit;
+		motorConfig.MotorOutput.Inverted = CTRESpaceConstants.SingleJointedArm.inverted;
+		motorConfig.MotorOutput.NeutralMode = CTRESpaceConstants.SingleJointedArm.mode;
+		motorConfig.Feedback.SensorToMechanismRatio = CTRESpaceConstants.SingleJointedArm.armGearing;
 		talonFXConfigurator.apply(motorConfig);
 	
 		//reset our position (getDistance just because it's zero usually, and IF the robot died on field and rebooted, it'd still be accurate.)
@@ -201,7 +201,7 @@ private final SysIdRoutine sysIdRoutine =
 	public double getVelocity() { return m_velocity; }
 
 	/**
-	 * Given a direction, is the arm currently within LIMITS
+	 * Given a direction, is the SingleJointedarm currently within LIMITS
 	 * 
 	 * @param direction travelling
 	 * @return true or false SUPPLIER
@@ -209,14 +209,14 @@ private final SysIdRoutine sysIdRoutine =
 	public BooleanSupplier withinLimits(SysIdRoutine.Direction direction) {
 		BooleanSupplier returnVal;
 		if (direction.toString() == "kReverse") {
-			if (getDistance() < CTRESpaceConstants.Arm.startingPosition) {
+			if (getDistance() < CTRESpaceConstants.SingleJointedArm.startingPosition) {
 				returnVal = () -> false;
 				return returnVal;
 			}
 		}
-		//second set of conditionals (below) checks to see if the arm is within the hard limits, and stops it if it is
+		//second set of conditionals (below) checks to see if the SingleJointedarm is within the hard limits, and stops it if it is
 		if (direction.toString() == "kForward") {
-			if (getDistance() > CTRESpaceConstants.Arm.maxPosition) {
+			if (getDistance() > CTRESpaceConstants.SingleJointedArm.maxPosition) {
 				returnVal = () -> false;
 				return returnVal;
 			}
@@ -231,18 +231,18 @@ private final SysIdRoutine sysIdRoutine =
 	 */
 	public TrapezoidProfile.State startingState() {
 		return new TrapezoidProfile.State(
-				CTRESpaceConstants.Arm.startingPosition, 0);
+				CTRESpaceConstants.SingleJointedArm.startingPosition, 0);
 	}
 
 	/*
 	 * Create a state that is the MAXIMUM position
 	 */
 	public TrapezoidProfile.State maxState() {
-		return new TrapezoidProfile.State(CTRESpaceConstants.Arm.maxPosition, 0);
+		return new TrapezoidProfile.State(CTRESpaceConstants.SingleJointedArm.maxPosition, 0);
 	}
 
 	/**
-	 * For cleanliness of code, create State is in ArmS, called everywhere else.
+	 * For cleanliness of code, create State is in SingleJointedArmS, called everywhere else.
 	 * 
 	 * @param angle IN RADS
 	 * @return state, pass through to deployIntake.
@@ -291,7 +291,7 @@ private final SysIdRoutine sysIdRoutine =
 		default:
 			m_position = simArm.getAngleRads();
 			m_velocity = simArm.getVelocityRadPerSec();
-			m_arm.setAngle(m_position);
+			m_SingleJointedarm.setAngle(m_position);
 			break;
 		}
 	}
@@ -324,18 +324,18 @@ private final SysIdRoutine sysIdRoutine =
 			break;
 		}
 		//Push the mechanism to AdvantageScope
-		Logger.recordOutput("ArmMechanism", m_mech2d);
-		//calcualate arm pose
-		var armPose = new Pose3d(CTRESpaceConstants.Arm.simX, CTRESpaceConstants.Arm.simY, CTRESpaceConstants.Arm.simZ,
+		Logger.recordOutput("SingleJointedArmMechanism", m_mech2d);
+		//calcualate SingleJointedarm pose
+		var SingleJointedarmPose = new Pose3d(CTRESpaceConstants.SingleJointedArm.simX, CTRESpaceConstants.SingleJointedArm.simY, CTRESpaceConstants.SingleJointedArm.simZ,
 				new Rotation3d(0, -m_position, 0.0));
-		Logger.recordOutput("Mechanism3d/Arm/", armPose);
+		Logger.recordOutput("Mechanism3d/SingleJointedArm/", SingleJointedarmPose);
 		if (CTRESpaceConstants.debug) {
-			SmartDashboard.putNumber("Angle Error ARM", Units.radiansToDegrees(getError()));
-			SmartDashboard.putNumber("SETPOINT ARM",
+			SmartDashboard.putNumber("Angle Error SingleJointedARM", Units.radiansToDegrees(getError()));
+			SmartDashboard.putNumber("SETPOINT SingleJointedARM",
 					Units.radiansToDegrees(goal.position));
-			SmartDashboard.putNumber("CURRENT WANTED ARM",
+			SmartDashboard.putNumber("CURRENT WANTED SingleJointedARM",
 					Units.radiansToDegrees(m_lastProfiledReference.position));
-			SmartDashboard.putNumber("pos ARM",
+			SmartDashboard.putNumber("pos SingleJointedARM",
 					Units.radiansToDegrees(m_position));
 		}
 	}

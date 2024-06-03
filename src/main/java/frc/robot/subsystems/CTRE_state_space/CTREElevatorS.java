@@ -137,10 +137,10 @@ private final SysIdRoutine sysIdRoutine =
 		var talonFXConfigurator = elevatorMotor.getConfigurator();
 		TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 		motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-		motorConfig.CurrentLimits.StatorCurrentLimit = CTRESpaceConstants.Arm.statorCurrentLimit;
-		motorConfig.MotorOutput.Inverted = CTRESpaceConstants.Arm.inverted;
-		motorConfig.MotorOutput.NeutralMode = CTRESpaceConstants.Arm.mode;
-		motorConfig.Feedback.SensorToMechanismRatio = CTRESpaceConstants.Arm.armGearing;
+		motorConfig.CurrentLimits.StatorCurrentLimit = CTRESpaceConstants.Elevator.statorCurrentLimit;
+		motorConfig.MotorOutput.Inverted = CTRESpaceConstants.Elevator.inverted;
+		motorConfig.MotorOutput.NeutralMode = CTRESpaceConstants.Elevator.mode;
+		motorConfig.Feedback.SensorToMechanismRatio = CTRESpaceConstants.Elevator.elevatorGearing;
 		talonFXConfigurator.apply(motorConfig);
 		//reset our position
 		m_loop.reset(VecBuilder.fill(getDistance(),getVelocity()));

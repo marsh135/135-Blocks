@@ -3,13 +3,13 @@ package frc.robot.commands.CTRE_state_space;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.CTRE_state_space.CTREArmS;
+import frc.robot.subsystems.CTRE_state_space.CTRESingleJointedArmS;
 import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
 
-public class CTREArmC extends Command {
-	private final CTREArmS armS;
+public class CTRESingleJointedArmC extends Command {
+	private final CTRESingleJointedArmS armS;
 
-	public CTREArmC(CTREArmS armS) {
+	public CTRESingleJointedArmC(CTRESingleJointedArmS armS) {
 		this.armS = armS;
 		addRequirements(armS);
 	}
@@ -21,7 +21,7 @@ public class CTREArmC extends Command {
 
 	@Override
 	public void execute() {
-		double armSpeed = 0, armPos = CTREArmS.getSetpoint();
+		double armSpeed = 0, armPos = CTRESingleJointedArmS.getSetpoint();
 		double desSpeed = -RobotContainer.manipController.getRightY();
 		if (CTRESpaceConstants.Controls.go45Button.getAsBoolean()) {
 			armPos = Units.degreesToRadians(45);
@@ -29,15 +29,15 @@ public class CTREArmC extends Command {
 			armPos = Units.degreesToRadians(0);
 		}
 		if (Math.abs(desSpeed) > CTRESpaceConstants.Controls.kArmDeadband) {
-			if (armPos >= CTRESpaceConstants.Arm.maxPosition && desSpeed > 0) {
-				armPos = CTRESpaceConstants.Arm.maxPosition;
-			} else if (armPos <= CTRESpaceConstants.Arm.startingPosition
+			if (armPos >= CTRESpaceConstants.SingleJointedArm.maxPosition && desSpeed > 0) {
+				armPos = CTRESpaceConstants.SingleJointedArm.maxPosition;
+			} else if (armPos <= CTRESpaceConstants.SingleJointedArm.startingPosition
 					&& desSpeed < 0) {
-				armPos = CTRESpaceConstants.Arm.startingPosition;
+				armPos = CTRESpaceConstants.SingleJointedArm.startingPosition;
 			} else {
-				armSpeed = desSpeed * CTRESpaceConstants.Arm.maxAcceleration
+				armSpeed = desSpeed * CTRESpaceConstants.SingleJointedArm.maxAcceleration
 						* CTRESpaceConstants.Controls.armMoveSpeed;
-				armPos += (armSpeed * CTREArmS.dtSeconds); //add to our current position 20 MS of that accel
+				armPos += (armSpeed * CTRESingleJointedArmS.dtSeconds); //add to our current position 20 MS of that accel
 			}
 		}
 		if (armSpeed == 0) {
