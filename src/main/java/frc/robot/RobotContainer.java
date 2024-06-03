@@ -18,6 +18,7 @@ import frc.robot.subsystems.drive.REVSwerve.REVSwerveS;
 import frc.robot.subsystems.drive.REVSwerve.SwerveModules.REVSwerveModuleContainers;
 import frc.robot.subsystems.drive.REVTank.REVTankConstantContainer;
 import frc.robot.subsystems.drive.REVTank.REVTankS;
+import frc.robot.subsystems.solenoid.SolenoidS;
 import frc.robot.utils.drive.DriveConstants;
 
 import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
