@@ -88,7 +88,8 @@ public class REVMecanumS implements DrivetrainS {
 
 	/**
 	 * Constructs a REV Mecanum Drivetrain. 
-	 * @param container the container that holds the constants @see REVMecanumSConstantContainer
+	 * @param container the container that holds the constants 
+	 * @see REVMecanumConstantContainer
 	 */
 	public REVMecanumS(REVMecanumConstantContainer container) {
 

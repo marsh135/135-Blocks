@@ -7,7 +7,22 @@ public class REVTankConstantContainer {
 	private int[] REVTankInts;
 	private double[] REVTankDoubles;
 	private boolean[] REVTankBooleans;
-
+	/**
+	 * Container that holds the constants to create a REV Tank drivetrain
+	 * @param leftMasterID The id of the primary left motor
+	 * @param leftFollowerID The id of the secondary left motor
+	 * @param rightMasterID The id of the primary right motor
+	 * @param rightFollowerID The id of the secondary right motor
+	 * @param leftMasterInverted Whether the left primary motor is inverted
+	 * @param leftFollowerInverted Whether the left secondary motor is inverted
+	 * @param rightMasterInverted Whether the right primary motor is inverted
+	 * @param rightFollowerInverted Whether the right secondary motor is inverted
+	 * @param idleMode The idle mode of the motor
+	 * @param maxAmps The maximum amps to be supplied to the motor
+	 * @param gearing The gearing of the motor (>1 means a reduction)
+	 * @param kWheelDiameterMeters The diameter of the wheel in meters 
+	 * @param kChassisLength The length of the chassis (in meters)
+	 */
 	public REVTankConstantContainer(int leftMasterID, int leftFollowerID,
 			int rightMasterID, int rightFollowerID, boolean leftMasterInverted,
 			boolean leftFollowerInverted, boolean rightMasterInverted,

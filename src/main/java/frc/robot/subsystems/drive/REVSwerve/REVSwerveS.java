@@ -95,7 +95,8 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	 * @param driveBaseRadius          the radius of the drivetrain
 	 * @param moduleConstantContainers the moduleConstantContainers for each
 	 *                                    module as an array of {frontLeft,
-	 *                                    frontRight, backLeft, backRight} @see REVModuleConstantContainer
+	 *                                    frontRight, backLeft, backRight} 
+	 * @see REVModuleConstantContainer
 	 * 
 	 */
 	public REVSwerveS(REVModuleConstantContainer[] moduleConstantContainers,
