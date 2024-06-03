@@ -47,6 +47,7 @@ public class CTRESpaceConstants {
 		public static InvertedValue inverted = InvertedValue.CounterClockwise_Positive;
 		public static NeutralModeValue mode = NeutralModeValue.Brake;
 		public static int kArmMotorID = 30, kElbowMotorID = 31;
+		public static double[] macroTopLeft = {-1.5,1,0}, macroTopRight = {1.5,1,1}; //0 = false, 1 = true for the last value 
 		public static double armStatorCurrentLimit = 250, armGearing = 70,
 				elbowStatorCurrentLimit = 250, elbowGearing = 45,
 				armLength = Units.inchesToMeters(46.25),

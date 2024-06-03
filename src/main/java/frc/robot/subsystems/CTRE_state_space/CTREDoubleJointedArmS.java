@@ -24,7 +24,7 @@ public class CTREDoubleJointedArmS extends SubsystemBase{
 	
 	private final VoltageOut m_voltReq = new VoltageOut(0.0);
 	private final Mechanism2d m_mech2d = new Mechanism2d(
-			Units.inchesToMeters(180), Units.inchesToMeters(180));
+			CTRESpaceConstants.DoubleJointedArm.simSizeWidth,CTRESpaceConstants.DoubleJointedArm.simSizeLength);
 	private final MechanismRoot2d m_DoubleJointedarmPivot = m_mech2d.getRoot("DoubleJointedArmPivot",
 			CTRESpaceConstants.DoubleJointedArm.physicalX, CTRESpaceConstants.DoubleJointedArm.physicalY);
 	private final MechanismLigament2d m_DoubleJointedArm = m_DoubleJointedarmPivot.append(

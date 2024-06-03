@@ -17,9 +17,9 @@ public class CTREDoubleJointedArmC extends Command {
 	@Override
 	public void execute() {
 		if (CTRESpaceConstants.Controls.gotoUpRight.getAsBoolean()){
-			DataHandler.logData("point2","doubleJointSetpoint");
+			DataHandler.logData(CTRESpaceConstants.DoubleJointedArm.macroTopRight,"doubleJointSetpoint");
 		}else if (CTRESpaceConstants.Controls.gotoUpLeft.getAsBoolean()){
-			DataHandler.logData("point1","doubleJointSetpoint");
+			DataHandler.logData(CTRESpaceConstants.DoubleJointedArm.macroTopLeft,"doubleJointSetpoint");
 		}
 		System.out.println(voltages);
 		if (voltages != null){
