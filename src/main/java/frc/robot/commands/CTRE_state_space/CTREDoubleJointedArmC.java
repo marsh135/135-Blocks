@@ -17,11 +17,10 @@ public class CTREDoubleJointedArmC extends Command {
 	@Override
 	public void execute() {
 		if (CTRESpaceConstants.Controls.gotoUpRight.getAsBoolean()){
-			DataHandler.logData(CTRESpaceConstants.DoubleJointedArm.macroTopRight,"doubleJointSetpoint");
+			DataHandler.logData(CTRESpaceConstants.DoubleJointedArm.macroTopRight,"DoubleJointSetpoint");
 		}else if (CTRESpaceConstants.Controls.gotoUpLeft.getAsBoolean()){
-			DataHandler.logData(CTRESpaceConstants.DoubleJointedArm.macroTopLeft,"doubleJointSetpoint");
+			DataHandler.logData(CTRESpaceConstants.DoubleJointedArm.macroTopLeft,"DoubleJointSetpoint");
 		}
-		System.out.println(voltages);
 		if (voltages != null){
 			armS.setMotors(voltages.get(0), voltages.get(1));
 		}
