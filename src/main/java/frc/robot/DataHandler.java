@@ -506,7 +506,7 @@ public class DataHandler {
 			if (receivedData.has("voltages")) {
 				String rawData = receivedData.get("voltages").getAsString();
 				List<Double> voltages = makeDoubleList(rawData);
-				System.out.println(voltages);
+				//System.out.println(voltages);
 				CTREDoubleJointedArmC.voltages = voltages.subList(0, 2);
 				CTREDoubleJointedArmS.expectedArmRads = voltages.get(2);
 				CTREDoubleJointedArmS.expectedElbowRads = voltages.get(3);
