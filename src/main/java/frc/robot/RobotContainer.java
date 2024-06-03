@@ -24,7 +24,6 @@ import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
 import frc.robot.utils.drive.DriveConstants.TrainConstants;
 
 import com.ctre.phoenix6.SignalLogger;
-import frc.robot.utils.drive.MotorConstantContainer;
 import frc.robot.commands.leds.LEDGifC;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.revrobotics.CANSparkBase.IdleMode;
