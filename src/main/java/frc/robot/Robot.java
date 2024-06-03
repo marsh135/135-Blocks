@@ -189,6 +189,10 @@ public class Robot extends LoggedRobot {
 			//System.err.println("UP");
 			DataHandler.logData("[4.5,25.4]", "shouldUpdateModel");
 		}
+		if (RobotContainer.manipController.getAButton()) {
+			System.out.println("A");
+			DataHandler.logData("4.5", "modelDistance");
+		}
 	}
 
 	@Override
