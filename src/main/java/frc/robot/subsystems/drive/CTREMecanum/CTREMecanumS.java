@@ -19,6 +19,8 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.MecanumDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
@@ -51,6 +53,7 @@ public class CTREMecanumS implements DrivetrainS {
 	private static double kWheelDiameter, kDriveBaseRadius, kMaxSpeedMetersPerSecond, kDriveMotorGearRatio;
 	private static double dtSeconds = 0.02;
 	MecanumDriveKinematics kinematics;
+	private Twist2d fieldVelocity = new Twist2d();
 	MecanumDriveWheelSpeeds wheelSpeeds = new MecanumDriveWheelSpeeds(0, 0, 0,
 			0);
 	private static DCMotorSim[] motorSimModels;
@@ -226,6 +229,12 @@ public class CTREMecanumS implements DrivetrainS {
 						motorSimModels[i].getAngularVelocityRadPerSec()));
 			}
 		}
+		ChassisSpeeds m_ChassisSpeeds = kinematics.toChassisSpeeds(wheelSpeeds);
+		Translation2d linearFieldVelocity = new Translation2d(
+			m_ChassisSpeeds.vxMetersPerSecond,
+				m_ChassisSpeeds.vyMetersPerSecond).rotateBy(getRotation2d());
+		fieldVelocity = new Twist2d(linearFieldVelocity.getX(),
+				linearFieldVelocity.getY(), m_ChassisSpeeds.omegaRadiansPerSecond);
 	}
 
 	@Override
@@ -288,4 +297,16 @@ public class CTREMecanumS implements DrivetrainS {
 	public boolean isConnected() {
 		return pigeon.getFault_Hardware().getValue();
 	}
+	@Override
+	public double getYawVelocity() { 
+		if (Constants.currentMode == Constants.Mode.REAL){
+			return Units.degreesToRadians(pigeon.getAngularVelocityZWorld().getValueAsDouble());
+		}
+		return getChassisSpeeds().omegaRadiansPerSecond;
+	}
+
+	@Override
+	public Twist2d getFieldVelocity() { 
+	return fieldVelocity;
+ }
 }

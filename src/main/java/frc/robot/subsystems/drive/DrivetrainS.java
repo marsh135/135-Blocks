@@ -3,6 +3,7 @@ package frc.robot.subsystems.drive;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -57,6 +58,13 @@ public interface DrivetrainS extends Subsystem {
 	 * @return the angle of the drivetrain as a rotation2d (in degrees)
 	 */
 	Rotation2d getRotation2d();
+  /** Returns the current yaw velocity (Z rotation) in radians per second. */
+  public double getYawVelocity();
+    /**
+   * Returns the measured X, Y, and theta field velocities in meters per sec. The components of the
+   * twist are velocities and NOT changes in position.
+   */
+  public Twist2d getFieldVelocity();
 
 	/**
 	 * SysID Command for drivetrain characterization

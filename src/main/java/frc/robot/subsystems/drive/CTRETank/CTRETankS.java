@@ -4,6 +4,8 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
@@ -57,6 +59,7 @@ public class CTRETankS implements DrivetrainS {
 	private DifferentialDriveKinematics kinematics;
 	private Position<DifferentialDriveWheelPositions> wheelPositions;
 	private DifferentialDriveWheelSpeeds wheelSpeeds;
+	private Twist2d fieldVelocity = new Twist2d();
 	Field2d robotField = new Field2d();
 	public Pose2d pose;
 	private final VelocityDutyCycle m_motorRequest = new VelocityDutyCycle(0);
@@ -213,6 +216,12 @@ public class CTRETankS implements DrivetrainS {
 					poses.toArray(new Pose2d[poses.size()]));
 			robotField.getObject("path").setPoses(poses);
 		});
+		ChassisSpeeds m_ChassisSpeeds = kinematics.toChassisSpeeds(wheelSpeeds);
+		Translation2d linearFieldVelocity = new Translation2d(
+			m_ChassisSpeeds.vxMetersPerSecond,
+				m_ChassisSpeeds.vyMetersPerSecond).rotateBy(getRotation2d());
+		fieldVelocity = new Twist2d(linearFieldVelocity.getX(),
+				linearFieldVelocity.getY(), m_ChassisSpeeds.omegaRadiansPerSecond);
 	}
 
 	@Override
@@ -297,4 +306,17 @@ public class CTRETankS implements DrivetrainS {
 	public boolean isConnected() {
 		return pigeon.getFault_Hardware().getValue();
 	}
+
+@Override
+	public double getYawVelocity() { 
+		if (Constants.currentMode == Constants.Mode.REAL){
+			return Units.degreesToRadians(pigeon.getAngularVelocityZWorld().getValueAsDouble());
+		}
+		return getChassisSpeeds().omegaRadiansPerSecond;
+	}
+
+	@Override
+	public Twist2d getFieldVelocity() { 
+	return fieldVelocity;
+ }
 }

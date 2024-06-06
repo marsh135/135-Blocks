@@ -17,9 +17,11 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -108,8 +110,7 @@ public class CTRESwerveS extends SwerveDrivetrain implements DrivetrainS {
 						.orElse(Alliance.Blue) == Alliance.Red, // Assume the path needs to be flipped for Red vs Blue, this is normally the case
 				this); // Subsystem for requirements
 		super.registerTelemetry(logger::telemeterize);
-	}
-
+			}
 	@Override
 	public void applyRequest() {
 		drive.withVelocityX(-RobotContainer.driveController.getLeftY()
@@ -271,4 +272,22 @@ public class CTRESwerveS extends SwerveDrivetrain implements DrivetrainS {
 	public boolean isConnected() {
 		return super.getPigeon2().getFault_Hardware().getValue();
 	}
+
+@Override
+	public double getYawVelocity() { 
+		if (Constants.currentMode == Constants.Mode.REAL){
+			return Units.degreesToRadians(super.getPigeon2().getAngularVelocityZWorld().getValueAsDouble());
+		}
+		return super.getState().speeds.omegaRadiansPerSecond;
+	}
+
+	@Override
+	public Twist2d getFieldVelocity() { 
+		ChassisSpeeds m_ChassisSpeeds = super.getState().speeds;
+		Translation2d linearFieldVelocity = new Translation2d(
+			m_ChassisSpeeds.vxMetersPerSecond,
+				m_ChassisSpeeds.vyMetersPerSecond).rotateBy(getRotation2d());
+		return new Twist2d(linearFieldVelocity.getX(),
+				linearFieldVelocity.getY(), m_ChassisSpeeds.omegaRadiansPerSecond);
+ }
 }

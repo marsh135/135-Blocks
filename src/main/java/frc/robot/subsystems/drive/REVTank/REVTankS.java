@@ -18,6 +18,8 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
@@ -50,6 +52,7 @@ public class REVTankS implements DrivetrainS {
 	private static AHRS gyro = new AHRS();
 	private DifferentialDrivePoseEstimator poseEstimator;
 	private static CANSparkBase[] motors = new CANSparkBase[4];
+	private Twist2d fieldVelocity = new Twist2d();
 	private static RelativeEncoder[] encoders = new RelativeEncoder[4];
 	private static final DCMotorSim[] motorSimModels = new DCMotorSim[4];
 	private DifferentialDriveKinematics differentialDriveKinematics;
@@ -215,6 +218,12 @@ public class REVTankS implements DrivetrainS {
 					poses.toArray(new Pose2d[poses.size()]));
 			robotField.getObject("path").setPoses(poses);
 		});
+		ChassisSpeeds m_ChassisSpeeds = differentialDriveKinematics.toChassisSpeeds(wheelSpeeds);
+		Translation2d linearFieldVelocity = new Translation2d(
+			m_ChassisSpeeds.vxMetersPerSecond,
+				m_ChassisSpeeds.vyMetersPerSecond).rotateBy(getRotation2d());
+		fieldVelocity = new Twist2d(linearFieldVelocity.getX(),
+				linearFieldVelocity.getY(), m_ChassisSpeeds.omegaRadiansPerSecond);
 	}
 
 	private DifferentialDriveWheelSpeeds getWheelSpeeds() {
@@ -286,4 +295,14 @@ public class REVTankS implements DrivetrainS {
 	public boolean isConnected(){
 		return gyro.isConnected();
 	}
+	@Override
+	public double getYawVelocity() {
+		return fieldVelocity.dtheta; //?
+	}
+
+	@Override
+	public Twist2d getFieldVelocity() {
+		return fieldVelocity;
+	 }
+	
 }
