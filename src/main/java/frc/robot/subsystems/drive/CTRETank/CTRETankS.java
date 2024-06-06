@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.drive.DrivetrainS;
-
+import frc.robot.utils.drive.Position;
 
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -55,7 +55,7 @@ public class CTRETankS implements DrivetrainS {
 	private static DCMotorSim[] motorSimModels;
 	private double dtSeconds = 0.02;
 	private DifferentialDriveKinematics kinematics;
-	private DifferentialDriveWheelPositions wheelPositions;
+	private Position<DifferentialDriveWheelPositions> wheelPositions;
 	private DifferentialDriveWheelSpeeds wheelSpeeds;
 	Field2d robotField = new Field2d();
 	public Pose2d pose;
@@ -176,9 +176,9 @@ public class CTRETankS implements DrivetrainS {
 
 	@Override
 	public void periodic() {
-		wheelPositions = getWheelPositions();
+		wheelPositions = getPositionsWithTimestamp(getWheelPositions());
 		wheelSpeeds = getWheelSpeeds();
-		poseEstimator.update(getRotation2d(), getWheelPositions());
+		poseEstimator.updateWithTime(wheelPositions.getTimestamp(),getRotation2d(), wheelPositions.getPositions());
 		pose = poseEstimator.getEstimatedPosition();
 		if (Constants.currentMode == Constants.Mode.SIM) {
 			for (int i = 0; i < motors.length; i++) {
@@ -245,7 +245,7 @@ public class CTRETankS implements DrivetrainS {
 
 	@Override
 	public void resetPose(Pose2d pose) {
-		poseEstimator.resetPosition(getRotation2d(), wheelPositions, pose);
+		poseEstimator.resetPosition(getRotation2d(), wheelPositions.getPositions(), pose);
 	}
 
 	@Override

@@ -40,6 +40,8 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.utils.drive.DriveConstants;
+import frc.robot.utils.drive.Position;
+
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -51,7 +53,7 @@ public class REVTankS implements DrivetrainS {
 	private static RelativeEncoder[] encoders = new RelativeEncoder[4];
 	private static final DCMotorSim[] motorSimModels = new DCMotorSim[4];
 	private DifferentialDriveKinematics differentialDriveKinematics;
-	private DifferentialDriveWheelPositions wheelPositions;
+	private Position<DifferentialDriveWheelPositions> wheelPositions;
 	private DifferentialDriveWheelSpeeds wheelSpeeds;
 	Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1)); //for going FROM ZERO PER SECOND
 	Measure<Voltage> holdVoltage = Volts.of(4);
@@ -183,7 +185,7 @@ public class REVTankS implements DrivetrainS {
 	}
 	@Override
 	public void periodic() {
-		wheelPositions = getWheelPositions();
+		wheelPositions = getPositionsWithTimestamp(getWheelPositions());
 		wheelSpeeds = getWheelSpeeds();
 		pose = poseEstimator.update(getRotation2d(), getWheelPositions());
 		if (Constants.currentMode == Constants.Mode.SIM) {
@@ -232,7 +234,7 @@ public class REVTankS implements DrivetrainS {
 
 	@Override
 	public void resetPose(Pose2d pose) {
-		poseEstimator.resetPosition(getRotation2d(), wheelPositions, pose);
+		poseEstimator.resetPosition(getRotation2d(), wheelPositions.getPositions(), pose);
 	}
 
 	@Override
@@ -278,7 +280,7 @@ public class REVTankS implements DrivetrainS {
 	@Override
 	public void zeroHeading() {
 		gyro.reset();
-		poseEstimator.resetPosition(getRotation2d(), wheelPositions, pose);
+		poseEstimator.resetPosition(getRotation2d(), wheelPositions.getPositions(), pose);
 	}
 	@Override
 	public boolean isConnected(){

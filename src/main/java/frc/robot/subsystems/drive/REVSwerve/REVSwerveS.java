@@ -44,6 +44,7 @@ import static edu.wpi.first.units.Units.Volts;
 import java.util.HashMap;
 
 import frc.robot.utils.drive.DriveConstants.TrainConstants.ModulePosition;
+import frc.robot.utils.drive.Position;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -64,7 +65,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	static Vector<N3> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
 	static Vector<N3> visionStdDevs = VecBuilder.fill(1, 1, 1);
 	public SwerveDrivePoseEstimator poseEstimator;
-	SwerveModulePosition[] m_modulePositions;
+	Position<SwerveModulePosition[]> m_modulePositions;
 	private double m_simYaw;
 	Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1)); //for going FROM ZERO PER SECOND
 	Measure<Voltage> holdVoltage = Volts.of(8);
@@ -111,10 +112,11 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 		};
 		kDriveKinematics = new SwerveDriveKinematics(kModuleTranslations);
 		m_ChassisSpeeds = kDriveKinematics.toChassisSpeeds(getModuleStates());
+		m_modulePositions = getPositionsWithTimestamp(getModulePositions());
 		poseEstimator = new SwerveDrivePoseEstimator(kDriveKinematics,
-				getRotation2d(), getModulePositions(), robotPosition, stateStdDevs,
+				getRotation2d(), m_modulePositions.getPositions(), robotPosition, stateStdDevs,
 				visionStdDevs);
-		m_modulePositions = getModulePositions();
+
 		kMaxSpeedMetersPerSecond = maxSpeed;
 		kDriveBaseRadius = driveBaseRadius;
 		// Waits for the RIO to finishing booting
@@ -225,7 +227,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	public void zeroHeading() {
 		debounce = 0;
 		gyro.reset();
-		poseEstimator.resetPosition(gyro.getRotation2d(), m_modulePositions,
+		poseEstimator.resetPosition(gyro.getRotation2d(), m_modulePositions.getPositions(),
 				robotPosition);
 	}
 
@@ -257,10 +259,11 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 		//SmartDashboard.putBoolean("Auto Lock", autoLock);
 		SmartDashboard.putNumber("Robot Heading (getPose)",
 				getPose().getRotation().getDegrees());
-		m_modulePositions = getModulePositions();
+		m_modulePositions = getPositionsWithTimestamp(getModulePositions());
+
 		// LIST MODULES IN THE SAME EXACT ORDER USED WHEN DECLARING SwerveDriveKinematics
 		m_ChassisSpeeds = kDriveKinematics.toChassisSpeeds(getModuleStates());
-		robotPosition = poseEstimator.update(getRotation2d(), m_modulePositions);
+		robotPosition = poseEstimator.updateWithTime(m_modulePositions.getTimestamp(),getRotation2d(), m_modulePositions.getPositions());
 		for (REVSwerveModule module : m_swerveModules.values()) {
 			var modulePositionFromChassis = kModuleTranslations[module
 					.getModuleNumber()].rotateBy(getRotation2d())
@@ -305,7 +308,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	@Override
 	public void resetPose(Pose2d pose) {
 		// LIST MODULES IN THE SAME EXACT ORDER USED WHEN DECLARING SwerveDriveKinematics
-		poseEstimator.resetPosition(getRotation2d(), m_modulePositions, pose);
+		poseEstimator.resetPosition(getRotation2d(), m_modulePositions.getPositions(), pose);
 	}
 
 	@Override

@@ -31,6 +31,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -56,6 +57,7 @@ public class CTREMecanumS implements DrivetrainS {
 	private final VelocityDutyCycle m_motorRequest = new VelocityDutyCycle(0);
 	MecanumDriveWheelPositions wheelPositions = new MecanumDriveWheelPositions(0,
 			0, 0, 0);
+	private static double updateTime;
 	public Pose2d pose;
 	Field2d robotField = new Field2d();
 	MecanumDrivePoseEstimator poseEstimator;
@@ -96,6 +98,7 @@ public class CTREMecanumS implements DrivetrainS {
 			container.getTranslation2ds()[1],
 			container.getTranslation2ds()[2],
 			container.getTranslation2ds()[3]);
+		updateTime = Timer.getFPGATimestamp();
 		poseEstimator = new MecanumDrivePoseEstimator(
 			kinematics, getRotation2d(), wheelPositions, pose);	
 			motorSimModels  = new DCMotorSim[]{
@@ -144,6 +147,7 @@ public class CTREMecanumS implements DrivetrainS {
 
 	public void updateWheelPositions() {
 		double[] wheelPos = getWheelPositionMeters();
+		updateTime = Timer.getFPGATimestamp();
 		wheelPositions.frontLeftMeters = wheelPos[0];
 		wheelPositions.frontRightMeters = wheelPos[1];
 		wheelPositions.rearLeftMeters = wheelPos[2];
@@ -153,7 +157,7 @@ public class CTREMecanumS implements DrivetrainS {
 	private double metersPerSecondToRotationsPerSecond(
 			double velocityMetersPerSecond) {
 		double wheelCircumferenceMeters = Math.PI
-				* kWheelDiameter;
+				* kWheelDiameter/2; //may be buggin?
 		return (velocityMetersPerSecond / wheelCircumferenceMeters)
 				* kDriveMotorGearRatio;
 	}
@@ -181,13 +185,14 @@ public class CTREMecanumS implements DrivetrainS {
 			// Set the motor control to the converted velocity
 			motors[i].setControl(
 					m_motorRequest.withVelocity(velocityRotationsPerSecond));
+			System.err.println(motors[i].get());
 		}
 	}
 
 	@Override
 	public void periodic() {
 		updateWheelPositions();
-		poseEstimator.update(getRotation2d(), wheelPositions);
+		poseEstimator.updateWithTime(updateTime,getRotation2d(), wheelPositions);
 		pose = poseEstimator.getEstimatedPosition();
 		robotField.setRobotPose(getPose());
 		SmartDashboard.putData(robotField);

@@ -46,6 +46,7 @@ import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.SerialPort.Port;
 import frc.robot.utils.drive.DriveConstants;
+import frc.robot.utils.drive.Position;
 public class REVMecanumS implements DrivetrainS {
 	private static CANSparkBase[] sparkMotors = new CANSparkBase[4];
 	private static int[] motorIDs;
@@ -56,6 +57,7 @@ public class REVMecanumS implements DrivetrainS {
 	private static AHRS gyro;
 	private static MecanumDriveKinematics driveKinematics;
 	private static MecanumDrivePoseEstimator drivePoseEstimator;
+	private static Position<MecanumDriveWheelPositions> wheelPositions;
 	private static double maxDriveVelMetersPerSec, kDriveBaseRadius;
 	private static Translation2d[] kModuleTranslations;
 	private static double gearing, kWheelDiameterMeters;
@@ -132,8 +134,9 @@ public class REVMecanumS implements DrivetrainS {
 				kModuleTranslations[1],
 				kModuleTranslations[2],
 				kModuleTranslations[3]);
+		wheelPositions = getPositionsWithTimestamp(getWheelPositions());
 		drivePoseEstimator = new MecanumDrivePoseEstimator(driveKinematics,
-				getRotation2d(), getWheelPositions(), pose);
+				getRotation2d(), wheelPositions.getPositions(), pose);
 		AutoBuilder.configureHolonomic(this::getPose, // Robot pose supplier
 				this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
 				this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
@@ -166,7 +169,8 @@ public class REVMecanumS implements DrivetrainS {
 
 	@Override
 	public void periodic() {
-		drivePoseEstimator.update(getRotation2d(), getWheelPositions());
+		wheelPositions = getPositionsWithTimestamp(getWheelPositions());
+		drivePoseEstimator.updateWithTime(wheelPositions.getTimestamp(),getRotation2d(), wheelPositions.getPositions());
 		robotField.setRobotPose(getPose());
 		SmartDashboard.putData(robotField);
 		if (Constants.currentMode == Constants.Mode.SIM) {
