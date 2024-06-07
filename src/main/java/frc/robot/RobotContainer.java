@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
+import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.SwerveC;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumConstantContainer;
@@ -27,6 +28,8 @@ import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.revrobotics.CANSparkBase.IdleMode;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
 import java.util.function.BooleanSupplier;
@@ -51,6 +54,7 @@ public class RobotContainer {
 	public static XboxController manipController = new XboxController(1);
 	public static XboxController testingController = new XboxController(5);
 	static JoystickButton xButtonDrive = new JoystickButton(driveController, 3),
+			yButtonDrive = new JoystickButton(driveController, 4),
 			aButtonTest = new JoystickButton(testingController, 1),
 			bButtonTest = new JoystickButton(testingController, 2),
 			xButtonTest = new JoystickButton(testingController, 3),
@@ -152,6 +156,7 @@ public class RobotContainer {
 	private void configureBindings() {
 		xButtonDrive.and(isDriving())
 				.onTrue(new InstantCommand(() -> drivetrainS.zeroHeading()));
+		yButtonDrive.and(isDriving()).onTrue(new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90)))));
 		//swerve DRIVE tests
 		rightBumperTest.onTrue(new InstantCommand(() -> {
 			if (currentTest == Constants.SysIdRoutines.values().length - 1) {

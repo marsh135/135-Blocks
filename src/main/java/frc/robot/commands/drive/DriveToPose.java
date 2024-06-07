@@ -28,7 +28,7 @@ public class DriveToPose extends Command {
   private final boolean slowMode;
   private final Supplier<Pose2d> poseSupplier;
 
-  private boolean running = false;
+  private boolean running = true;
   private final ProfiledPIDController driveController =
       new ProfiledPIDController(
           0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(0.0, 0.0), .02);
@@ -66,12 +66,12 @@ public class DriveToPose extends Command {
   private static final LoggableTunedNumber ffMinRadius =
       new LoggableTunedNumber("DriveToPose/FFMinRadius");
   private static final LoggableTunedNumber ffMaxRadius =
-      new LoggableTunedNumber("DriveToPose/FFMinRadius");
+      new LoggableTunedNumber("DriveToPose/FFMaxRadius");
 
   static {
         driveKp.initDefault(2.0);
         driveKd.initDefault(0.0);
-        thetaKp.initDefault(5.0);
+        thetaKp.initDefault(12.16);
         thetaKd.initDefault(0.0);
         driveMaxVelocity.initDefault(Units.inchesToMeters(150.0));
         driveMaxVelocitySlow.initDefault(Units.inchesToMeters(50.0));
@@ -79,10 +79,10 @@ public class DriveToPose extends Command {
         thetaMaxVelocity.initDefault(Units.degreesToRadians(360.0));
         thetaMaxVelocitySlow.initDefault(Units.degreesToRadians(90.0));
         thetaMaxAcceleration.initDefault(Units.degreesToRadians(720.0));
-        driveTolerance.initDefault(0.01);
-        driveToleranceSlow.initDefault(0.06);
-        thetaTolerance.initDefault(Units.degreesToRadians(1.0));
-        thetaToleranceSlow.initDefault(Units.degreesToRadians(3.0));
+        driveTolerance.initDefault(0.06);
+        driveToleranceSlow.initDefault(0.03);
+        thetaTolerance.initDefault(Units.degreesToRadians(3.0));
+        thetaToleranceSlow.initDefault(Units.degreesToRadians(1.0));
         ffMinRadius.initDefault(0.2);
         ffMaxRadius.initDefault(0.8);
   }
@@ -114,6 +114,7 @@ public class DriveToPose extends Command {
   @Override
   public void initialize() {
     // Reset all controllers
+	 running = true;
     var currentPose = drive.getPose();
     driveController.reset(
         currentPose.getTranslation().getDistance(poseSupplier.get().getTranslation()),
@@ -128,14 +129,13 @@ public class DriveToPose extends Command {
                         .getAngle()
                         .unaryMinus())
                 .getX()));
-    thetaController.reset(currentPose.getRotation().getRadians(), drive.getYawVelocity());
+    thetaController.reset(currentPose.getRotation().getRadians(), drive.getRotation2d().getRadians());
     lastSetpointTranslation = drive.getPose().getTranslation();
+	 drive.changeDeadband(.01);
   }
 
   @Override
   public void execute() {
-    running = true;
-
     // Update from tunable numbers
     if (driveMaxVelocity.hasChanged(hashCode())
         || driveMaxVelocitySlow.hasChanged(hashCode())
@@ -150,7 +150,8 @@ public class DriveToPose extends Command {
         || driveKp.hasChanged(hashCode())
         || driveKd.hasChanged(hashCode())
         || thetaKp.hasChanged(hashCode())
-        || thetaKd.hasChanged(hashCode())) {
+        || thetaKd.hasChanged(hashCode())
+		  ) {
       driveController.setP(driveKp.get());
       driveController.setD(driveKd.get());
       driveController.setConstraints(
@@ -214,7 +215,6 @@ public class DriveToPose extends Command {
     drive.setChassisSpeeds(
         ChassisSpeeds.fromFieldRelativeSpeeds(
             driveVelocity.getX(), driveVelocity.getY(), thetaVelocity, currentPose.getRotation()));
-
     // Log data
     Logger.recordOutput("DriveToPose/DistanceMeasured", currentDistance);
     Logger
@@ -229,30 +229,29 @@ public class DriveToPose extends Command {
             new Pose2d(
                 lastSetpointTranslation, new Rotation2d(thetaController.getSetpoint().position)));
     Logger.recordOutput("Odometry/DriveToPoseGoal", targetPose);
+	 if (atGoal()) running = false;
+
   }
 
   @Override
   public void end(boolean interrupted) {
-    running = false;
+	 drive.changeDeadband(.1);
     drive.stopModules();
-    Logger.recordOutput("Odometry/DriveToPoseSetpoint", new double[] {});
-    Logger.recordOutput("Odometry/DriveToPoseGoal", new double[] {});
+
   }
 
   /** Checks if the robot is stopped at the final pose. */
   public boolean atGoal() {
-    return running && driveController.atGoal() && thetaController.atGoal();
+    return driveController.atGoal() && thetaController.atGoal();
   }
 
   /** Checks if the robot pose is within the allowed drive and theta tolerances. */
   public boolean withinTolerance(double driveTolerance, Rotation2d thetaTolerance) {
-    return running
-        && Math.abs(driveErrorAbs) < driveTolerance
+    return Math.abs(driveErrorAbs) < driveTolerance
         && Math.abs(thetaErrorAbs) < thetaTolerance.getRadians();
   }
 
-  /** Returns whether the command is actively running. */
-  public boolean isRunning() {
-    return running;
-  }
+  @Override
+  public boolean isFinished() { 
+	return !running; }
 }
