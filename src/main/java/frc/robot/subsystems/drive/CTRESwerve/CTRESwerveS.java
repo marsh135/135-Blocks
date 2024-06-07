@@ -132,7 +132,7 @@ public class CTRESwerveS extends SwerveDrivetrain implements DrivetrainS {
     builder.addDoubleProperty("Back Right Angle", () -> moduleStates[3].angle.getRadians(), null);
     builder.addDoubleProperty("Back Right Velocity", () -> moduleStates[3].speedMetersPerSecond, null);
 
-    builder.addDoubleProperty("Robot Angle", () -> getPose().getRotation().plus(new Rotation2d(Units.degreesToRadians(-90))).getRadians(), null);
+    builder.addDoubleProperty("Robot Angle", () -> getPose().getRotation().plus(new Rotation2d(Units.degreesToRadians(-90))).getRadians(), null); //🥥🥥🥥
   }
 });
 	}
@@ -207,7 +207,17 @@ public class CTRESwerveS extends SwerveDrivetrain implements DrivetrainS {
 		});
 		m_simNotifier.startPeriodic(kSimLoopPeriod);
 	}
-
+	@Override
+	public double getCurrent() {
+		return Math.abs(super.Modules[0].getDriveMotor().getStatorCurrent().getValueAsDouble())
+				+ Math.abs(super.Modules[0].getSteerMotor().getStatorCurrent().getValueAsDouble())
+				+ Math.abs(super.Modules[1].getDriveMotor().getStatorCurrent().getValueAsDouble())
+				+ Math.abs(super.Modules[1].getSteerMotor().getStatorCurrent().getValueAsDouble())
+				+ Math.abs(super.Modules[2].getDriveMotor().getStatorCurrent().getValueAsDouble())
+				+ Math.abs(super.Modules[2].getSteerMotor().getStatorCurrent().getValueAsDouble())
+				+ Math.abs(super.Modules[3].getDriveMotor().getStatorCurrent().getValueAsDouble())
+				+ Math.abs(super.Modules[3].getSteerMotor().getStatorCurrent().getValueAsDouble());
+	}
 	/**
 	 * Stops the modules
 	 */
