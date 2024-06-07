@@ -55,10 +55,10 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
-	private final CTREFlywheelS flywheelS = new CTREFlywheelS();
-	private final CTRESingleJointedArmS armS = new CTRESingleJointedArmS();
-	private final CTREDoubleJointedArmS doubleJointedArmS = new CTREDoubleJointedArmS();
-	private final CTREElevatorS elevatorS = new CTREElevatorS();
+	public static final CTREFlywheelS flywheelS = new CTREFlywheelS();
+	public static final CTRESingleJointedArmS armS = new CTRESingleJointedArmS();
+	public static final CTREDoubleJointedArmS doubleJointedArmS = new CTREDoubleJointedArmS();
+	public static final CTREElevatorS elevatorS = new CTREElevatorS();
 	private Telemetry logger = null;
 	private final SendableChooser<Command> autoChooser;
 	static PowerDistribution PDH = new PowerDistribution(Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
@@ -209,7 +209,10 @@ public class RobotContainer {
 	 */
 	public static double[] getCurrentDraw(){
 		return new double[]{
-			drivetrainS.getCurrent()
+			drivetrainS.getCurrent(),
+			elevatorS.getDrawnCurrentAmps(),
+			flywheelS.getDrawnCurrentAmps(),
+			armS.getDrawnCurrentAmps(),
 		};
 	}
 	public static BooleanSupplier isDriving() {

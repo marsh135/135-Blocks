@@ -513,6 +513,11 @@ public class DataHandler {
 
 				//System.out.println(voltages);
 			}
+			if (receivedData.has("gotEncoder")){
+				if (responseData.containsKey("DoubleJointedEncoders")){
+					responseData.remove("DoubleJointedEncoders");
+				}
+			}
 			responseData.put("status", "running");
 			// Prepare response JSON
 			String jsonResponse = gson.toJson(responseData);

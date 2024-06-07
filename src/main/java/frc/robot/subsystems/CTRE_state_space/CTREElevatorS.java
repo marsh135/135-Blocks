@@ -25,6 +25,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -54,7 +55,7 @@ public class CTREElevatorS extends SubsystemBase {
 	Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1)); // for going FROM ZERO PER SECOND, this is 1v per 1sec.
 	Measure<Voltage> holdVoltage = Volts.of(4); //what voltage should I hold during Quas test?
 	Measure<Time> timeout = Seconds.of(10); //how many total seconds should I run the test, unless interrupted?
-	private final VoltageOut m_voltReq = new VoltageOut(0.0);
+	private final VoltageOut m_voltReq = new VoltageOut(0.0).withEnableFOC(true);
 
 	/**
 	 * We cannot have multiple sysIdRoutines run on the same robot-cycle. If we
@@ -292,15 +293,15 @@ private final SysIdRoutine sysIdRoutine =
 		m_loop.predict(dtSeconds);
 		// Send the new calculated voltage to the motors.
 		double nextVoltage = m_loop.getU(0);
-		switch (Constants.currentMode) {
-		case REAL:
-			elevatorMotor.setVoltage(nextVoltage);
-			break;
-		default:
-			simElevator.setInputVoltage(nextVoltage);
+		elevatorMotor.setVoltage(nextVoltage);
+		if (Constants.currentMode == Constants.Mode.SIM){
+			var talonFXSim = elevatorMotor.getSimState();
+			talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+			double motorVoltage = talonFXSim.getMotorVoltage();
+			simElevator.setInputVoltage(motorVoltage);
 			simElevator.update(dtSeconds);
-			break;
 		}
+
 		//Push the mechanism to AdvantageScope
 		Logger.recordOutput("ElevatorMechanism", m_mech2d);
 		//calcualate arm pose
@@ -308,4 +309,8 @@ private final SysIdRoutine sysIdRoutine =
 				new Rotation3d(0, 0, 0.0));
 		Logger.recordOutput("Mechanism3d/Elevator/", elevatorPose);
 	}
+	//Sim Only
+	public double getDrawnCurrentAmps() {
+			return Math.abs(simElevator.getCurrentDrawAmps());
+		}
 }

@@ -18,6 +18,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -43,7 +44,7 @@ public class CTREFlywheelS extends SubsystemBase {
 	Measure<Time> timeout = Seconds.of(10); //how many total seconds should I run the test, unless interrupted?
 	//update cycle time
 	private static double dtSeconds = .02; //20 ms
-	private final VoltageOut m_voltReq = new VoltageOut(0.0);
+	private final VoltageOut m_voltReq = new VoltageOut(0.0).withEnableFOC(true);
 
 	/**
 	 * We cannot have multiple sysIdRoutines run on the same robot-cycle. If we
@@ -142,9 +143,10 @@ private final SysIdRoutine sysIdRoutine =
 		m_loop.correct(getEncoderRotations());
 		m_loop.predict(dtSeconds);
 		nextVoltage = m_loop.getU(0); //get model's control output
-		flywheel.setControl(m_voltReq.withOutput(nextVoltage).withEnableFOC(true));
+		flywheel.setControl(m_voltReq.withOutput(nextVoltage));
 		if (Constants.currentMode == Constants.Mode.SIM){
 			var talonFXSim = flywheel.getSimState();
+			talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 			double motorVoltage = talonFXSim.getMotorVoltage();
 			motorSim.setInputVoltage(motorVoltage);
 			motorSim.update(dtSeconds);
@@ -181,6 +183,6 @@ private final SysIdRoutine sysIdRoutine =
 
 	//Sim Only
 	public double getDrawnCurrentAmps() {
-		return motorSim.getCurrentDrawAmps();
+		return Math.abs(motorSim.getCurrentDrawAmps());
 	}
 }

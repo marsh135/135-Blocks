@@ -339,4 +339,8 @@ private final SysIdRoutine sysIdRoutine =
 					Units.radiansToDegrees(m_position));
 		}
 	}
+	//Sim Only
+	public double getDrawnCurrentAmps() {
+			return Math.abs(simArm.getCurrentDrawAmps());
+	}
 }
