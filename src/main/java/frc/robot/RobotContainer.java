@@ -29,7 +29,9 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
+
 import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -49,10 +51,12 @@ public class RobotContainer {
 	public static SolenoidS solenoidS = new SolenoidS();
 	private Telemetry logger = null;
 	private final SendableChooser<Command> autoChooser;
+	static PowerDistribution PDH = new PowerDistribution(Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
 	public static XboxController driveController = new XboxController(0);
 	public static XboxController manipController = new XboxController(1);
 	public static XboxController testingController = new XboxController(5);
 	static JoystickButton xButtonDrive = new JoystickButton(driveController, 3),
+			//yButtonDrive = new JoystickButton(driveController, 4), //used for DriveToPose
 			aButtonTest = new JoystickButton(testingController, 1),
 			bButtonTest = new JoystickButton(testingController, 2),
 			xButtonTest = new JoystickButton(testingController, 3),
@@ -148,12 +152,15 @@ public class RobotContainer {
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData("Auto Chooser", autoChooser);
 		// Configure the trigger bindings
+		
 		configureBindings();
 	}
 
 	private void configureBindings() {
 		xButtonDrive.and(isDriving())
 				.onTrue(new InstantCommand(() -> drivetrainS.zeroHeading()));
+		//Example Drive To 2024 Amp Pose, Bind to what you need.
+		//yButtonDrive.and(isDriving()).onTrue(new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90)))));
 		//swerve DRIVE tests
 		rightBumperTest.onTrue(new InstantCommand(() -> {
 			if (currentTest == Constants.SysIdRoutines.values().length - 1) {
@@ -182,7 +189,15 @@ public class RobotContainer {
 		// An example command will be run in autonomous
 		return autoChooser.getSelected();
 	}
-
+	/**
+	 * For SIMULATION ONLY, return the estimated current draw of the robot.
+	 * @return Current in amps.
+	 */
+	public static double[] getCurrentDraw(){
+		return new double[]{
+			drivetrainS.getCurrent()
+		};
+	}
 	public static BooleanSupplier isDriving() {
 		BooleanSupplier returnVal;
 		if (aButtonTest.getAsBoolean() || bButtonTest.getAsBoolean()
