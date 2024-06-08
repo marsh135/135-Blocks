@@ -3,10 +3,18 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
+import frc.robot.commands.CTRE_state_space.CTRESingleJointedArmC;
+import frc.robot.commands.CTRE_state_space.CTREDoubleJointedArmC;
+import frc.robot.commands.CTRE_state_space.CTREElevatorC;
+import frc.robot.commands.CTRE_state_space.CTREFlywheelC;
 import frc.robot.commands.drive.SwerveC;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumConstantContainer;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumS;
+import frc.robot.subsystems.CTRE_state_space.CTRESingleJointedArmS;
+import frc.robot.subsystems.CTRE_state_space.CTREDoubleJointedArmS;
+import frc.robot.subsystems.CTRE_state_space.CTREElevatorS;
+import frc.robot.subsystems.CTRE_state_space.CTREFlywheelS;
 import frc.robot.subsystems.drive.CTRESwerve.CTRESwerveS;
 import frc.robot.subsystems.drive.CTRESwerve.Telemetry;
 import frc.robot.subsystems.drive.CTRESwerve.TunerConstants;
@@ -47,6 +55,10 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
+	public static final CTREFlywheelS flywheelS = new CTREFlywheelS();
+	public static final CTRESingleJointedArmS armS = new CTRESingleJointedArmS();
+	public static final CTREDoubleJointedArmS doubleJointedArmS = new CTREDoubleJointedArmS();
+	public static final CTREElevatorS elevatorS = new CTREElevatorS();
 	private Telemetry logger = null;
 	private final SendableChooser<Command> autoChooser;
 	static PowerDistribution PDH = new PowerDistribution(
@@ -148,6 +160,10 @@ public class RobotContainer {
 					"Unknown implementation type, please check DriveConstants.java!");
 		}
 		drivetrainS.setDefaultCommand(new SwerveC(drivetrainS));
+		flywheelS.setDefaultCommand(new CTREFlywheelC(flywheelS));
+		armS.setDefaultCommand(new CTRESingleJointedArmC(armS));
+		elevatorS.setDefaultCommand(new CTREElevatorC(elevatorS));
+		doubleJointedArmS.setDefaultCommand(new CTREDoubleJointedArmC(doubleJointedArmS));
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData("Auto Chooser", autoChooser);
 		// Configure the trigger bindings
@@ -208,8 +224,13 @@ public class RobotContainer {
 	 * 
 	 * @return Current in amps.
 	 */
-	public static double[] getCurrentDraw() {
-		return new double[] { Math.min(drivetrainS.getCurrent(), 200)
+	public static double[] getCurrentDraw(){
+		return new double[]{
+			Math.min(drivetrainS.getCurrent(),200),
+			elevatorS.getDrawnCurrentAmps(),
+			flywheelS.getDrawnCurrentAmps(),
+			armS.getDrawnCurrentAmps(),
+
 		};
 	}
 }
