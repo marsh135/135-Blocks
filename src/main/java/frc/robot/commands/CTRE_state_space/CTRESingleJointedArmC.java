@@ -2,13 +2,14 @@ package frc.robot.commands.CTRE_state_space;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.CTRE_state_space.CTRESingleJointedArmS;
 import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
 
 public class CTRESingleJointedArmC extends Command {
 	private final CTRESingleJointedArmS armS;
-
+	double armPos = 0;
 	public CTRESingleJointedArmC(CTRESingleJointedArmS armS) {
 		this.armS = armS;
 		addRequirements(armS);
@@ -16,18 +17,22 @@ public class CTRESingleJointedArmC extends Command {
 
 	@Override
 	public void initialize() {
-		//do nothing, armS handles startup.
+		CTRESpaceConstants.Controls.go45Button
+						.onTrue(new InstantCommand(() -> {
+							armPos = Units.degreesToRadians(45);
+							armS.deployIntake(armS.createState(armPos));
+						}));
+		CTRESpaceConstants.Controls.go0Button
+						.onTrue(new InstantCommand(() -> {
+							armPos = Units.degreesToRadians(0);
+							armS.deployIntake(armS.createState(armPos));
+						}));
 	}
 
 	@Override
 	public void execute() {
-		double armSpeed = 0, armPos = CTRESingleJointedArmS.getSetpoint();
-		double desSpeed = -RobotContainer.manipController.getRightY();
-		if (CTRESpaceConstants.Controls.go45Button.getAsBoolean()) {
-			armPos = Units.degreesToRadians(45);
-		} else if (CTRESpaceConstants.Controls.go0Button.getAsBoolean()) {
-			armPos = Units.degreesToRadians(0);
-		}
+		double armSpeed = 0, desSpeed = -RobotContainer.manipController.getRightY();
+		armPos = CTRESingleJointedArmS.getSetpoint();
 		if (Math.abs(desSpeed) > CTRESpaceConstants.Controls.kArmDeadband) {
 			if (armPos >= CTRESpaceConstants.SingleJointedArm.maxPosition && desSpeed > 0) {
 				armPos = CTRESpaceConstants.SingleJointedArm.maxPosition;
