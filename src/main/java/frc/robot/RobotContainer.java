@@ -25,6 +25,7 @@ import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
 import frc.robot.utils.drive.DriveConstants.TrainConstants;
 
 import com.ctre.phoenix6.SignalLogger;
+import frc.robot.commands.leds.LEDGifC;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.revrobotics.CANSparkBase.IdleMode;
 
@@ -32,6 +33,10 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 
+
+import java.util.function.BooleanSupplier;
+import frc.robot.subsystems.leds.LEDs;
+import frc.robot.utils.leds.LEDConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -48,6 +53,7 @@ public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
 	private Telemetry logger = null;
+	private final LEDs leds = new LEDs();
 	private final SendableChooser<Command> autoChooser;
 	static PowerDistribution PDH = new PowerDistribution(
 			Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
@@ -148,6 +154,7 @@ public class RobotContainer {
 					"Unknown implementation type, please check DriveConstants.java!");
 		}
 		drivetrainS.setDefaultCommand(new SwerveC(drivetrainS));
+		leds.setDefaultCommand(new LEDGifC(leds, LEDConstants.imageList, 20,2).ignoringDisable(true));
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData("Auto Chooser", autoChooser);
 		// Configure the trigger bindings
