@@ -18,6 +18,7 @@ import frc.robot.subsystems.drive.REVSwerve.REVSwerveS;
 import frc.robot.subsystems.drive.REVSwerve.SwerveModules.REVSwerveModuleContainers;
 import frc.robot.subsystems.drive.REVTank.REVTankConstantContainer;
 import frc.robot.subsystems.drive.REVTank.REVTankS;
+import frc.robot.utils.RunTest;
 import frc.robot.utils.drive.DriveConstants;
 
 import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
@@ -37,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 /**
  * THIS CODE REQUIRES WPILIB 2024 AND PATHPLANNER 2024 IT WILL NOT WORK
@@ -153,8 +155,18 @@ public class RobotContainer {
 	}
 
 	private void configureBindings() {
-		xButtonDrive.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest).negate())
+		xButtonDrive
+				.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest)
+						.negate())
 				.onTrue(new InstantCommand(() -> drivetrainS.zeroHeading()));
+		yButtonTest.whileTrue(
+				new RunTest(SysIdRoutine.Direction.kForward, true, drivetrainS));
+		bButtonTest.whileTrue(
+				new RunTest(SysIdRoutine.Direction.kReverse, true, drivetrainS));
+		aButtonTest.whileTrue(
+				new RunTest(SysIdRoutine.Direction.kForward, false, drivetrainS));
+		xButtonTest.whileTrue(
+				new RunTest(SysIdRoutine.Direction.kReverse, false, drivetrainS));
 		//Example Drive To 2024 Amp Pose, Bind to what you need.
 		//yButtonDrive.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest).negate()).whileTrue(new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90)))));
 		//swerve DRIVE tests
@@ -162,6 +174,7 @@ public class RobotContainer {
 		rightBumperTest.onTrue(new InstantCommand(() -> {
 			if (currentTest == Constants.SysIdRoutines.values().length - 1) {
 				currentTest = 0;
+				System.out.println("looping");
 			} else {
 				currentTest++;
 			}
@@ -170,6 +183,7 @@ public class RobotContainer {
 		leftBumperTest.onTrue(new InstantCommand(() -> {
 			if (currentTest == 0) {
 				currentTest = Constants.SysIdRoutines.values().length - 1;
+				System.out.println("looping");
 			} else {
 				currentTest--;
 			}
@@ -194,9 +208,8 @@ public class RobotContainer {
 	 * 
 	 * @return Current in amps.
 	 */
-	public static double[] getCurrentDraw(){
-		return new double[]{
-			Math.min(drivetrainS.getCurrent(),200)
+	public static double[] getCurrentDraw() {
+		return new double[] { Math.min(drivetrainS.getCurrent(), 200)
 		};
 	}
 }
