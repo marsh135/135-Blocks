@@ -31,8 +31,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 
-import java.util.function.BooleanSupplier;
-
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -49,7 +47,8 @@ public class RobotContainer {
 	public static DrivetrainS drivetrainS;
 	private Telemetry logger = null;
 	private final SendableChooser<Command> autoChooser;
-	static PowerDistribution PDH = new PowerDistribution(Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
+	static PowerDistribution PDH = new PowerDistribution(
+			Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
 	public static XboxController driveController = new XboxController(0);
 	public static XboxController manipController = new XboxController(1);
 	public static XboxController testingController = new XboxController(5);
@@ -150,15 +149,14 @@ public class RobotContainer {
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData("Auto Chooser", autoChooser);
 		// Configure the trigger bindings
-		
 		configureBindings();
 	}
 
 	private void configureBindings() {
-		xButtonDrive.and(isDriving())
+		xButtonDrive.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest).negate())
 				.onTrue(new InstantCommand(() -> drivetrainS.zeroHeading()));
 		//Example Drive To 2024 Amp Pose, Bind to what you need.
-		//yButtonDrive.and(isDriving()).whileTrue(new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90)))));
+		//yButtonDrive.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest).negate()).whileTrue(new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90)))));
 		//swerve DRIVE tests
 		//When user hits right bumper, go to next test, or wrap back to starting test for SysID.
 		rightBumperTest.onTrue(new InstantCommand(() -> {
@@ -176,7 +174,6 @@ public class RobotContainer {
 				currentTest--;
 			}
 		}));
-
 		//When using CTRE, be sure to hit Start so that the motors are logged via CTRE (For SysId)
 		selectButtonTest.onTrue(Commands.runOnce(SignalLogger::stop));
 		startButtonTest.onTrue(Commands.runOnce(SignalLogger::start));
@@ -191,23 +188,15 @@ public class RobotContainer {
 		// An example command will be run in autonomous
 		return autoChooser.getSelected();
 	}
+
 	/**
 	 * For SIMULATION ONLY, return the estimated current draw of the robot.
+	 * 
 	 * @return Current in amps.
 	 */
 	public static double[] getCurrentDraw(){
 		return new double[]{
 			Math.min(drivetrainS.getCurrent(),200)
 		};
-	}
-	public static BooleanSupplier isDriving() {
-		BooleanSupplier returnVal;
-		if (aButtonTest.getAsBoolean() || bButtonTest.getAsBoolean()
-				|| xButtonTest.getAsBoolean() || yButtonTest.getAsBoolean()) {
-			returnVal = () -> false;
-			return returnVal; //currently doing a test
-		}
-		returnVal = () -> true;
-		return returnVal;
 	}
 }
