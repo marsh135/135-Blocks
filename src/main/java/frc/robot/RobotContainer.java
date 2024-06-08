@@ -34,7 +34,6 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 
 
-import java.util.function.BooleanSupplier;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.utils.leds.LEDConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
