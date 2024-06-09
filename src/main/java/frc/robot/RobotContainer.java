@@ -23,16 +23,28 @@ import frc.robot.utils.drive.DriveConstants;
 
 import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
 import frc.robot.utils.drive.DriveConstants.TrainConstants;
-
+import frc.robot.utils.drive.LocalADStarAK;
+import frc.robot.utils.drive.PathFinder;
 import com.ctre.phoenix6.SignalLogger;
 import frc.robot.commands.leds.LEDGifC;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.pathfinding.Pathfinding;
+import com.pathplanner.lib.util.PPLibTelemetry;
 import com.revrobotics.CANSparkBase.IdleMode;
+import java.util.List;
+import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 
+import java.util.Arrays;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
-
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.utils.leds.LEDConstants;
@@ -70,7 +82,7 @@ public class RobotContainer {
 			selectButtonTest = new JoystickButton(testingController, 7),
 			startButtonTest = new JoystickButton(testingController, 8);
 	static int currentTest = 0;
-
+ 	public static Field2d field = new Field2d();
 	// POVButton manipPOVZero = new POVButton(manipController, 0);
 	// POVButton manipPOV180 = new POVButton(manipController, 180);
 	/**
@@ -153,9 +165,29 @@ public class RobotContainer {
 					"Unknown implementation type, please check DriveConstants.java!");
 		}
 		drivetrainS.setDefaultCommand(new SwerveC(drivetrainS));
+		List<Pair<String,Command> > autoCommands = Arrays.asList(
+			//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
+	   );
+		Pathfinding.setPathfinder(new LocalADStarAK());
+		NamedCommands.registerCommands(autoCommands);
+		 if (Constants.isCompetition) {
+      	PPLibTelemetry.enableCompetitionMode();
+    	}
+		PathfindingCommand.warmupCommand().schedule();
 		leds.setDefaultCommand(new LEDGifC(leds, LEDConstants.imageList, 20,2).ignoringDisable(true));
 		autoChooser = AutoBuilder.buildAutoChooser();
+		SmartDashboard.putData(field);
 		SmartDashboard.putData("Auto Chooser", autoChooser);
+		autoChooser.onChange(
+        auto -> {
+			try{
+				field.getObject("path").setPoses(PathPlannerPath.fromChoreoTrajectory(auto.getName()).getPathPoses());
+			}
+			catch (Exception e){
+				System.err.println("No found path for" + auto.getName());
+				field.getObject("path").setPoses(new Pose2d[]{new Pose2d(-50,-50,new Rotation2d()),new Pose2d(-50.2,-50,new Rotation2d())});
+			}
+        });
 		// Configure the trigger bindings
 		configureBindings();
 	}
@@ -164,7 +196,7 @@ public class RobotContainer {
 		xButtonDrive
 				.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest)
 						.negate())
-				.onTrue(new InstantCommand(() -> drivetrainS.zeroHeading()));
+				.whileTrue(PathFinder.goToPose(new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))), new PathConstraints(5.21, 10, 3, 6),drivetrainS)); //new InstantCommand(() -> drivetrainS.zeroHeading())
 		yButtonTest.whileTrue(
 				new RunTest(SysIdRoutine.Direction.kForward, true, drivetrainS));
 		bButtonTest.whileTrue(
@@ -215,7 +247,7 @@ public class RobotContainer {
 	 * @return Current in amps.
 	 */
 	public static double[] getCurrentDraw() {
-		return new double[] { Math.min(drivetrainS.getCurrent(), 200)
+		return new double[] {0// Math.min(drivetrainS.getCurrent(), 200) //Enable when you need to test voltages. It can cause weird module behaviour, in which you restart
 		};
 	}
 }
