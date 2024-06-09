@@ -26,8 +26,11 @@ import frc.robot.utils.drive.DriveConstants.TrainConstants;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.CANSparkBase.IdleMode;
-
+import java.util.List;
+import edu.wpi.first.math.Pair;
+import java.util.Arrays;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
@@ -148,6 +151,10 @@ public class RobotContainer {
 					"Unknown implementation type, please check DriveConstants.java!");
 		}
 		drivetrainS.setDefaultCommand(new SwerveC(drivetrainS));
+		List<Pair<String,Command> > autoCommands = Arrays.asList(
+			//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
+	   );
+		NamedCommands.registerCommands(autoCommands);
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData("Auto Chooser", autoChooser);
 		// Configure the trigger bindings
