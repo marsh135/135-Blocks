@@ -9,6 +9,7 @@ import edu.wpi.first.math.estimator.KalmanFilter;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -32,6 +33,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -154,15 +156,23 @@ private final SysIdRoutine sysIdRoutine =
 	 * @return command which runs wanted test
 	 */
 	public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-		return sysIdRoutine.quasistatic(direction)
+		return sysIdRoutine.quasistatic(direction).beforeStarting(optimizeForSysID(250))
 				.onlyWhile(withinLimits(direction));
 	}
 
 	public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-		return sysIdRoutine.dynamic(direction)
+		return sysIdRoutine.dynamic(direction).beforeStarting(optimizeForSysID(250))
 				.onlyWhile(withinLimits(direction));
 	}
-
+	public Command optimizeForSysID(int freq) {
+		return new InstantCommand(() ->{
+			BaseStatusSignal.setUpdateFrequencyForAll(
+				freq,
+				elevatorMotor.getPosition(),
+				elevatorMotor.getVelocity(),
+				elevatorMotor.getMotorVoltage());
+		});
+	 }
 	public static double getDistance() { return m_position; }
 
 	public static double getSetpoint() { return goal.position; }
