@@ -219,10 +219,17 @@ public class REVSwerveModule extends SubsystemBase {
 		driveMotor.set(0);
 		turningMotor.set(0);
 	}
-
+	/**
+	 * Converts the inputs from meters to volts, sets motors
+	 * @param driveOutput driveOutput, in METERS
+	 * @param driveFeedforward driveFeedForwards, in Meters
+	 * @param turnOutput Nish add details
+	 */
 	public void setMotors(double driveOutput, double driveFeedforward,
 			double turnOutput) {
-		driveMotor.setVoltage(driveOutput + driveFeedforward);
+			double volts = 12*(driveOutput + driveFeedforward)/DriveConstants.kMaxSpeedMetersPerSecond;
+			SmartDashboard.putNumber("Output", volts);
+		driveMotor.setVoltage(volts);
 		turningMotor.set(turnOutput);
 	}
 
@@ -255,7 +262,7 @@ public class REVSwerveModule extends SubsystemBase {
 		// Calculate the drive output from the drive PID controller.
 		double driveOutput = drivePIDController
 				.calculate(getDriveVelocity(), state.speedMetersPerSecond);
-		SmartDashboard.putNumber("Output", driveOutput);
+
 
 		final double driveFeedforward = driveFeedForward
 				.calculate(state.speedMetersPerSecond);
