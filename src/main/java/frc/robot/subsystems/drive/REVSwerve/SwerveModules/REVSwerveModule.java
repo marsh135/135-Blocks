@@ -39,11 +39,9 @@ public class REVSwerveModule extends SubsystemBase {
 	private PIDController turningPIDController = null;
 	private PIDController drivePIDController = null;
 	private SimpleMotorFeedforward driveFeedForward = null;
-	private double m_currentAngle = 0;
-	private double m_simDriveEncoderPosition = 0;
-	private double m_simDriveEncoderVelocity = 0;
-	private double m_simAngleDifference = 0;
-	private double m_simTurnAngleIncrement = 0;
+	private double m_currentAngle = 0, m_simDriveEncoderPosition = 0,
+			m_simDriveEncoderVelocity = 0, m_simAngleDifference = 0,
+			m_simTurnAngleIncrement = 0, m_moduleMaxSpeed = 0;
 	private Pose2d m_pose = new Pose2d();
 	private int m_moduleNumber = 0;
 
@@ -61,19 +59,19 @@ public class REVSwerveModule extends SubsystemBase {
 		position = container.getModulePosition();
 		switch (position) {
 		case FRONT_LEFT:
-		this.m_moduleNumber = 0;
+			this.m_moduleNumber = 0;
 			break;
 		case FRONT_RIGHT:
-		this.m_moduleNumber = 1;
+			this.m_moduleNumber = 1;
 			break;
 		case BACK_LEFT:
 			this.m_moduleNumber = 2;
 			break;
 		case BACK_RIGHT:
-		this.m_moduleNumber = 3;
+			this.m_moduleNumber = 3;
 			break;
 		default:
-		this.m_moduleNumber = -1;
+			this.m_moduleNumber = -1;
 			break;
 		}
 		/*turningFeedForward = new SimpleMotorFeedforward(
@@ -85,12 +83,12 @@ public class REVSwerveModule extends SubsystemBase {
 		//sets values of the encoder offset and whether its reversed
 		absoluteEncoderOffsetRad = container.getAbsoluteEncoderOffset();
 		this.absoluteEncoderReversed = container.getAbsoluteEncoderReversed();
+		m_moduleMaxSpeed = container.getModuleMaxSpeed();
 		//absoluteEncoder = new AnalogInput(absoluteEncoderId);
 		//absoluteEncoder = new CANCoder(absoluteEncoderId);
 		//declares motors
 		switch (DriveConstants.robotMotorController) {
-		
-			case NEO_SPARK_MAX:
+		case NEO_SPARK_MAX:
 			System.err.println("Detected Spark Max");
 			driveMotor = new CANSparkMax(container.getDriveMotorID(),
 					MotorType.kBrushless);
@@ -118,14 +116,16 @@ public class REVSwerveModule extends SubsystemBase {
 		driveMotor.setIdleMode(IdleMode.kBrake);
 		turningMotor.setIdleMode(IdleMode.kBrake);
 		//accounts for gear ratios
-		driveEncoder.setPositionConversionFactor(
-				DriveConstants.TrainConstants.kDriveEncoderRot2Meter);
+		driveEncoder.setPositionConversionFactor(container
+				.getSwerveModuleEncoderConstants().getDriveEncoderRot2Meter());
 		driveEncoder.setVelocityConversionFactor(
-				DriveConstants.TrainConstants.kDriveEncoderRPM2MeterPerSec);
-		turningEncoder.setPositionConversionFactor(
-				DriveConstants.TrainConstants.kTurningEncoderRot2Rad);
+				container.getSwerveModuleEncoderConstants()
+						.getDriveEncoderRPM2MeterPerSec());
+		turningEncoder.setPositionConversionFactor(container
+				.getSwerveModuleEncoderConstants().getTurningEncoderRot2Rad());
 		turningEncoder.setVelocityConversionFactor(
-				DriveConstants.TrainConstants.kTurningEncoderRPM2RadPerSec);
+				container.getSwerveModuleEncoderConstants()
+						.getTurningEncoderRPM2RadPerSec());
 		//creates pidController, used exclusively for turning because that has to be precise
 		turningPIDController = new PIDController(.5, 0, 0);
 		//makes the value loop around
@@ -219,16 +219,18 @@ public class REVSwerveModule extends SubsystemBase {
 		driveMotor.set(0);
 		turningMotor.set(0);
 	}
+
 	/**
 	 * Converts the inputs from meters to volts, sets motors
-	 * @param driveOutput driveOutput, in METERS
+	 * 
+	 * @param driveOutput      driveOutput, in METERS
 	 * @param driveFeedforward driveFeedForwards, in Meters
-	 * @param turnOutput Nish add details
+	 * @param turnOutput       Nish add details
 	 */
 	public void setMotors(double driveOutput, double driveFeedforward,
 			double turnOutput) {
-			double volts = 12*(driveOutput + driveFeedforward)/DriveConstants.kMaxSpeedMetersPerSecond;
-			SmartDashboard.putNumber("Output", volts);
+		double volts = 12 * (driveOutput + driveFeedforward) / m_moduleMaxSpeed;
+		SmartDashboard.putNumber("Output", volts);
 		driveMotor.setVoltage(volts);
 		turningMotor.set(turnOutput);
 	}
@@ -260,13 +262,11 @@ public class REVSwerveModule extends SubsystemBase {
 		// Optimizing finds the shortest path to the desired angle
 		state = SwerveModuleState.optimize(state, getState().angle);
 		// Calculate the drive output from the drive PID controller.
-		double driveOutput = drivePIDController
-				.calculate(getDriveVelocity(), state.speedMetersPerSecond);
-
-
+		double driveOutput = drivePIDController.calculate(getDriveVelocity(),
+				state.speedMetersPerSecond);
 		final double driveFeedforward = driveFeedForward
 				.calculate(state.speedMetersPerSecond);
-				// Calculate the turning motor output from the turning PID controller.
+		// Calculate the turning motor output from the turning PID controller.
 		final double turnOutput = turningPIDController
 				.calculate(getAbsoluteEncoderRad(), state.angle.getRadians());
 		//        final double turnFeedforward =
