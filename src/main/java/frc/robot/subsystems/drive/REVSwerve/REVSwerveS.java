@@ -270,6 +270,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 
 	@Override
 	public void periodic() {
+		
 		if (Constants.currentMode == Mode.SIM) {
 			ChassisSpeeds chassisSpeed = kDriveKinematics
 					.toChassisSpeeds(getModuleStates());

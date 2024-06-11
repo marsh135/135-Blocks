@@ -21,6 +21,7 @@ import com.revrobotics.CANSparkFlex;
 // import
 // edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
@@ -88,7 +89,8 @@ public class REVSwerveModule extends SubsystemBase {
 		//absoluteEncoder = new CANCoder(absoluteEncoderId);
 		//declares motors
 		switch (DriveConstants.robotMotorController) {
-		case NEO_SPARK_MAX:
+		
+			case NEO_SPARK_MAX:
 			System.err.println("Detected Spark Max");
 			driveMotor = new CANSparkMax(container.getDriveMotorID(),
 					MotorType.kBrushless);
@@ -251,11 +253,13 @@ public class REVSwerveModule extends SubsystemBase {
 		// Optimizing finds the shortest path to the desired angle
 		state = SwerveModuleState.optimize(state, getState().angle);
 		// Calculate the drive output from the drive PID controller.
-		final double driveOutput = drivePIDController
+		double driveOutput = drivePIDController
 				.calculate(getDriveVelocity(), state.speedMetersPerSecond);
+		SmartDashboard.putNumber("Output", driveOutput);
+
 		final double driveFeedforward = driveFeedForward
 				.calculate(state.speedMetersPerSecond);
-		// Calculate the turning motor output from the turning PID controller.
+				// Calculate the turning motor output from the turning PID controller.
 		final double turnOutput = turningPIDController
 				.calculate(getAbsoluteEncoderRad(), state.angle.getRadians());
 		//        final double turnFeedforward =
