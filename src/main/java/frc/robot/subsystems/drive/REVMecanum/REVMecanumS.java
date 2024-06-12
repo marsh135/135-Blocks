@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import frc.robot.subsystems.SubsystemChecker.SystemStatus;
 import frc.robot.subsystems.drive.DrivetrainS;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
@@ -300,4 +301,12 @@ public class REVMecanumS implements DrivetrainS {
 		return new Twist2d(linearFieldVelocity.getX(), linearFieldVelocity.getY(),
 				m_ChassisSpeeds.omegaRadiansPerSecond);
 	}
+
+	@Override
+	public Command getSystemCheckCommand() { // TODO Auto-generated method stub
+	throw new UnsupportedOperationException("Unimplemented method 'getSystemCheckCommand'"); }
+
+	@Override
+	public SystemStatus getTrueSystemStatus() { // TODO Auto-generated method stub
+	throw new UnsupportedOperationException("Unimplemented method 'getTrueSystemStatus'"); }
 }

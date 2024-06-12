@@ -2,6 +2,7 @@ package frc.robot.subsystems.drive.REVTank;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.hardware.ParentDevice;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.ReplanningConfig;
@@ -32,21 +33,28 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.Position;
+import frc.robot.utils.selfCheck.SubsystemFault;
 
+import java.util.Collections;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
-public class REVTankS implements DrivetrainS {
+import java.util.List;
+
+public class REVTankS extends SubsystemChecker implements DrivetrainS {
 	private Pose2d pose = new Pose2d();
 	private static AHRS gyro = new AHRS();
 	private DifferentialDrivePoseEstimator poseEstimator;
@@ -289,5 +297,51 @@ public class REVTankS implements DrivetrainS {
 	public Twist2d getFieldVelocity() {
 		return fieldVelocity;
 	 }
-	
+   public void registerSelfCheckHardware() {
+    super.registerHardware("IMU", gyro);
+	 super.registerHardware("FrontLeft", motors[0]);
+	 super.registerHardware("FrontRight", motors[2]);
+	 super.registerHardware("BackLeft", motors[1]);
+	 super.registerHardware("BackRight", motors[3]);
+	 
+   }
+	@Override
+	public List<ParentDevice> getOrchestraDevices() {
+		return Collections.emptyList();
+	 }
+
+	@Override
+   public SystemStatus getSystemStatus() {
+    SystemStatus worstStatus = SystemStatus.OK;
+
+    for (SubsystemFault f : this.getFaults()) {
+      if (f.sticky || f.timestamp > Timer.getFPGATimestamp() - 10) {
+        if (f.isWarning) {
+          if (worstStatus != SystemStatus.ERROR) {
+            worstStatus = SystemStatus.WARNING;
+          }
+        } else {
+          worstStatus = SystemStatus.ERROR;
+        }
+      }
+    }
+	 return worstStatus;
+   }
+	@Override
+	public SystemStatus getTrueSystemStatus(){
+		return getSystemStatus();
+	}
+	@Override
+	protected Command systemCheckCommand() { 
+	return Commands.sequence(run(() -> setChassisSpeeds(new ChassisSpeeds(0,0,0.5))).withTimeout(2.0),
+            run(() -> setChassisSpeeds(new ChassisSpeeds(0, 0, -0.5))).withTimeout(2.0))
+        .until(
+            () ->
+                !getFaults().isEmpty())
+        .andThen(runOnce(() ->setChassisSpeeds(new ChassisSpeeds(0,0,0))));
+	}
+	@Override
+	public Command getSystemCheckCommand(){
+		return systemCheckCommand();
+	}
 }

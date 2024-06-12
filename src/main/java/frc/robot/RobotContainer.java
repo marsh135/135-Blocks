@@ -4,6 +4,7 @@
 package frc.robot;
 
 import frc.robot.commands.drive.SwerveC;
+import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumConstantContainer;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumS;
@@ -251,4 +252,22 @@ public class RobotContainer {
 		return new double[] {0// Math.min(drivetrainS.getCurrent(), 200) //Enable when you need to test voltages. It can cause weird module behaviour, in which you restart
 		};
 	}
+	private static void addNTCommands() {
+		SmartDashboard.putData("SystemStatus/AllSystemsCheck", allSystemsCheck());
+	 }
+	/**
+	 * RUN EACH system's test command.
+	 * Does NOT run any checks on vision. 
+	 * @return a command with all of them in a sequence.
+	 */
+	public static Command allSystemsCheck() {
+	return Commands.sequence(drivetrainS.getSystemCheckCommand());
+	}
+	/**
+	 * Checks EACH system's status (DOES NOT RUN THE TESTS)  
+	 * @return true if ALL systems were good.
+	 */
+	public static boolean allSystemsOK() {
+		return drivetrainS.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK;
+	 }
 }

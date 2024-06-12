@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.subsystems.SubsystemChecker.SystemStatus;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.Position;
 
@@ -123,6 +124,8 @@ public interface DrivetrainS extends Subsystem {
 	 * @param positions with both a timestamp and position.
 	 * @return
 	 */
+	Command getSystemCheckCommand();
+	SystemStatus getTrueSystemStatus();
 	default <T> Position<T> getPositionsWithTimestamp(T positions) {
         double timestamp = Timer.getFPGATimestamp();
         return new Position<>(positions, timestamp);

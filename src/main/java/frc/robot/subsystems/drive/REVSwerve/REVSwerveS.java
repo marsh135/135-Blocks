@@ -37,6 +37,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.Constants.Mode;
+import frc.robot.subsystems.SubsystemChecker.SystemStatus;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.REVSwerve.SwerveModules.REVSwerveModule;
 import frc.robot.Robot;
@@ -375,4 +376,12 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 
 	@Override
 	public Twist2d getFieldVelocity() { return fieldVelocity; }
+
+	@Override
+	public Command getSystemCheckCommand() { // TODO Auto-generated method stub
+	throw new UnsupportedOperationException("Unimplemented method 'getSystemCheckCommand'"); }
+
+	@Override
+	public SystemStatus getTrueSystemStatus() { // TODO Auto-generated method stub
+	throw new UnsupportedOperationException("Unimplemented method 'getTrueSystemStatus'"); }
 }
