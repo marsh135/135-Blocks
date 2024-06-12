@@ -247,7 +247,7 @@ public class REVSwerveModule extends SubsystemBase {
 	 */
 	public void setMotors(double driveOutput, double driveFeedforward,
 			double turnOutput) {
-		double volts = 12 * (driveOutput + driveFeedforward) / m_moduleMaxSpeed;
+		double volts = RobotController.getBatteryVoltage() * (driveOutput + driveFeedforward) / m_moduleMaxSpeed;
 		SmartDashboard.putNumber("Output", volts);
 		driveMotor.setVoltage(volts);
 		turningMotor.set(turnOutput);
