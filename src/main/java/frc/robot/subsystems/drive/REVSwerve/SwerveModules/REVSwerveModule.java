@@ -36,6 +36,7 @@ public class REVSwerveModule extends SubsystemBase {
 	private RelativeEncoder driveEncoder, turningEncoder;
 	private DCMotorSim driveMotorSim, turningMotorSim;
 	private double absoluteEncoderOffsetRad;
+	private double wheelDiameter;
 	private boolean absoluteEncoderReversed;
 	private SparkAnalogSensor absoluteEncoder;
 	private PIDController turningPIDController = null, drivePIDController = null;
@@ -85,6 +86,7 @@ public class REVSwerveModule extends SubsystemBase {
 		absoluteEncoderOffsetRad = container.getAbsoluteEncoderOffset();
 		this.absoluteEncoderReversed = container.getAbsoluteEncoderReversed();
 		m_moduleMaxSpeed = container.getModuleMaxSpeed();
+		wheelDiameter = container.getWheelDiameter();
 		//absoluteEncoder = new AnalogInput(absoluteEncoderId);
 		//absoluteEncoder = new CANCoder(absoluteEncoderId);
 		//declares motors
@@ -166,7 +168,8 @@ public class REVSwerveModule extends SubsystemBase {
 		if (Constants.currentMode == Constants.Mode.REAL) {
 			return driveEncoder.getPosition();
 		} else {
-			return m_simDriveEncoderPosition;
+			
+			return driveMotorSim.getAngularPositionRad()*Math.PI*wheelDiameter;
 		}
 	}
 
@@ -175,7 +178,7 @@ public class REVSwerveModule extends SubsystemBase {
 		if (Constants.currentMode == Constants.Mode.REAL) {
 			return getAbsoluteEncoderRad();
 		} else {
-			return m_currentAngle;
+			return turningMotorSim.getAngularPositionRad();
 		}
 	}
 

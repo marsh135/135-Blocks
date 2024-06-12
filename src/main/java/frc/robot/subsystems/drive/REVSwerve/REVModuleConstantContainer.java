@@ -18,31 +18,36 @@ public class REVModuleConstantContainer {
 	 * Wrapper class designed to hold all the constants for a rev swerve module
 	 * in the 135-blocks framework
 	 * 
-	 * @param driveMotorID                  the CAN ID of the drive motor
-	 * @param turningMotorID                the CAN ID of the turning motor
-	 * @param driveMotorReversed            whether the drive motor is reversed
+	 * @param driveMotorID                  The CAN ID of the drive motor
+	 * @param turningMotorID                The CAN ID of the turning motor
+	 * @param driveMotorReversed            Whether the drive motor is reversed
 	 *                                         (positive percent/voltage makes it
 	 *                                         go backwards)
-	 * @param turningMotorReversed          whether the turning motor is reversed
+	 * @param turningMotorReversed          Whether the turning motor is reversed
 	 *                                         (positive percent/voltage makes it
 	 *                                         go backwards)
-	 * @param absoluteEncoderOffset         the offset of the absolute encoder
+	 * @param absoluteEncoderOffset         The offset of the absolute encoder
 	 *                                         (when the module is zeroed, what
 	 *                                         value is output)
-	 * @param maxModuleSpeed                the maximum speed of the module
+	 * @param driveGearing                  The gearing of the drive motor on the
+	 *                                         module (>1 is a reduction)
+	 * @param turnGearing                   The gearing of the turning motor on
+	 *                                         the module (>1 is a reduction)
+	 * @param wheelDiameter                 The diameter of the wheel (in meters)
+	 * @param maxModuleSpeed                The maximum speed of the module
 	 *                                         (should be the same as the max
 	 *                                         speed of the drivetrain )
-	 * @param absoluteEncoderReversed       whether the absolute encoder is
+	 * @param absoluteEncoderReversed       Whether the absolute encoder is
 	 *                                         reversed
-	 * @param modulePosition                the position of the module relative
+	 * @param modulePosition                The position of the module relative
 	 *                                         to the center of the robot
-	 * @param driveMotorConstantContainer   motor constant container for the
+	 * @param driveMotorConstantContainer   Motor constant container for the
 	 *                                         drive motor
-	 * @param turningMotorConstantContainer motor constant container for the
+	 * @param turningMotorConstantContainer Motor constant container for the
 	 *                                         turning motor
-	 * @param moduleTranslation2d           the translation of the module from
+	 * @param moduleTranslation2d           The translation of the module from
 	 *                                         the center
-	 * @param encoderConstants              the encoder constant wrapper for the
+	 * @param encoderConstants              The encoder constant wrapper for the
 	 *                                         swerve module
 	 * @see MotorConstantContainer
 	 * @see REVSwerveModuleEncoderConstants
@@ -50,6 +55,7 @@ public class REVModuleConstantContainer {
 	public REVModuleConstantContainer(int driveMotorID, int turningMotorID,
 			boolean driveMotorReversed, boolean turningMotorReversed,
 			double absoluteEncoderOffset, double maxModuleSpeed,
+			double driveGearing, double turnGearing, double wheelDiameter,
 			boolean absoluteEncoderReversed, ModulePosition modulePosition,
 			MotorConstantContainer driveMotorConstantContainer,
 			MotorConstantContainer turningMotorConstantContainer,
@@ -64,50 +70,104 @@ public class REVModuleConstantContainer {
 				driveMotorConstantContainer, turningMotorConstantContainer
 		};
 		moduleConstantContainerDoubles = new double[] { absoluteEncoderOffset,
-				maxModuleSpeed
+				maxModuleSpeed, driveGearing, turnGearing, wheelDiameter
 		};
 		m_modulePosition = modulePosition;
 		moduleTranslation = moduleTranslation2d;
 		moduleEncoderConstants = encoderConstants;
 	}
 
+	/**
+	 * @return The drive motor's CAN ID
+	 */
 	public int getDriveMotorID() { return moduleConstantContainerInts[0]; }
 
 	public int getTurningMotorID() { return moduleConstantContainerInts[1]; }
 
+	/**
+	 * @return Whether the drive motor is reversed
+	 */
 	public boolean getDriveMotorReversed() {
 		return moduleConstantContainerBools[0];
 	}
 
+	/**
+	 * @return Whether the turning motor is reversed
+	 */
 	public boolean getTurningMotorReversed() {
 		return moduleConstantContainerBools[1];
 	}
 
+	/**
+	 * @return Whether the absolute encoder on the turning module is reversed
+	 */
 	public boolean getAbsoluteEncoderReversed() {
 		return moduleConstantContainerBools[2];
 	}
 
+	/**
+	 * @return The MotorConstantContainer of the drive motors
+	 * @see MotorConstantContainer
+	 */
 	public MotorConstantContainer getDriveMotorConstantContainer() {
 		return moduleMotorConstants[0];
 	}
 
+	/**
+	 * @return The MotorConstantContainer of the turning motors
+	 * @see MotorConstantContainer
+	 */
 	public MotorConstantContainer getTurningMotorConstantContainer() {
 		return moduleMotorConstants[1];
 	}
 
+	/**
+	 * @return The offset of the absolute encoder
+	 */
 	public double getAbsoluteEncoderOffset() {
 		return moduleConstantContainerDoubles[0];
 	}
 
+	/**
+	 * @return The maximum speed of the module
+	 */
 	public double getModuleMaxSpeed() {
-		return moduleConstantContainerDoubles[0];
+		return moduleConstantContainerDoubles[1];
 	}
 
+	/**
+	 * @return The position of the module
+	 */
 	public ModulePosition getModulePosition() { return m_modulePosition; }
 
+	/**
+	 * @return The translation of the module from the center of the robot
+	 */
 	public Translation2d getTranslation2d() { return moduleTranslation; }
 
+	/**
+	 * @return The encoder factors associated with the swerve module
+	 * @see REVSwerveModuleEncoderConstants
+	 */
 	public REVSwerveModuleEncoderConstants getSwerveModuleEncoderConstants() {
 		return moduleEncoderConstants;
+	}
+
+	/**
+	 * @return the gearing of the drive motor
+	 */
+	public double getDriveMotorGearing() {
+		return moduleConstantContainerDoubles[2];
+	}
+
+	/**
+	 * @return the gearing of the turning motor
+	 */
+	public double getTurnMotorGearing() {
+		return moduleConstantContainerDoubles[3];
+	}
+
+	public double getWheelDiameter(){
+		return moduleConstantContainerDoubles[4];
 	}
 }
