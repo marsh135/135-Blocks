@@ -10,7 +10,7 @@ import frc.robot.utils.MotorConstantContainer;
 
 public class DriveConstants {
 	//ONLY CTRE_SWERVE IS *FULLY* CURRENT DRAW ACCURATE IN SIM
-	public static MotorVendor robotMotorController = MotorVendor.NEO_SPARK_MAX;
+	public static MotorVendor robotMotorController = MotorVendor.CTRE_MOTORS;
 	public static driveTrainType driveType = driveTrainType.SWERVE;
 
 	/**
@@ -84,7 +84,7 @@ public class DriveConstants {
 		}
 
 		public static double kWheelDiameter = Units.inchesToMeters(3.873),
-				kDriveMotorGearRatio = 1/6.75, kTurningMotorGearRatio = 150 / 7,
+				kDriveMotorGearRatio = 6.75, kTurningMotorGearRatio = 150 / 7, //GEAR RATIO MAY BE INVERSED! (FOR REV SWERVE)
 				kDriveEncoderRot2Meter = kDriveMotorGearRatio * Math.PI
 						* kWheelDiameter,
 				kDriveEncoderRPM2MeterPerSec = kDriveEncoderRot2Meter / 60,

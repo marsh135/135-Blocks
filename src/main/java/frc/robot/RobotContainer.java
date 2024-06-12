@@ -3,13 +3,14 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
+import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.SwerveC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumConstantContainer;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumS;
-import frc.robot.subsystems.drive.CTRESwerve.CTRESwerveS;
 import frc.robot.subsystems.drive.CTRESwerve.Telemetry;
+import frc.robot.subsystems.drive.CTRESwerve.TestableCTRESwerveS;
 import frc.robot.subsystems.drive.CTRESwerve.TunerConstants;
 import frc.robot.subsystems.drive.CTRETank.CTRETankConstantContainer;
 import frc.robot.subsystems.drive.CTRETank.CTRETankS;
@@ -66,7 +67,7 @@ public class RobotContainer {
 	public static XboxController manipController = new XboxController(1);
 	public static XboxController testingController = new XboxController(5);
 	static JoystickButton xButtonDrive = new JoystickButton(driveController, 3),
-			//yButtonDrive = new JoystickButton(driveController, 4), //used for DriveToPose
+			yButtonDrive = new JoystickButton(driveController, 4), //used for DriveToPose
 			aButtonTest = new JoystickButton(testingController, 1),
 			bButtonTest = new JoystickButton(testingController, 2),
 			xButtonTest = new JoystickButton(testingController, 3),
@@ -76,6 +77,7 @@ public class RobotContainer {
 			selectButtonTest = new JoystickButton(testingController, 7),
 			startButtonTest = new JoystickButton(testingController, 8);
 	public static int currentTest = 0, currentGamePieceStatus = 0;
+	public static String currentPath = "";
 	public static Field2d field = new Field2d();
 
 	// POVButton manipPOVZero = new POVButton(manipController, 0);
@@ -92,7 +94,7 @@ public class RobotContainer {
 			switch (DriveConstants.robotMotorController) {
 			case CTRE_MOTORS:
 				logger = new Telemetry(DriveConstants.kMaxSpeedMetersPerSecond);
-				drivetrainS = new CTRESwerveS(TunerConstants.DrivetrainConstants,
+				drivetrainS = new TestableCTRESwerveS(TunerConstants.DrivetrainConstants,
 						logger, TunerConstants.Modules);
 				break;
 			case NEO_SPARK_MAX:
@@ -208,7 +210,7 @@ public class RobotContainer {
 		xButtonTest.whileTrue(
 				new RunTest(SysIdRoutine.Direction.kReverse, false, drivetrainS));
 		//Example Drive To 2024 Amp Pose, Bind to what you need.
-		//yButtonDrive.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest).negate()).whileTrue(new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90)))));
+		yButtonDrive.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest).negate()).whileTrue(new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90)))));
 		//swerve DRIVE tests
 		//When user hits right bumper, go to next test, or wrap back to starting test for SysID.
 		rightBumperTest.onTrue(new InstantCommand(() -> {
@@ -249,7 +251,7 @@ public class RobotContainer {
 	 * @return Current in amps.
 	 */
 	public static double[] getCurrentDraw() {
-		return new double[] {0// Math.min(drivetrainS.getCurrent(), 200) //Enable when you need to test voltages. It can cause weird module behaviour, in which you restart
+		return new double[] {Math.min(drivetrainS.getCurrent(), 200)
 		};
 	}
 	private static void addNTCommands() {
@@ -261,7 +263,7 @@ public class RobotContainer {
 	 * @return a command with all of them in a sequence.
 	 */
 	public static Command allSystemsCheck() {
-	return Commands.sequence(drivetrainS.getSystemCheckCommand());
+	return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand());
 	}
 	/**
 	 * Checks EACH system's status (DOES NOT RUN THE TESTS)  

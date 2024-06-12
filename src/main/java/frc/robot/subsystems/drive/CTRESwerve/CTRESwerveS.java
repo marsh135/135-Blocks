@@ -34,11 +34,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.SubsystemChecker.SystemStatus;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.utils.drive.DriveConstants;
 
 import static edu.wpi.first.units.Units.Volts;
+
 
 /**
  * Class that extends the Phoenix SwerveDrivetrain class and implements
@@ -159,7 +159,11 @@ public class CTRESwerveS extends SwerveDrivetrain implements DrivetrainS {
 	 * @param speeds The speeds to be set
 	 */
 	public void setChassisSpeeds(ChassisSpeeds speeds) {
-		AutoRequest.withSpeeds(speeds.times(2)).apply(m_requestParameters, Modules);
+		if (RobotContainer.currentPath == "DRIVETOPOSE"){
+			AutoRequest.withSpeeds(speeds.times(2)).apply(m_requestParameters, Modules);
+		}else{
+			AutoRequest.withSpeeds(speeds).apply(m_requestParameters, Modules);
+		}
 	}
 
 	/**
@@ -339,12 +343,4 @@ public class CTRESwerveS extends SwerveDrivetrain implements DrivetrainS {
 		drive.RotationalDeadband = DriveConstants.kTeleTurningMaxAcceleration
 				* deadband;
 	}
-
-	@Override
-	public Command getSystemCheckCommand() { // TODO Auto-generated method stub
-	throw new UnsupportedOperationException("Unimplemented method 'getSystemCheckCommand'"); }
-
-	@Override
-	public SystemStatus getTrueSystemStatus() { // TODO Auto-generated method stub
-	throw new UnsupportedOperationException("Unimplemented method 'getTrueSystemStatus'"); }
 }

@@ -201,6 +201,8 @@ public class Robot extends LoggedRobot {
 		Constants.currentMatchState = FRCMatchState.TESTINIT;
 		// Cancels all running commands at the start of test mode.
 		CommandScheduler.getInstance().cancelAll();
+		System.err.println("ON BOOT, SYSTEMS ARE FUNCTIONING: w" + RobotContainer.allSystemsOK());
+		RobotContainer.allSystemsCheck().schedule();
 	}
 
 	/** This function is called periodically during test mode. */

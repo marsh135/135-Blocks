@@ -141,6 +141,7 @@ public class REVTankS extends SubsystemChecker implements DrivetrainS {
 		AutoBuilder.configureLTV(this::getPose, this::resetPose,
 				this::getChassisSpeeds, this::setChassisSpeeds, .02,
 				new ReplanningConfig(true, true), () -> Robot.isRed, this);
+		registerSelfCheckHardware();
 	}
 
 	public Rotation2d getRotation2d() { 
@@ -341,7 +342,13 @@ public class REVTankS extends SubsystemChecker implements DrivetrainS {
         .andThen(runOnce(() ->setChassisSpeeds(new ChassisSpeeds(0,0,0))));
 	}
 	@Override
-	public Command getSystemCheckCommand(){
-		return systemCheckCommand();
+	public Command getRunnableSystemCheckCommand(){
+		return super.getSystemCheckCommand();
 	}
+
+	@Override
+	public List<ParentDevice> getDriveOrchestraDevices() { 
+		return getOrchestraDevices();
+	}
+
 }

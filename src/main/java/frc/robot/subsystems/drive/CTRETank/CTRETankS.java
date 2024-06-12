@@ -19,20 +19,25 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.subsystems.SubsystemChecker.SystemStatus;
+import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.utils.drive.Position;
+import frc.robot.utils.selfCheck.SubsystemFault;
 
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.List;
+import java.util.ArrayList;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -40,6 +45,7 @@ import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -48,7 +54,7 @@ import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.ReplanningConfig;
 
-public class CTRETankS implements DrivetrainS {
+public class CTRETankS extends SubsystemChecker implements DrivetrainS {
 	private static double kMaxSpeedMetersPerSecond, kWheelDiameter, kDriveMotorGearRatio;
 	private Pigeon2 pigeon;
 	private TalonFX rightLeader, rightFollower, leftLeader, leftFollower;
@@ -134,6 +140,7 @@ public class CTRETankS implements DrivetrainS {
 		AutoBuilder.configureLTV(this::getPose, this::resetPose,
 				this::getChassisSpeeds, this::setChassisSpeeds, .02,
 				new ReplanningConfig(true, true), () -> Robot.isRed, this);
+		registerSelfCheckHardware();
 	}
 
 	private double getLeftMeters() {
@@ -306,11 +313,61 @@ public class CTRETankS implements DrivetrainS {
 	return fieldVelocity;
  }
 
+	public void registerSelfCheckHardware() {
+    super.registerHardware("IMU", pigeon);
+	 super.registerHardware("FrontLeft", motors[2]);
+	 super.registerHardware("FrontRight", motors[0]);
+	 super.registerHardware("BackLeft", motors[3]);
+	 super.registerHardware("BackRight", motors[1]);
+	 
+   }
 	@Override
-	public Command getSystemCheckCommand() { // TODO Auto-generated method stub
-	throw new UnsupportedOperationException("Unimplemented method 'getSystemCheckCommand'"); }
+	public List<ParentDevice> getOrchestraDevices() {
+		List<ParentDevice> orchestra = new ArrayList<>(4);
+
+		for (var motor : motors) {
+		  orchestra.add(motor);
+		}
+  
+		return orchestra;
+	 }
 
 	@Override
-	public SystemStatus getTrueSystemStatus() { // TODO Auto-generated method stub
-	throw new UnsupportedOperationException("Unimplemented method 'getTrueSystemStatus'"); }
+   public SystemStatus getSystemStatus() {
+    SystemStatus worstStatus = SystemStatus.OK;
+
+    for (SubsystemFault f : this.getFaults()) {
+      if (f.sticky || f.timestamp > Timer.getFPGATimestamp() - 10) {
+        if (f.isWarning) {
+          if (worstStatus != SystemStatus.ERROR) {
+            worstStatus = SystemStatus.WARNING;
+          }
+        } else {
+          worstStatus = SystemStatus.ERROR;
+        }
+      }
+    }
+	 return worstStatus;
+   }
+	@Override
+	public SystemStatus getTrueSystemStatus(){
+		return getSystemStatus();
+	}
+	@Override
+	protected Command systemCheckCommand() { 
+	return Commands.sequence(run(() -> setChassisSpeeds(new ChassisSpeeds(0,0,0.5))).withTimeout(2.0),
+            run(() -> setChassisSpeeds(new ChassisSpeeds(0, 0, -0.5))).withTimeout(2.0))
+        .until(
+            () ->
+                !getFaults().isEmpty())
+        .andThen(runOnce(() ->setChassisSpeeds(new ChassisSpeeds(0,0,0))));
+	}
+	@Override
+	public Command getRunnableSystemCheckCommand(){
+		return super.getSystemCheckCommand();
+	}
+	@Override
+	public List<ParentDevice> getDriveOrchestraDevices() { 
+		return getOrchestraDevices();
+	}
 }

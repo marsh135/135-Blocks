@@ -20,6 +20,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.SubsystemChecker.SystemStatus;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.Position;
+import java.util.List;
+import com.ctre.phoenix6.hardware.ParentDevice;
 
 public interface DrivetrainS extends Subsystem {
 	/**
@@ -118,14 +120,23 @@ public interface DrivetrainS extends Subsystem {
 	 * @return if the gyro drivetrain is connected
 	 */
 	boolean isConnected();
-	/**
+
+	default Command getRunnableSystemCheckCommand(){
+		throw new UnsupportedOperationException("Unimplemented method 'getRunnableSystemCheckCommand'");
+	}
+	default SystemStatus getTrueSystemStatus(){
+		throw new UnsupportedOperationException("Unimplemented method 'getTrueSystemStatus'");
+
+	}
+	default List<ParentDevice> getDriveOrchestraDevices(){
+		throw new UnsupportedOperationException("Unimplemented method 'getDriveOrchestraDevices'");
+	}
+		/**
 	 * Create a position wrapper which contains the positions, and the timestamps.
 	 * @param <T> The type of position, MechanumWheelPositions or SwerveModulePositions[] or tank's.
 	 * @param positions with both a timestamp and position.
 	 * @return
 	 */
-	Command getSystemCheckCommand();
-	SystemStatus getTrueSystemStatus();
 	default <T> Position<T> getPositionsWithTimestamp(T positions) {
         double timestamp = Timer.getFPGATimestamp();
         return new Position<>(positions, timestamp);
