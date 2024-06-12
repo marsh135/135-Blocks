@@ -14,6 +14,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.system.plant.DCMotor;
+import frc.robot.utils.drive.DriveConstants.TrainConstants;
 import frc.robot.utils.drive.DriveConstants.TrainConstants.ModulePosition;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkFlex;
@@ -26,18 +28,17 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
 import frc.robot.utils.drive.DriveConstants;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 public class REVSwerveModule extends SubsystemBase {
 	private static ModulePosition position;
-	private CANSparkBase driveMotor;
-	private CANSparkBase turningMotor;
-	private RelativeEncoder driveEncoder;
-	private RelativeEncoder turningEncoder;
+	private CANSparkBase driveMotor, turningMotor;
+	private RelativeEncoder driveEncoder, turningEncoder;
+	private DCMotorSim driveMotorSim = null, turningMotorSim = null;
 	private double absoluteEncoderOffsetRad;
 	private boolean absoluteEncoderReversed;
 	private SparkAnalogSensor absoluteEncoder;
-	private PIDController turningPIDController = null;
-	private PIDController drivePIDController = null;
+	private PIDController turningPIDController = null, drivePIDController = null;
 	private SimpleMotorFeedforward driveFeedForward = null;
 	private double m_currentAngle = 0, m_simDriveEncoderPosition = 0,
 			m_simDriveEncoderVelocity = 0, m_simAngleDifference = 0,
@@ -87,20 +88,37 @@ public class REVSwerveModule extends SubsystemBase {
 		//absoluteEncoder = new AnalogInput(absoluteEncoderId);
 		//absoluteEncoder = new CANCoder(absoluteEncoderId);
 		//declares motors
+
 		switch (DriveConstants.robotMotorController) {
+			
 		case NEO_SPARK_MAX:
 			System.err.println("Detected Spark Max");
 			driveMotor = new CANSparkMax(container.getDriveMotorID(),
 					MotorType.kBrushless);
 			turningMotor = new CANSparkMax(container.getTurningMotorID(),
-					MotorType.kBrushless);
-			break;
+					MotorType.kBrushless); 
+			switch (Constants.currentMode) {
+				case SIM:
+					driveMotorSim = new DCMotorSim(DCMotor.getNEO(1), TrainConstants.kDriveMotorGearRatio, .0000001);
+					turningMotorSim = new DCMotorSim(DCMotor.getNEO(1),TrainConstants.kTurningMotorGearRatio,.0000001);
+				break;
+			default:
+				break;
+			}
 		case VORTEX_SPARK_FLEX:
 			System.err.println("Detected Spark Flex");
 			driveMotor = new CANSparkFlex(container.getDriveMotorID(),
 					MotorType.kBrushless);
 			turningMotor = new CANSparkFlex(container.getTurningMotorID(),
 					MotorType.kBrushless);
+			switch (Constants.currentMode) {
+				case SIM:
+					driveMotorSim = new DCMotorSim(DCMotor.getNeoVortex(1), TrainConstants.kDriveMotorGearRatio, .0000001);
+					turningMotorSim = new DCMotorSim(DCMotor.getNeoVortex(1),TrainConstants.kTurningMotorGearRatio,.0000001);
+				break;
+			default:
+				break;
+			}
 		default:
 			break;
 		}
