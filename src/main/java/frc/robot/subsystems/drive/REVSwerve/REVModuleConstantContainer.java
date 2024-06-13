@@ -29,11 +29,6 @@ public class REVModuleConstantContainer {
 	 * @param absoluteEncoderOffset         The offset of the absolute encoder
 	 *                                         (when the module is zeroed, what
 	 *                                         value is output)
-	 * @param driveGearing                  The gearing of the drive motor on the
-	 *                                         module (>1 is a reduction)
-	 * @param turnGearing                   The gearing of the turning motor on
-	 *                                         the module (>1 is a reduction)
-	 * @param wheelDiameter                 The diameter of the wheel (in meters)
 	 * @param maxModuleSpeed                The maximum speed of the module
 	 *                                         (should be the same as the max
 	 *                                         speed of the drivetrain )
@@ -55,7 +50,7 @@ public class REVModuleConstantContainer {
 	public REVModuleConstantContainer(int driveMotorID, int turningMotorID,
 			boolean driveMotorReversed, boolean turningMotorReversed,
 			double absoluteEncoderOffset, double maxModuleSpeed,
-			double driveGearing, double turnGearing, double wheelDiameter,
+	
 			boolean absoluteEncoderReversed, ModulePosition modulePosition,
 			MotorConstantContainer driveMotorConstantContainer,
 			MotorConstantContainer turningMotorConstantContainer,
@@ -70,8 +65,7 @@ public class REVModuleConstantContainer {
 				driveMotorConstantContainer, turningMotorConstantContainer
 		};
 		moduleConstantContainerDoubles = new double[] { absoluteEncoderOffset,
-				maxModuleSpeed, driveGearing, turnGearing, wheelDiameter
-		};
+				maxModuleSpeed};
 		m_modulePosition = modulePosition;
 		moduleTranslation = moduleTranslation2d;
 		moduleEncoderConstants = encoderConstants;
@@ -153,21 +147,4 @@ public class REVModuleConstantContainer {
 		return moduleEncoderConstants;
 	}
 
-	/**
-	 * @return the gearing of the drive motor
-	 */
-	public double getDriveMotorGearing() {
-		return moduleConstantContainerDoubles[2];
-	}
-
-	/**
-	 * @return the gearing of the turning motor
-	 */
-	public double getTurnMotorGearing() {
-		return moduleConstantContainerDoubles[3];
-	}
-
-	public double getWheelDiameter(){
-		return moduleConstantContainerDoubles[4];
-	}
 }

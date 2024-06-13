@@ -145,9 +145,9 @@ public class REVSwerveModule extends SubsystemBase {
 				break;
 			case VORTEX_SPARK_FLEX:
 				driveMotorSim = new DCMotorSim(DCMotor.getNeoVortex(1),
-						container.getDriveMotorGearing(), .0001);
+						1, .0001);
 				turningMotorSim = new DCMotorSim(DCMotor.getNeoVortex(1),
-						container.getTurnMotorGearing(), .0001);
+						1, .0001);
 				break;
 			default:
 				break;
