@@ -294,6 +294,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 				m_modulePositions.getTimestamp(), getRotation2d(),
 				m_modulePositions.getPositions());
 		for (REVSwerveModule module : m_swerveModules.values()) {
+			module.updateModuleStates();
 			var modulePositionFromChassis = kModuleTranslations[module
 					.getModuleNumber()].rotateBy(getRotation2d())
 							.plus(getPoseMeters().getTranslation());
@@ -377,7 +378,7 @@ public class REVSwerveS extends SubsystemBase implements DrivetrainS {
 	@Override
 	public Twist2d getFieldVelocity() { return fieldVelocity; }
 
-	@Override
+
 	public Command getSystemCheckCommand() { // TODO Auto-generated method stub
 	throw new UnsupportedOperationException("Unimplemented method 'getSystemCheckCommand'"); }
 

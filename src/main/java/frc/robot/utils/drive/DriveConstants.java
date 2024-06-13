@@ -10,7 +10,7 @@ import frc.robot.utils.MotorConstantContainer;
 
 public class DriveConstants {
 	//ONLY CTRE_SWERVE IS *FULLY* CURRENT DRAW ACCURATE IN SIM
-	public static MotorVendor robotMotorController = MotorVendor.CTRE_MOTORS;
+	public static MotorVendor robotMotorController = MotorVendor.NEO_SPARK_MAX;
 	public static driveTrainType driveType = driveTrainType.SWERVE;
 
 	/**
@@ -87,9 +87,9 @@ public class DriveConstants {
 				kDriveMotorGearRatio = 6.75, kTurningMotorGearRatio = 150 / 7, //GEAR RATIO MAY BE INVERSED! (FOR REV SWERVE)
 				kDriveEncoderRot2Meter = kDriveMotorGearRatio * Math.PI
 						* kWheelDiameter,
-				kDriveEncoderRPM2MeterPerSec = kDriveEncoderRot2Meter / 60,
+				kDriveEncoderRPM2MeterPerSec = kDriveEncoderRot2Meter,
 				kTurningEncoderRot2Rad = kTurningMotorGearRatio * 2 * Math.PI,
-				kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad / 60,
+				kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad,
 				kDeadband = 0.1;
 		public static final MotorConstantContainer overallTurningMotorConstantContainer = new MotorConstantContainer(
 				.2907325, .002131625, .000203095, 1.07062 * 4, 0.019508), //Average the turning motors for these vals.
