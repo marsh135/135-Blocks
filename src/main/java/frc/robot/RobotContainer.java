@@ -31,10 +31,16 @@ import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PPLibTelemetry;
 import com.revrobotics.CANSparkBase.IdleMode;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+
+
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -66,6 +72,7 @@ public class RobotContainer {
 	public static XboxController driveController = new XboxController(0);
 	public static XboxController manipController = new XboxController(1);
 	public static XboxController testingController = new XboxController(5);
+	public static Supplier<Optional<Rotation2d>> poseOverrider = () ->(Optional.empty());
 	static JoystickButton xButtonDrive = new JoystickButton(driveController, 3),
 			yButtonDrive = new JoystickButton(driveController, 4), //used for DriveToPose
 			aButtonTest = new JoystickButton(testingController, 1),
@@ -108,6 +115,7 @@ public class RobotContainer {
 						DriveConstants.kDriveBaseRadius);
 				break;
 			}
+			PPHolonomicDriveController.setRotationTargetOverride(poseOverrider);
 			break;
 		case TANK:
 			switch (DriveConstants.robotMotorController) {
@@ -154,7 +162,9 @@ public class RobotContainer {
 						11, 12, 13, 80, 7.5, TrainConstants.kWheelDiameter,
 						DriveConstants.kModuleTranslations, Units.inchesToMeters(6)));
 				break;
+
 			}
+			PPHolonomicDriveController.setRotationTargetOverride(poseOverrider);
 			break;
 		//Placeholder values
 		default:
