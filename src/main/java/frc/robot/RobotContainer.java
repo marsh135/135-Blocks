@@ -210,7 +210,7 @@ public class RobotContainer {
 						.setPoses(PathFinder.parseAutoToPose2dList(auto.getName()));
 			}
 			catch (Exception e) {
-				System.err.println("No found path for" + auto.getName());
+				System.err.println("NO FOUND PATH FOR DESIRED AUTO!!");
 				field.getObject("path").setPoses(
 						new Pose2d[] { new Pose2d(-50, -50, new Rotation2d()),
 								new Pose2d(-50.2, -50, new Rotation2d())
