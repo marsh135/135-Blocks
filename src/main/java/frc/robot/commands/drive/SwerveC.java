@@ -18,10 +18,6 @@ public class SwerveC extends Command {
 	public ChassisSpeeds chassisSpeeds;
 	private final DrivetrainS drivetrainS;
 	private final SlewRateLimiter xLimiter, yLimiter, turningLimiter;
-	public static double[][] variableAngleLog = new double[2][20];
-	public static double variableAngleDistance = 0;
-	public static double angleOutputDegrees = 0;
-	//private int arrayIndex = 0;
 
 	public SwerveC(DrivetrainS drivetrainS) {
 		this.drivetrainS = drivetrainS;
@@ -91,6 +87,9 @@ public class SwerveC extends Command {
 				xSpeed *= -1;
 				ySpeed *= -1;
 				turningSpeed *= 1;
+			}
+			if (RobotContainer.angularSpeed !=0){
+				turningSpeed = RobotContainer.angularSpeed;
 			}
 			// Convert ChassisSpeeds into the ChassisSpeeds type
 			if (DriveConstants.fieldOriented) {

@@ -142,16 +142,23 @@ public class CTRESwerveS extends SwerveDrivetrain implements DrivetrainS {
 
 	@Override
 	public void applyRequest() {
+		double rotationRate = 0, rotationDeadband = 0;
+		if (RobotContainer.angularSpeed !=0){
+			rotationRate = RobotContainer.angularSpeed*2;
+			rotationDeadband = 0.01;
+		}else{
+			rotationRate = -RobotContainer.driveController.getRightX() * DriveConstants.kTeleTurningMaxAcceleration;
+			rotationDeadband = DriveConstants.kTeleTurningMaxAcceleration * deadband;
+		}
 		drive.withVelocityX(-RobotContainer.driveController.getLeftY()
 				* TunerConstants.kSpeedAt12VoltsMps) // Drive forward with
 				// negative Y (forward)
 				.withVelocityY(-RobotContainer.driveController.getLeftX()
 						* TunerConstants.kSpeedAt12VoltsMps) // Drive left with negative X (left)
-				.withRotationalRate(-RobotContainer.driveController.getRightX()
-						* DriveConstants.kTeleTurningMaxAcceleration)
+				.withRotationalRate(rotationRate)
 				.withDeadband(TunerConstants.kSpeedAt12VoltsMps * deadband)
 				.withRotationalDeadband(
-						DriveConstants.kTeleTurningMaxAcceleration * deadband) // Drive counterclockwise with negative X (left)
+						rotationDeadband) // Drive counterclockwise with negative X (left)
 				.apply(m_requestParameters, Modules);
 	}
 
