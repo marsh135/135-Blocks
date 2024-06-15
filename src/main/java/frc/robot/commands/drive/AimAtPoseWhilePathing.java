@@ -7,11 +7,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.utils.drive.DriveConstants;
-
 public class AimAtPoseWhilePathing extends Command {
 	private DrivetrainS drivetrainS;
 	private Pose2d aimedPose;
 	private boolean isFinished;
+	/**
+	 * Constructs a command to aim at a specific pose while pathing
+	 * @param drivetrain the drivetrainS subsystem
+	 * @param pose the pose to set it to
+	 */
 	public AimAtPoseWhilePathing(DrivetrainS drivetrain, Pose2d pose){
 		drivetrainS = drivetrain;
 		aimedPose = pose;
