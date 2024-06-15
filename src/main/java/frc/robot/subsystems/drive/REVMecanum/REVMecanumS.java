@@ -37,6 +37,7 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 import org.ejml.simple.UnsupportedOperation;
 import org.littletonrobotics.junction.Logger;
+import java.util.HashMap;
 
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.kauailabs.navx.frc.AHRS;
@@ -54,10 +55,8 @@ import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SerialPort.Port;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.Position;
-import frc.robot.utils.selfCheck.SubsystemFault;
 
 public class REVMecanumS extends SubsystemChecker implements DrivetrainS {
 	private static CANSparkBase[] sparkMotors = new CANSparkBase[4];
@@ -325,23 +324,6 @@ public class REVMecanumS extends SubsystemChecker implements DrivetrainS {
 	 }
 
 	@Override
-   public SystemStatus getSystemStatus() {
-    SystemStatus worstStatus = SystemStatus.OK;
-
-    for (SubsystemFault f : this.getFaults()) {
-      if (f.sticky || f.timestamp > Timer.getFPGATimestamp() - 10) {
-        if (f.isWarning) {
-          if (worstStatus != SystemStatus.ERROR) {
-            worstStatus = SystemStatus.WARNING;
-          }
-        } else {
-          worstStatus = SystemStatus.ERROR;
-        }
-      }
-    }
-	 return worstStatus;
-   }
-	@Override
 	public SystemStatus getTrueSystemStatus(){
 		return getSystemStatus();
 	}
@@ -375,4 +357,14 @@ public class REVMecanumS extends SubsystemChecker implements DrivetrainS {
                 !getFaults().isEmpty())
         .andThen(runOnce(() ->setChassisSpeeds(new ChassisSpeeds(0,0,0))));
 	}
+	
+	@Override
+	public HashMap<String, Double> getTemps() {
+		 HashMap<String, Double> tempMap = new HashMap<>();
+		 tempMap.put("FLTemp", sparkMotors[0].getMotorTemperature());
+		 tempMap.put("FRTemp", sparkMotors[1].getMotorTemperature());
+		 tempMap.put("BLTemp", sparkMotors[2].getMotorTemperature());
+		 tempMap.put("BRTemp", sparkMotors[3].getMotorTemperature());
+		 return tempMap;
+	}	
 }

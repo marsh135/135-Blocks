@@ -3,9 +3,7 @@ package frc.robot.subsystems.drive.CTRESwerve;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrainConstants;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -15,17 +13,15 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.utils.drive.DriveConstants;
-import frc.robot.utils.selfCheck.SubsystemFault;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TestableCTRESwerveS extends SubsystemChecker
 		implements DrivetrainS {
@@ -37,7 +33,8 @@ public class TestableCTRESwerveS extends SubsystemChecker
 			SwerveModuleConstants... modules) {
 		this.ctreSwerveS = new CTRESwerveS(driveTrainConstants,
 				OdometryUpdateFrequency, logger, modules);
-		makeMotors();
+		motors = makeMotors();
+		registerSelfCheckHardware();
 	}
 
 	/**
@@ -51,7 +48,8 @@ public class TestableCTRESwerveS extends SubsystemChecker
 	public TestableCTRESwerveS(SwerveDrivetrainConstants driveTrainConstants,
 			Telemetry logger, SwerveModuleConstants... modules) {
 		this.ctreSwerveS = new CTRESwerveS(driveTrainConstants, logger, modules);
-		makeMotors();
+		motors = makeMotors();
+		registerSelfCheckHardware();
 	}
 
 	private TalonFX[][] makeMotors() {
@@ -88,24 +86,6 @@ public class TestableCTRESwerveS extends SubsystemChecker
 		}
 		return orchestra;
 	}
-
-	@Override
-	public SystemStatus getSystemStatus() {
-		SystemStatus worstStatus = SystemStatus.OK;
-		for (SubsystemFault f : this.getFaults()) {
-			if (f.sticky || f.timestamp > Timer.getFPGATimestamp() - 10) {
-				if (f.isWarning) {
-					if (worstStatus != SystemStatus.ERROR) {
-						worstStatus = SystemStatus.WARNING;
-					}
-				} else {
-					worstStatus = SystemStatus.ERROR;
-				}
-			}
-		}
-		return worstStatus;
-	}
-
 	@Override
 	public SystemStatus getTrueSystemStatus() { return getSystemStatus(); }
 
@@ -119,83 +99,9 @@ public class TestableCTRESwerveS extends SubsystemChecker
 		return getOrchestraDevices();
 	}
 
-	boolean frontLeftFinished = false;
-	boolean frontRightFinished = false;
-	boolean backLeftFinished = false;
-	boolean backRightFinished = false;
-
-	private Command swerveModuleTest(SwerveModule module, String moduleName) {
-		return Commands.sequence(
-				run(() -> module.apply(
-						new SwerveModuleState(0,
-								new Rotation2d(Units.degreesToRadians(90))),
-						DriveRequestType.OpenLoopVoltage)).withTimeout(1.0),
-				runOnce(() -> {
-					if (module.getCurrentState().angle.getDegrees() < 70
-							|| module.getCurrentState().angle.getDegrees() > 110) {
-						addFault(
-								"[System Check] Rotation Motor did not reach target position for "
-										+ moduleName,
-								false, true);
-					}
-				}), runOnce(() -> {
-					module.getDriveMotor().setVoltage(1.2);
-					module.getSteerMotor().stopMotor();
-				}), Commands.waitSeconds(0.5), runOnce(() -> {
-					if (module.getCurrentState().speedMetersPerSecond < 0.25) {
-						addFault(
-								"[System Check] Drive motor encoder velocity too slow for "
-										+ moduleName,
-								false, true);
-					}
-					module.getDriveMotor().stopMotor();
-				}), Commands.waitSeconds(0.25),
-				run(() -> module.apply(
-						new SwerveModuleState(0,
-								new Rotation2d(Units.degreesToRadians(0))),
-						DriveRequestType.OpenLoopVoltage)).withTimeout(1.0),
-				runOnce(() -> {
-					if (Math.abs(module.getCurrentState().angle.getDegrees()) > 20) {
-						addFault(
-								"[System Check] Rotation did not reach target position for "
-										+ moduleName,
-								false, true);
-					}
-				})).until(() -> !getFaults().isEmpty()).andThen(runOnce(() -> {
-					module.getDriveMotor().stopMotor();
-					module.getSteerMotor().stopMotor();
-					switch (moduleName) {
-					case "FrontLeft":
-						frontLeftFinished = true;
-						break;
-					case "FrontRight":
-						frontRightFinished = true;
-						break;
-					case "BackLeft":
-						backLeftFinished = true;
-						break;
-					default:
-						backRightFinished = true;
-						break;
-					}
-				}));
-	}
-
 	@Override
 	protected Command systemCheckCommand() {
 		return Commands.sequence(
-				/*runOnce(
-					() -> {
-					  swerveModuleTest(ctreSwerveS.getModule(0),"FrontLeft").schedule();
-					  swerveModuleTest(ctreSwerveS.getModule(1),"FrontRight").schedule();
-					  swerveModuleTest(ctreSwerveS.getModule(2),"BackLeft").schedule();
-					  swerveModuleTest(ctreSwerveS.getModule(3),"BackRight").schedule();
-					}),
-				// Hack to run module system checks since modules[] does not exist when this method is
-				// called
-				Commands.waitUntil(
-					() ->
-					frontLeftFinished && frontRightFinished && backLeftFinished && backRightFinished),*/
 				run(() -> setChassisSpeeds(new ChassisSpeeds(1.5, 0, 0)))
 						.withTimeout(1.0),
 				runOnce(() -> {
@@ -209,14 +115,14 @@ public class TestableCTRESwerveS extends SubsystemChecker
 								|| Math.abs(module.speedMetersPerSecond) > 1.7) {
 							addFault(
 									"[System Check] Drive motor encoder velocity too slow for "
-											+ name + module.speedMetersPerSecond);
+											+ name + module.speedMetersPerSecond,false,true);
 						}
-						if (Math.abs(module.angle.getRadians()) > Units
-								.degreesToRadians(10))
-							if (Math.abs(module.angle.getDegrees() - 180) > 10) {
-								addFault("[System Check] Turn angle off for " + name
-										+ module.angle);
-							}
+						//angle could be 0, 180, or mod that
+						double angle = module.angle.getDegrees();
+						if (Math.abs(Math.abs(angle) - 0)  >= 10 && Math.abs(Math.abs(angle) - 180)  >= 10) {
+							addFault("[System Check] Turn angle off for " + name
+										+ module.angle.getDegrees(),false,true);
+						}
 					}
 				}), run(() -> setChassisSpeeds(new ChassisSpeeds(0, 1.5, 0)))
 						.withTimeout(1.0),
@@ -231,16 +137,18 @@ public class TestableCTRESwerveS extends SubsystemChecker
 								|| Math.abs(module.speedMetersPerSecond) > 1.7) {
 							addFault(
 									"[System Check] Drive motor encoder velocity too slow for "
-											+ name + module.speedMetersPerSecond);
+											+ name + module.speedMetersPerSecond,false,true);
 						}
-						if (Math.abs(module.angle.getDegrees()) > 10)
-							if (Math.abs(module.angle.getDegrees() - 180) > 10) {
-								addFault("[System Check] Turn angle off for " + name
-										+ module.angle);
-							}
+						double angle = module.angle.getDegrees();
+						if (Math.abs(Math.abs(angle) - 90) >= 10 && Math.abs(Math.abs(angle) - 270) >= 10) { 
+							addFault("[System Check] Turn angle off for " + name
+										+ module.angle.getDegrees(),false,true);
+						}
 					}
 				}),
 				run(() -> setChassisSpeeds(new ChassisSpeeds(0, 0, -0.5)))
+						.withTimeout(2.0),
+				run(() -> setChassisSpeeds(new ChassisSpeeds(0, 0, 0.5)))
 						.withTimeout(2.0))
 				.until(() -> !getFaults().isEmpty()).andThen(
 						runOnce(() -> setChassisSpeeds(new ChassisSpeeds(0, 0, 0))));
@@ -313,4 +221,18 @@ public class TestableCTRESwerveS extends SubsystemChecker
 	public double getCurrent() {
 		return 0;//ctreSwerveS.getCurrent(); //ENABLE IF WANT PROPER CURRENT, BE AWARE CAUSES SOME RESIM'S NEEDED!
 	}
+	
+	@Override
+	public HashMap<String, Double> getTemps() {
+		 HashMap<String, Double> tempMap = new HashMap<>();
+		 tempMap.put("FLDriveTemp", motors[0][0].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("FLTurnTemp", motors[0][1].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("FRDriveTemp", motors[1][0].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("FRTurnTemp", motors[1][1].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("BLDriveTemp", motors[2][0].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("BLTurnTemp", motors[2][1].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("BRDriveTemp", motors[3][0].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("BRTurnTemp", motors[3][1].getDeviceTemp().getValueAsDouble());
+		 return tempMap;
+	}	
 }

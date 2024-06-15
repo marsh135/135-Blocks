@@ -39,6 +39,8 @@ import frc.robot.utils.drive.DriveConstants;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.HashMap;
+
 
 /**
  * Class that extends the Phoenix SwerveDrivetrain class and implements
@@ -343,4 +345,8 @@ public class CTRESwerveS extends SwerveDrivetrain implements DrivetrainS {
 		drive.RotationalDeadband = DriveConstants.kTeleTurningMaxAcceleration
 				* deadband;
 	}
+
+	@Override
+	public HashMap<String, Double> getTemps() { 
+	throw new UnsupportedOperationException("Unimplemented method 'getTemps'"); }
 }

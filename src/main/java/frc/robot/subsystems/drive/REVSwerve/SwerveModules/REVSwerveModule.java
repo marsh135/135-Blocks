@@ -9,7 +9,6 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAnalogSensor.Mode;
 
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -18,13 +17,13 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import frc.robot.utils.drive.DriveConstants.TrainConstants.ModulePosition;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkFlex;
 
 // import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.REVSwerve.REVModuleConstantContainer;
@@ -32,7 +31,7 @@ import frc.robot.utils.drive.DriveConstants;
 
 public class REVSwerveModule extends SubsystemBase {
 	private static ModulePosition position;
-	private CANSparkBase driveMotor, turningMotor;
+	public CANSparkBase driveMotor, turningMotor;
 	private RelativeEncoder driveEncoder, turningEncoder;
 	private DCMotorSim driveMotorSim, turningMotorSim;
 	private double absoluteEncoderOffsetRad;
@@ -41,8 +40,7 @@ public class REVSwerveModule extends SubsystemBase {
 	private PIDController turningPIDController = null, drivePIDController = null;
 	private SimpleMotorFeedforward driveFeedForward = null;
 	private double driveEncoderRot2Meter, driveEncoderRPM2MeterPerSec,
-			turningEncoderRot2Rad, turningEncoderRPM2RadPerSec,
-			m_moduleMaxSpeed = 0;
+			turningEncoderRot2Rad, turningEncoderRPM2RadPerSec;
 	private Pose2d m_pose = new Pose2d();
 	private int m_moduleNumber = 0;
 
@@ -92,12 +90,9 @@ public class REVSwerveModule extends SubsystemBase {
 		//sets values of the encoder offset and whether its reversed
 		absoluteEncoderOffsetRad = container.getAbsoluteEncoderOffset();
 		this.absoluteEncoderReversed = container.getAbsoluteEncoderReversed();
-		m_moduleMaxSpeed = container.getModuleMaxSpeed();
 		//absoluteEncoder = new AnalogInput(absoluteEncoderId);
 		//absoluteEncoder = new CANCoder(absoluteEncoderId);
 		//declares motors
-		switch (Constants.currentMode) {
-		case REAL:
 			switch (DriveConstants.robotMotorController) {
 			case NEO_SPARK_MAX:
 				System.err.println("Detected Spark Max");
@@ -105,6 +100,8 @@ public class REVSwerveModule extends SubsystemBase {
 						MotorType.kBrushless);
 				turningMotor = new CANSparkMax(container.getTurningMotorID(),
 						MotorType.kBrushless);
+				driveMotorSim = new DCMotorSim(DCMotor.getNEO(1), driveEncoderRot2Meter, .001); //container.getSwerveModuleEncoderConstants().getDriveEncoderRot2Meter()
+				turningMotorSim = new DCMotorSim(DCMotor.getNEO(1), 150/7, .001);
 				break;
 			case VORTEX_SPARK_FLEX:
 				System.err.println("Detected Spark Flex");
@@ -112,6 +109,10 @@ public class REVSwerveModule extends SubsystemBase {
 						MotorType.kBrushless);
 				turningMotor = new CANSparkFlex(container.getTurningMotorID(),
 						MotorType.kBrushless);
+				driveMotorSim = new DCMotorSim(DCMotor.getNeoVortex(1),
+				driveEncoderRot2Meter, .001);
+				turningMotorSim = new DCMotorSim(DCMotor.getNeoVortex(1),
+				150/7, .001);
 			default:
 				break;
 			}
@@ -133,28 +134,7 @@ public class REVSwerveModule extends SubsystemBase {
 			turningEncoder
 					.setVelocityConversionFactor(turningEncoderRPM2RadPerSec);
 			//creates pidController, used exclusively for turning because that has to be precise
-			break;
-		//This is sim btw
-		default:
-			switch (DriveConstants.robotMotorController) {
-			/*We're going to do this how the REV motor controllers do it: simulate the actual relative encoder value (via setting the gearing to 1,
-			then multiply it by the conversion factor given in the encoderConstantContainer)*/
-			case NEO_SPARK_MAX:
-				driveMotorSim = new DCMotorSim(DCMotor.getNEO(1), 1, .0001);
-				turningMotorSim = new DCMotorSim(DCMotor.getNEO(1), 1, .0001);
-				break;
-			case VORTEX_SPARK_FLEX:
-				driveMotorSim = new DCMotorSim(DCMotor.getNeoVortex(1),
-						1, .0001);
-				turningMotorSim = new DCMotorSim(DCMotor.getNeoVortex(1),
-						1, .0001);
-				break;
-			default:
-				break;
-			}
-			break;
-		}
-		turningPIDController = new PIDController(.5, 0, 0);
+		turningPIDController = new PIDController(360, 0, 0);
 		//makes the value loop around
 		turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
 		drivePIDController = new PIDController(
@@ -163,46 +143,25 @@ public class REVSwerveModule extends SubsystemBase {
 	}
 
 	public double getDrivePosition() {
-		//returns the position of the drive wheel
-		switch (Constants.currentMode) {
-		case REAL:
 			return driveEncoder.getPosition();
-		default:
-			return driveMotorSim.getAngularPositionRotations()
-					* driveEncoderRot2Meter;
-		}
 	}
 
 	public double getTurningPosition() {
-		//returns the heading of the swerve module (turning motor position)
-		switch (Constants.currentMode) {
-		case REAL:
 			return getAbsoluteEncoderRad();
-		default:
-			return turningMotorSim.getAngularPositionRotations()
-					* turningEncoderRot2Rad;
-		}
 	}
 
 	public double getDriveVelocity() {
-		//returns velocity of drive wheel
-		switch (Constants.currentMode) {
-		case REAL:
-			return driveEncoder.getVelocity();
-		default:
-			return driveMotorSim.getAngularVelocityRPM()
-					* driveEncoderRot2Meter;
-		}
+			if (Constants.currentMode == Constants.Mode.REAL){
+				return driveEncoder.getVelocity();
+			}
+			return driveMotorSim.getAngularVelocityRPM()/60;
 	}
 
 	public double getTurningVelocity() {
-		switch (Constants.currentMode) {
-		case REAL:
-			return turningEncoder.getVelocity();
-		default:
-			return turningMotorSim.getAngularVelocityRPM()
-					* turningEncoderRPM2RadPerSec;
-		}
+			if (Constants.currentMode == Constants.Mode.REAL){
+				return turningEncoder.getVelocity();
+			}
+			return turningMotorSim.getAngularVelocityRPM()/60;
 		//returns velocity of turning motor
 	}
 
@@ -235,7 +194,7 @@ public class REVSwerveModule extends SubsystemBase {
 			return angle;
 		default:
 			//Sim encoder is 100 percent accurate, so we can just recycle that value
-			return turningMotorSim.getAngularPositionRad();
+			return Units.degreesToRadians(turningEncoder.getPosition());
 		}
 	}
 
@@ -244,16 +203,8 @@ public class REVSwerveModule extends SubsystemBase {
 	 * the module heading from the absolute encoder)
 	 */
 	public void resetEncoders() {
-		switch (Constants.currentMode) {
-		case REAL:
 			driveEncoder.setPosition(0);
 			turningEncoder.setPosition(getAbsoluteEncoderRad());
-			break;
-		default:
-			driveMotorSim.setState(VecBuilder.fill(0,0));
-			turningMotorSim.setState(VecBuilder.fill(0,0));
-			break;
-		}
 	}
 
 	public void stop() {
@@ -276,19 +227,16 @@ public class REVSwerveModule extends SubsystemBase {
 	 * @param driveFeedforward driveFeedForwards, in Meters
 	 * @param turnOutput       turningOutput, as a percentage 
 	 */
-	public void setMotors(double driveOutput, double driveFeedforward,
+	public void setMotors(double driveOutput,
 			double turnOutput) {
-		double volts = 12 * driveOutput / m_moduleMaxSpeed;
-
 		switch (Constants.currentMode) {
 		case REAL:
-			driveMotor.setVoltage(volts + driveFeedforward);
+			driveMotor.setVoltage(driveOutput);
 			turningMotor.set(turnOutput);
 			break;
 		default:
-			SmartDashboard.putNumber("Output", volts+driveFeedforward);
-			driveMotorSim.setInputVoltage(volts+driveFeedforward);
-			turningMotorSim.setInputVoltage(turnOutput*RobotController.getBatteryVoltage());
+			driveMotorSim.setInputVoltage(driveOutput);
+			turningMotorSim.setInputVoltage(turnOutput*12);
 			break;
 		}
 	}
@@ -296,7 +244,7 @@ public class REVSwerveModule extends SubsystemBase {
 	public int getModuleNumber() { return m_moduleNumber; }
 
 	public Rotation2d getHeadingRotation2d() {
-		return Rotation2d.fromDegrees(getTurningPosition());
+		return Rotation2d.fromRadians(getTurningPosition());
 	}
 
 	public SwerveModulePosition getPosition() {
@@ -313,30 +261,32 @@ public class REVSwerveModule extends SubsystemBase {
 	 * Updates the module states in sim. DT is set to .02, so call this in periodic or tweak this
 	 */
 	public void updateModuleStates(){
-		driveMotorSim.update(.02);
-		turningMotorSim.update(.02);
+		if (Constants.currentMode == Constants.Mode.SIM){
+			driveMotorSim.update(.02);
+			turningMotorSim.update(.02);
+			driveEncoder.setPosition(driveMotorSim.getAngularPositionRotations());
+			turningEncoder.setPosition(turningMotorSim.getAngularPositionRotations());
+		}
+
 	}
 
 	public void setDesiredState(SwerveModuleState state) {
-		//var encoderRotation = new Rotation2d(getTurningPosition());
-		// Stops the motors if the desired state is too small
-		/* if (Math.abs(state.speedMetersPerSecond) < 0.001 && !SwerveS.autoLock) {
-		    stop();
-		    return;
-		}*/
+
 		// Optimizing finds the shortest path to the desired angle
 		state = SwerveModuleState.optimize(state, getState().angle);
 		// Calculate the drive output from the drive PID controller.
-		double driveOutput = drivePIDController.calculate(getDriveVelocity(),
-				state.speedMetersPerSecond);
+		double driveOutput = drivePIDController.calculate(getDriveVelocity(),state.speedMetersPerSecond);
+		//double driveOutput = state.speedMetersPerSecond/DriveConstants.kMaxSpeedMetersPerSecond;
 		final double driveFeedforward = driveFeedForward
 				.calculate(state.speedMetersPerSecond);
+		driveOutput += driveFeedforward;
+
 		// Calculate the turning motor output from the turning PID controller.
 		final double turnOutput = turningPIDController
 				.calculate(getAbsoluteEncoderRad(), state.angle.getRadians());
 		//        final double turnFeedforward =
 		//         turningFeedForward.calculate(turningPIDController.getSetpoint().velocity);
-		setMotors(driveOutput, driveFeedforward, turnOutput);
+		setMotors(driveOutput, turnOutput);
 	}
 
 	public void setModulePose(Pose2d pose) { m_pose = pose; }

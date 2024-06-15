@@ -194,6 +194,7 @@ public class RobotContainer {
 		});
 		// Configure the trigger bindings
 		configureBindings();
+		addNTCommands();
 	}
 
 	private void configureBindings() {

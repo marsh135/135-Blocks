@@ -22,6 +22,7 @@ import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.Position;
 import java.util.List;
 import com.ctre.phoenix6.hardware.ParentDevice;
+import java.util.HashMap;
 
 public interface DrivetrainS extends Subsystem {
 	/**
@@ -121,6 +122,7 @@ public interface DrivetrainS extends Subsystem {
 	 */
 	boolean isConnected();
 
+	HashMap<String, Double>getTemps();
 	default Command getRunnableSystemCheckCommand(){
 		throw new UnsupportedOperationException("Unimplemented method 'getRunnableSystemCheckCommand'");
 	}

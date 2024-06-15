@@ -45,10 +45,10 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
-import frc.robot.utils.selfCheck.SubsystemFault;
 import java.util.ArrayList;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+import java.util.HashMap;
 
 import java.util.List;
 
@@ -318,24 +318,6 @@ public class CTREMecanumS extends SubsystemChecker implements DrivetrainS {
   
 		return orchestra;
 	 }
-
-	@Override
-   public SystemStatus getSystemStatus() {
-    SystemStatus worstStatus = SystemStatus.OK;
-
-    for (SubsystemFault f : this.getFaults()) {
-      if (f.sticky || f.timestamp > Timer.getFPGATimestamp() - 10) {
-        if (f.isWarning) {
-          if (worstStatus != SystemStatus.ERROR) {
-            worstStatus = SystemStatus.WARNING;
-          }
-        } else {
-          worstStatus = SystemStatus.ERROR;
-        }
-      }
-    }
-	 return worstStatus;
-   }
 	@Override
 	public SystemStatus getTrueSystemStatus(){
 		return getSystemStatus();
@@ -369,4 +351,13 @@ public class CTREMecanumS extends SubsystemChecker implements DrivetrainS {
 	public List<ParentDevice> getDriveOrchestraDevices() { 
 		return getOrchestraDevices();
 	}
-}
+	@Override
+	public HashMap<String, Double> getTemps() {
+		 HashMap<String, Double> tempMap = new HashMap<>();
+		 tempMap.put("FLTemp", motors[0].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("BLTemp", motors[1].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("FRTemp", motors[2].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("BRTemp", motors[3].getDeviceTemp().getValueAsDouble());
+		 return tempMap;
+		}	
+	}

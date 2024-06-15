@@ -19,7 +19,6 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,13 +30,13 @@ import frc.robot.Robot;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.utils.drive.Position;
-import frc.robot.utils.selfCheck.SubsystemFault;
 
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -333,23 +332,6 @@ public class CTRETankS extends SubsystemChecker implements DrivetrainS {
 	 }
 
 	@Override
-   public SystemStatus getSystemStatus() {
-    SystemStatus worstStatus = SystemStatus.OK;
-
-    for (SubsystemFault f : this.getFaults()) {
-      if (f.sticky || f.timestamp > Timer.getFPGATimestamp() - 10) {
-        if (f.isWarning) {
-          if (worstStatus != SystemStatus.ERROR) {
-            worstStatus = SystemStatus.WARNING;
-          }
-        } else {
-          worstStatus = SystemStatus.ERROR;
-        }
-      }
-    }
-	 return worstStatus;
-   }
-	@Override
 	public SystemStatus getTrueSystemStatus(){
 		return getSystemStatus();
 	}
@@ -370,4 +352,13 @@ public class CTRETankS extends SubsystemChecker implements DrivetrainS {
 	public List<ParentDevice> getDriveOrchestraDevices() { 
 		return getOrchestraDevices();
 	}
+	@Override
+	public HashMap<String, Double> getTemps() {
+		 HashMap<String, Double> tempMap = new HashMap<>();
+		 tempMap.put("FRTemp", motors[0].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("BRTemp", motors[1].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("FLTemp", motors[2].getDeviceTemp().getValueAsDouble());
+		 tempMap.put("BLTemp", motors[3].getDeviceTemp().getValueAsDouble());
+		 return tempMap;
+	}	
 }
