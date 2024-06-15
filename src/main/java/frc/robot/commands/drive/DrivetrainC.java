@@ -14,12 +14,12 @@ import frc.robot.utils.drive.DriveConstants;
  * download.html Should theoretically output a csv file, see if we can convert
  * it into a txt file and upload it to smth
  */
-public class SwerveC extends Command {
+public class DrivetrainC extends Command {
 	public ChassisSpeeds chassisSpeeds;
 	private final DrivetrainS drivetrainS;
 	private final SlewRateLimiter xLimiter, yLimiter, turningLimiter;
 
-	public SwerveC(DrivetrainS drivetrainS) {
+	public DrivetrainC(DrivetrainS drivetrainS) {
 		this.drivetrainS = drivetrainS;
 		// These guys limit acceleration, they aren't the most necessary but it makes movement smoother
 		this.xLimiter = new SlewRateLimiter(
