@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
+import frc.robot.commands.drive.AimAtPoseWhilePathing;
 import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.SwerveC;
 import frc.robot.subsystems.SubsystemChecker;
@@ -72,7 +73,7 @@ public class RobotContainer {
 	public static XboxController driveController = new XboxController(0);
 	public static XboxController manipController = new XboxController(1);
 	public static XboxController testingController = new XboxController(5);
-	public static Supplier<Optional<Rotation2d>> poseOverrider = () ->(Optional.empty());
+	public static Supplier<Optional<Rotation2d>> angleOverrider = () ->(Optional.empty());
 	static JoystickButton xButtonDrive = new JoystickButton(driveController, 3),
 			yButtonDrive = new JoystickButton(driveController, 4), //used for DriveToPose
 			aButtonTest = new JoystickButton(testingController, 1),
@@ -115,7 +116,7 @@ public class RobotContainer {
 						DriveConstants.kDriveBaseRadius);
 				break;
 			}
-			PPHolonomicDriveController.setRotationTargetOverride(poseOverrider);
+			PPHolonomicDriveController.setRotationTargetOverride(angleOverrider);
 			break;
 		case TANK:
 			switch (DriveConstants.robotMotorController) {
@@ -164,7 +165,7 @@ public class RobotContainer {
 				break;
 
 			}
-			PPHolonomicDriveController.setRotationTargetOverride(poseOverrider);
+			PPHolonomicDriveController.setRotationTargetOverride(angleOverrider);
 			break;
 		//Placeholder values
 		default:
@@ -175,6 +176,7 @@ public class RobotContainer {
 		List<Pair<String, Command>> autoCommands = Arrays.asList(
 		//new Pair<String, Command>("BranchGrabbingGamePiece", new BranchAuto("grabGamePieceBranch",new Pose2d(0,0,new Rotation2d())))
 		//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
+		//new Pair<String, Command> ("AimAtPoseWhilePathing",new AimAtPoseWhilePathing(drivetrainS, new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90)))))
 		);
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		NamedCommands.registerCommands(autoCommands);
