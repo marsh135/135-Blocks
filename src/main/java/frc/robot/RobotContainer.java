@@ -42,7 +42,7 @@ import java.util.Optional;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-
+import java.util.HashMap;
 import java.util.Arrays;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -278,6 +278,25 @@ public class RobotContainer {
 	 */
 	public static Command allSystemsCheck() {
 	return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand());
+	}
+	public static HashMap<String, Double> combineMaps(List<HashMap<String, Double>> maps) {
+		HashMap<String, Double> combinedMap = new HashMap<>();
+
+		// Iterate over the list of maps
+		for (HashMap<String, Double> map : maps) {
+			 combinedMap.putAll(map);
+		}
+
+		return combinedMap;
+  }
+
+	public static HashMap<String, Double> getAllTemps(){
+		// List of HashMaps
+		List<HashMap<String, Double>> maps = List.of(drivetrainS.getTemps());
+
+		// Combine all maps
+		HashMap<String, Double> combinedMap = combineMaps(maps);
+		return combinedMap;
 	}
 	/**
 	 * Checks EACH system's status (DOES NOT RUN THE TESTS)  
