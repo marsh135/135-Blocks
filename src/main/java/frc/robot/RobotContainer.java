@@ -3,8 +3,6 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
-import frc.robot.commands.drive.AimToPose;
-//import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.SwerveC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
@@ -75,7 +73,7 @@ public class RobotContainer {
 	public static Optional<Rotation2d> angleOverrider = Optional.empty();
 	public static double angularSpeed = 0;
 	static JoystickButton xButtonDrive = new JoystickButton(driveController, 3),
-			yButtonDrive = new JoystickButton(driveController, 4), //used for DriveToPose
+			//yButtonDrive = new JoystickButton(driveController, 4), //used for Aim/Drive to pose
 			aButtonTest = new JoystickButton(testingController, 1),
 			bButtonTest = new JoystickButton(testingController, 2),
 			xButtonTest = new JoystickButton(testingController, 3),
@@ -174,7 +172,7 @@ public class RobotContainer {
 		}
 		drivetrainS.setDefaultCommand(new SwerveC(drivetrainS));
 		List<Pair<String, Command>> autoCommands = Arrays.asList(
-			new Pair<String,Command>("AimAtAmp",new AimToPose(drivetrainS, new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(0)))))
+		//new Pair<String,Command>("AimAtAmp",new AimToPose(drivetrainS, new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(0)))))
 		//new Pair<String, Command>("BranchGrabbingGamePiece", new BranchAuto("grabGamePieceBranch",new Pose2d(0,0,new Rotation2d())))
 		//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
 		);
@@ -225,8 +223,8 @@ public class RobotContainer {
 				new RunTest(SysIdRoutine.Direction.kForward, false, drivetrainS));
 		xButtonTest.whileTrue(
 				new RunTest(SysIdRoutine.Direction.kReverse, false, drivetrainS));
-		//Example Drive To 2024 Amp Pose, Bind to what you need.
-		yButtonDrive.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest).negate()).whileTrue(new AimToPose(drivetrainS,new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(90)))));
+		//Example Aim To 2024 Amp Pose, Bind to what you need.
+		//yButtonDrive.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest).negate()).whileTrue(new AimToPose(drivetrainS,new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(90)))));
 		//swerve DRIVE tests
 		//When user hits right bumper, go to next test, or wrap back to starting test for SysID.
 		rightBumperTest.onTrue(new InstantCommand(() -> {
