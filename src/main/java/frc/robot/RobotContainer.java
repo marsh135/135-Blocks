@@ -8,6 +8,7 @@ import frc.robot.commands.CTRE_state_space.CTREDoubleJointedArmC;
 import frc.robot.commands.CTRE_state_space.CTREElevatorC;
 import frc.robot.commands.CTRE_state_space.CTREFlywheelC;
 import frc.robot.commands.drive.SwerveC;
+import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumConstantContainer;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumS;
@@ -15,8 +16,8 @@ import frc.robot.subsystems.CTRE_state_space.CTRESingleJointedArmS;
 import frc.robot.subsystems.CTRE_state_space.CTREDoubleJointedArmS;
 import frc.robot.subsystems.CTRE_state_space.CTREElevatorS;
 import frc.robot.subsystems.CTRE_state_space.CTREFlywheelS;
-import frc.robot.subsystems.drive.CTRESwerve.CTRESwerveS;
 import frc.robot.subsystems.drive.CTRESwerve.Telemetry;
+import frc.robot.subsystems.drive.CTRESwerve.TestableCTRESwerveS;
 import frc.robot.subsystems.drive.CTRESwerve.TunerConstants;
 import frc.robot.subsystems.drive.CTRETank.CTRETankConstantContainer;
 import frc.robot.subsystems.drive.CTRETank.CTRETankS;
@@ -37,10 +38,15 @@ import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PPLibTelemetry;
 import com.revrobotics.CANSparkBase.IdleMode;
 import java.util.List;
+import java.util.Optional;
+
+
+
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -76,8 +82,10 @@ public class RobotContainer {
 	public static XboxController driveController = new XboxController(0);
 	public static XboxController manipController = new XboxController(1);
 	public static XboxController testingController = new XboxController(5);
+	public static Optional<Rotation2d> angleOverrider = Optional.empty();
+	public static double angularSpeed = 0;
 	static JoystickButton xButtonDrive = new JoystickButton(driveController, 3),
-			//yButtonDrive = new JoystickButton(driveController, 4), //used for DriveToPose
+			//yButtonDrive = new JoystickButton(driveController, 4), //used for Aim/Drive to pose
 			aButtonTest = new JoystickButton(testingController, 1),
 			bButtonTest = new JoystickButton(testingController, 2),
 			xButtonTest = new JoystickButton(testingController, 3),
@@ -87,6 +95,7 @@ public class RobotContainer {
 			selectButtonTest = new JoystickButton(testingController, 7),
 			startButtonTest = new JoystickButton(testingController, 8);
 	public static int currentTest = 0, currentGamePieceStatus = 0;
+	public static String currentPath = "";
 	public static Field2d field = new Field2d();
 
 	// POVButton manipPOVZero = new POVButton(manipController, 0);
@@ -103,7 +112,7 @@ public class RobotContainer {
 			switch (DriveConstants.robotMotorController) {
 			case CTRE_MOTORS:
 				logger = new Telemetry(DriveConstants.kMaxSpeedMetersPerSecond);
-				drivetrainS = new CTRESwerveS(TunerConstants.DrivetrainConstants,
+				drivetrainS = new TestableCTRESwerveS(TunerConstants.DrivetrainConstants,
 						logger, TunerConstants.Modules);
 				break;
 			case NEO_SPARK_MAX:
@@ -117,6 +126,7 @@ public class RobotContainer {
 						DriveConstants.kDriveBaseRadius);
 				break;
 			}
+			PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
 			break;
 		case TANK:
 			switch (DriveConstants.robotMotorController) {
@@ -163,7 +173,9 @@ public class RobotContainer {
 						11, 12, 13, 80, 7.5, TrainConstants.kWheelDiameter,
 						DriveConstants.kModuleTranslations, Units.inchesToMeters(6)));
 				break;
+
 			}
+			PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
 			break;
 		//Placeholder values
 		default:
@@ -172,6 +184,7 @@ public class RobotContainer {
 		}
 		drivetrainS.setDefaultCommand(new SwerveC(drivetrainS));
 		List<Pair<String, Command>> autoCommands = Arrays.asList(
+		//new Pair<String,Command>("AimAtAmp",new AimToPose(drivetrainS, new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(0)))))
 		//new Pair<String, Command>("BranchGrabbingGamePiece", new BranchAuto("grabGamePieceBranch",new Pose2d(0,0,new Rotation2d())))
 		//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
 		);
@@ -206,8 +219,12 @@ public class RobotContainer {
 		});
 		// Configure the trigger bindings
 		configureBindings();
+		addNTCommands();
 	}
-
+	public Optional<Rotation2d> getRotationTargetOverride(){
+		// Some condition that should decide if we want to override rotation
+		return angleOverrider;
+	}
 	private void configureBindings() {
 		xButtonDrive
 				.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest)
@@ -221,8 +238,8 @@ public class RobotContainer {
 				new RunTest(SysIdRoutine.Direction.kForward, false, drivetrainS));
 		xButtonTest.whileTrue(
 				new RunTest(SysIdRoutine.Direction.kReverse, false, drivetrainS));
-		//Example Drive To 2024 Amp Pose, Bind to what you need.
-		//yButtonDrive.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest).negate()).whileTrue(new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90)))));
+		//Example Aim To 2024 Amp Pose, Bind to what you need.
+		//yButtonDrive.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest).negate()).whileTrue(new AimToPose(drivetrainS,new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(90)))));
 		//swerve DRIVE tests
 		//When user hits right bumper, go to next test, or wrap back to starting test for SysID.
 		rightBumperTest.onTrue(new InstantCommand(() -> {
@@ -263,10 +280,28 @@ public class RobotContainer {
 	 * @return Current in amps.
 	 */
 	public static double[] getCurrentDraw() {
-		return new double[] {// Math.min(drivetrainS.getCurrent(), 200) //Enable when you need to test voltages. It can cause weird module behaviour, in which you restart
-			elevatorS.getDrawnCurrentAmps(),
+		return new double[] {Math.min(drivetrainS.getCurrent(), 200),
+      elevatorS.getDrawnCurrentAmps(),
 			flywheelS.getDrawnCurrentAmps(),
 			armS.getDrawnCurrentAmps(),
 		};
 	}
+	private static void addNTCommands() {
+		SmartDashboard.putData("SystemStatus/AllSystemsCheck", allSystemsCheck());
+	 }
+	/**
+	 * RUN EACH system's test command.
+	 * Does NOT run any checks on vision. 
+	 * @return a command with all of them in a sequence.
+	 */
+	public static Command allSystemsCheck() {
+	return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand());
+	}
+	/**
+	 * Checks EACH system's status (DOES NOT RUN THE TESTS)  
+	 * @return true if ALL systems were good.
+	 */
+	public static boolean allSystemsOK() {
+		return drivetrainS.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK;
+	 }
 }
