@@ -118,7 +118,7 @@ public class TestableCTRESwerveS extends SubsystemChecker
 											+ name + module.speedMetersPerSecond,false,true);
 						}
 						//angle could be 0, 180, or mod that
-						double angle = module.angle.getDegrees();
+						double angle = module.angle.getDegrees()%360;
 						if (Math.abs(Math.abs(angle) - 0)  >= 10 && Math.abs(Math.abs(angle) - 180)  >= 10) {
 							addFault("[System Check] Turn angle off for " + name
 										+ module.angle.getDegrees(),false,true);
@@ -139,7 +139,7 @@ public class TestableCTRESwerveS extends SubsystemChecker
 									"[System Check] Drive motor encoder velocity too slow for "
 											+ name + module.speedMetersPerSecond,false,true);
 						}
-						double angle = module.angle.getDegrees();
+						double angle = module.angle.getDegrees()%360;
 						if (Math.abs(Math.abs(angle) - 90) >= 10 && Math.abs(Math.abs(angle) - 270) >= 10) { 
 							addFault("[System Check] Turn angle off for " + name
 										+ module.angle.getDegrees(),false,true);
