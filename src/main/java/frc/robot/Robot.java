@@ -229,7 +229,7 @@ public class Robot extends LoggedRobot {
 	/** This function is called periodically during test mode. */
 	@Override
 	public void testPeriodic() {
-		for (Map.Entry<String,Double> set : RobotContainer.drivetrainS.getTemps().entrySet()){
+		for (Map.Entry<String,Double> set : RobotContainer.getAllTemps().entrySet()){
 			Logger.recordOutput("Temps/"+set.getKey(), set.getValue());
 		}
 		Constants.currentMatchState = FRCMatchState.TEST;
