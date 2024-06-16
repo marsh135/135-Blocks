@@ -1,11 +1,13 @@
 package frc.robot.subsystems.leds;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.commands.leds.LEDGifC;
+import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.leds.LEDConstants;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -13,13 +15,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
+import edu.wpi.first.wpilibj2.command.Commands;
+import com.ctre.phoenix6.hardware.ParentDevice;
+import java.util.Collections;
 import java.nio.file.Files;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-public class LEDs extends SubsystemBase {
+public class LEDs extends SubsystemChecker {
 	public static AddressableLED leds;
 	public static AddressableLEDBuffer ledBuffer;
 	public static AddressableLEDSim ledSim;
@@ -103,4 +108,14 @@ public class LEDs extends SubsystemBase {
 		
 		return ledStates;
   }
+
+	@Override
+	public List<ParentDevice> getOrchestraDevices() { return Collections.emptyList(); }
+
+	@Override
+	protected Command systemCheckCommand() {
+	return Commands.sequence(run(() ->{
+		new LEDGifC(this, LEDConstants.imageList, 20,2).withTimeout(5);
+	}));
+}
 }
