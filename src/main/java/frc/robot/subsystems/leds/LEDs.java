@@ -24,20 +24,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+
 public class LEDs extends SubsystemChecker {
 	public static AddressableLED leds;
 	public static AddressableLEDBuffer ledBuffer;
 	public static AddressableLEDSim ledSim;
 	public static String gifStorage;
+
 	public LEDs() {
-		switch (Constants.currentMode){
-			case REAL:
-				gifStorage = "/U/images";
-				break;
-			default:
-				ledSim = new AddressableLEDSim(leds);
-				gifStorage = "src\\main\\java\\frc\\robot\\utils\\leds\\images";
-				break;
+		switch (Constants.currentMode) {
+		case REAL:
+			gifStorage = "/U/images";
+			break;
+		default:
+			ledSim = new AddressableLEDSim(leds);
+			gifStorage = "src\\main\\java\\frc\\robot\\utils\\leds\\images";
+			break;
 		}
 		//creates LED objects (the actual LEDs, and a buffer that stores data to be sent to them)
 		leds = new AddressableLED(LEDConstants.ledPort);
@@ -47,75 +49,86 @@ public class LEDs extends SubsystemChecker {
 		//starts LED strips
 		leds.start(); //FOR THE LOVE OF GOD PLEASE REMEMBER THIS IF YOU'RE GONNA CODE YOUR OWN SUBSYSTEM I SPENT LIKE 6 HOURS TROUBLESHOOTING AND IT DIDNT WORK BECAUSE OF THIS
 		//if the robot is a simulation, create a simulation for the addressableLEDs
+		LEDConstants.imageLedStates = preprocessImages(LEDConstants.imageList);
 	}
 
-	public static List<List<byte[][]> > preprocessImages(List<String> gifPaths) {
-		List<List<byte[][]> > imageList = new ArrayList<>();
-		for (int i = 0; i < gifPaths.size(); i++){
+	public static List<List<byte[][]>> preprocessImages(List<String> gifPaths) {
+		List<List<byte[][]>> imageList = new ArrayList<>();
+		for (int i = 0; i < gifPaths.size(); i++) {
 			List<byte[][]> gifImages = new ArrayList<>();
 			String gifPath;
-			if (Constants.currentMode == Mode.REAL){
-				gifPath = gifStorage + "/" +gifPaths.get(i);
-			}else{
-			 gifPath = gifStorage + "\\" + gifPaths.get(i);
+			if (Constants.currentMode == Mode.REAL) {
+				gifPath = gifStorage + "/" + gifPaths.get(i);
+			} else {
+				gifPath = gifStorage + "\\" + gifPaths.get(i);
 			}
 			List<String> filePaths = new ArrayList<>();
 			try {
-            Files.walkFileTree(Paths.get(gifPath), new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    filePaths.add(file.toString());
-						  System.err.println(file.toString());
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-		  for (String path : filePaths) {
-			try {
-				BufferedImage image = ImageIO.read(new File(path));
-				gifImages.add(processImageToLedStates(image,i));
+				Files.walkFileTree(Paths.get(gifPath),
+						new SimpleFileVisitor<Path>() {
+							@Override
+							public FileVisitResult visitFile(Path file,
+									BasicFileAttributes attrs) throws IOException {
+								filePaths.add(file.toString());
+								System.err.println(file.toString());
+								return FileVisitResult.CONTINUE;
+							}
+						});
 			}
 			catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
-		imageList.add(gifImages);
+			for (String path : filePaths) {
+				try {
+					BufferedImage image = ImageIO.read(new File(path));
+					gifImages.add(processImageToLedStates(image, i));
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			imageList.add(gifImages);
 		}
 		return imageList;
 	}
 
-	private static byte[][] processImageToLedStates(BufferedImage image, int gifIndex) {
-	 int ledCount = LEDConstants.ledRows * LEDConstants.ledCols;
-	 // Resize image to fit the number of LEDs
-	 BufferedImage resizedImage = new BufferedImage(LEDConstants.ledCols, LEDConstants.ledRows, BufferedImage.TYPE_INT_RGB);
-	 resizedImage.getGraphics().drawImage(image, 0, 0,LEDConstants.ledCols,LEDConstants.ledRows, null);
-
+	private static byte[][] processImageToLedStates(BufferedImage image,
+			int gifIndex) {
+		int ledCount = LEDConstants.ledRows * LEDConstants.ledCols;
+		// Resize image to fit the number of LEDs
+		BufferedImage resizedImage = new BufferedImage(LEDConstants.ledCols,
+				LEDConstants.ledRows, BufferedImage.TYPE_INT_RGB);
+		resizedImage.getGraphics().drawImage(image, 0, 0, LEDConstants.ledCols,
+				LEDConstants.ledRows, null);
 		// Initialize ledStates from the image pixels
 		byte[][] ledStates = new byte[ledCount][3];
-			for (int y = 0; y < LEDConstants.ledRows; y++) {
-				for (int x = 0; x < LEDConstants.ledCols; x++) {
-					 int pixel = resizedImage.getRGB(x, y);
-					 byte red = (byte) ((pixel >> 16) & 0xFF);
-					 byte green = (byte) ((pixel >> 8) & 0xFF);
-					 byte blue = (byte) (pixel & 0xFF);
-					 ledStates[x + y * LEDConstants.ledCols][0] = red;
-					 ledStates[x + y * LEDConstants.ledCols][1] = green;
-					 ledStates[x + y * LEDConstants.ledCols][2] = blue;
-				}
+		for (int y = 0; y < LEDConstants.ledRows; y++) {
+			for (int x = 0; x < LEDConstants.ledCols; x++) {
+				int pixel = resizedImage.getRGB(x, y);
+				byte red = (byte) ((pixel >> 16) & 0xFF);
+				byte green = (byte) ((pixel >> 8) & 0xFF);
+				byte blue = (byte) (pixel & 0xFF);
+				ledStates[x + y * LEDConstants.ledCols][0] = red;
+				ledStates[x + y * LEDConstants.ledCols][1] = green;
+				ledStates[x + y * LEDConstants.ledCols][2] = blue;
+			}
 		}
-		
 		return ledStates;
-  }
+	}
 
 	@Override
-	public List<ParentDevice> getOrchestraDevices() { return Collections.emptyList(); }
+	public List<ParentDevice> getOrchestraDevices() {
+		return Collections.emptyList();
+	}
 
+	/**
+	 * Does NOT self check. User must look at the images.
+	 */
 	@Override
 	protected Command systemCheckCommand() {
-	return Commands.sequence(run(() ->{
-		new LEDGifC(this, LEDConstants.imageList, 20,2).withTimeout(5);
-	}));
-}
+		return Commands.sequence(new LEDGifC(this, LEDConstants.imageList, 20, 0).withTimeout(5),
+				runOnce(() -> {
+					System.out.println("OVER");
+				})).until(() -> !getFaults().isEmpty());
+	}
 }
