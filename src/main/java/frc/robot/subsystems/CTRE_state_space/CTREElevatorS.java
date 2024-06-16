@@ -1,6 +1,5 @@
 package frc.robot.subsystems.CTRE_state_space;
 
-
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
@@ -13,6 +12,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
@@ -33,17 +33,22 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.function.BooleanSupplier;
 
-public class CTREElevatorS extends SubsystemBase {
+public class CTREElevatorS extends SubsystemChecker {
 	//initialize motors
 	private TalonFX elevatorMotor = new TalonFX(
 			CTRESpaceConstants.Elevator.kMotorID);
@@ -58,28 +63,21 @@ public class CTREElevatorS extends SubsystemBase {
 	Measure<Voltage> holdVoltage = Volts.of(4); //what voltage should I hold during Quas test?
 	Measure<Time> timeout = Seconds.of(10); //how many total seconds should I run the test, unless interrupted?
 	private final VoltageOut m_voltReq = new VoltageOut(0.0).withEnableFOC(true);
-
 	/**
 	 * We cannot have multiple sysIdRoutines run on the same robot-cycle. If we
 	 * want to run this and another sysIdRoutine, you must first POWER CYCLE the
 	 * robot.
 	 */
-
-private final SysIdRoutine sysIdRoutine =
-   new SysIdRoutine(
-      new SysIdRoutine.Config(
-         rampRate,        // Use default ramp rate (1 V/s)
-         holdVoltage, // Reduce dynamic step voltage to 4 to prevent brownout
-         timeout,        // Use default timeout (10 s)
-                      // Log state with Phoenix SignalLogger class
-         (state) -> SignalLogger.writeString("state", state.toString())
-      ),
-      new SysIdRoutine.Mechanism(
-         (volts) -> elevatorMotor.setControl(m_voltReq.withOutput(volts.in(Volts))),
-         null,
-         this
-      )
-   );
+	private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
+			new SysIdRoutine.Config(rampRate, // Use default ramp rate (1 V/s)
+					holdVoltage, // Reduce dynamic step voltage to 4 to prevent brownout
+					timeout, // Use default timeout (10 s)
+					// Log state with Phoenix SignalLogger class
+					(state) -> SignalLogger.writeString("state", state.toString())),
+			new SysIdRoutine.Mechanism(
+					(volts) -> elevatorMotor
+							.setControl(m_voltReq.withOutput(volts.in(Volts))),
+					null, this));
 	/*
 	 * Elevator StateSpace is given a position and velocity, in Meters and Meters per second
 	 * It gets inputted with Volts, and outputs position in Meters.
@@ -127,7 +125,8 @@ private final SysIdRoutine sysIdRoutine =
 			CTRESpaceConstants.Elevator.startingPosition);
 	// Create a Mechanism2d visualization of the elevator
 	private final Mechanism2d m_mech2d = new Mechanism2d(
-		CTRESpaceConstants.Elevator.maxPosition+.25, CTRESpaceConstants.Elevator.maxPosition+.25);
+			CTRESpaceConstants.Elevator.maxPosition + .25,
+			CTRESpaceConstants.Elevator.maxPosition + .25);
 	private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot(
 			"Elevator Root", CTRESpaceConstants.Elevator.physicalX,
 			CTRESpaceConstants.Elevator.physicalY);
@@ -146,9 +145,10 @@ private final SysIdRoutine sysIdRoutine =
 		motorConfig.Feedback.SensorToMechanismRatio = CTRESpaceConstants.Elevator.elevatorGearing;
 		talonFXConfigurator.apply(motorConfig);
 		//reset our position
-		m_loop.reset(VecBuilder.fill(getDistance(),getVelocity()));
+		m_loop.reset(VecBuilder.fill(getDistance(), getVelocity()));
 		m_lastProfiledReference = new TrapezoidProfile.State(getDistance(),
 				getVelocity());
+		registerSelfCheckHardware();
 	}
 
 	/**
@@ -156,23 +156,25 @@ private final SysIdRoutine sysIdRoutine =
 	 * @return command which runs wanted test
 	 */
 	public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-		return sysIdRoutine.quasistatic(direction).beforeStarting(optimizeForSysID(250))
+		return sysIdRoutine.quasistatic(direction)
+				.beforeStarting(optimizeForSysID(250))
 				.onlyWhile(withinLimits(direction));
 	}
 
 	public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-		return sysIdRoutine.dynamic(direction).beforeStarting(optimizeForSysID(250))
+		return sysIdRoutine.dynamic(direction)
+				.beforeStarting(optimizeForSysID(250))
 				.onlyWhile(withinLimits(direction));
 	}
+
 	public Command optimizeForSysID(int freq) {
-		return new InstantCommand(() ->{
-			BaseStatusSignal.setUpdateFrequencyForAll(
-				freq,
-				elevatorMotor.getPosition(),
-				elevatorMotor.getVelocity(),
-				elevatorMotor.getMotorVoltage());
+		return new InstantCommand(() -> {
+			BaseStatusSignal.setUpdateFrequencyForAll(freq,
+					elevatorMotor.getPosition(), elevatorMotor.getVelocity(),
+					elevatorMotor.getMotorVoltage());
 		});
-	 }
+	}
+
 	public static double getDistance() { return m_position; }
 
 	public static double getSetpoint() { return goal.position; }
@@ -217,8 +219,8 @@ private final SysIdRoutine sysIdRoutine =
 	 * Create a state that is the MAXIMUM position
 	 */
 	public TrapezoidProfile.State maxState() {
-		return new TrapezoidProfile.State(
-				CTRESpaceConstants.Elevator.maxPosition, 0);
+		return new TrapezoidProfile.State(CTRESpaceConstants.Elevator.maxPosition,
+				0);
 	}
 
 	/**
@@ -304,23 +306,63 @@ private final SysIdRoutine sysIdRoutine =
 		// Send the new calculated voltage to the motors.
 		double nextVoltage = m_loop.getU(0);
 		elevatorMotor.setVoltage(nextVoltage);
-		if (Constants.currentMode == Constants.Mode.SIM){
+		if (Constants.currentMode == Constants.Mode.SIM) {
 			var talonFXSim = elevatorMotor.getSimState();
 			talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 			double motorVoltage = talonFXSim.getMotorVoltage();
 			simElevator.setInputVoltage(motorVoltage);
 			simElevator.update(dtSeconds);
 		}
-
 		//Push the mechanism to AdvantageScope
 		Logger.recordOutput("ElevatorMechanism", m_mech2d);
 		//calcualate arm pose
-		var elevatorPose = new Pose3d(CTRESpaceConstants.Elevator.simX, CTRESpaceConstants.Elevator.simY, CTRESpaceConstants.Elevator.simZ,
+		var elevatorPose = new Pose3d(CTRESpaceConstants.Elevator.simX,
+				CTRESpaceConstants.Elevator.simY, CTRESpaceConstants.Elevator.simZ,
 				new Rotation3d(0, 0, 0.0));
 		Logger.recordOutput("Mechanism3d/Elevator/", elevatorPose);
 	}
+
 	//Sim Only
 	public double getDrawnCurrentAmps() {
-			return Math.abs(simElevator.getCurrentDrawAmps());
-		}
+		return Math.abs(simElevator.getCurrentDrawAmps());
+	}
+
+	public void registerSelfCheckHardware() {
+		super.registerHardware("Elevator", elevatorMotor);
+	}
+
+	@Override
+	public List<ParentDevice> getOrchestraDevices() {
+		List<ParentDevice> orchestra = new ArrayList<>(1);
+		orchestra.add(elevatorMotor);
+		return orchestra;
+	}
+	public HashMap<String, Double> getTemps() {
+		HashMap<String, Double> tempMap = new HashMap<>();
+		tempMap.put("ElevatorTemp", elevatorMotor.getDeviceTemp().getValueAsDouble());
+		return tempMap;
+	}
+	@Override
+	protected Command systemCheckCommand() {
+		return Commands.sequence(
+				run(() -> moveElevator(createState(Units.feetToMeters(2))))
+						.withTimeout(2.0),
+				runOnce(() -> {
+					if (getError() > Units.inchesToMeters(4)) {
+						addFault(
+								"[System Check] Elevator position off more than 4 inches. Set 2ft, got "
+										+ Units.metersToFeet(getDistance()),
+								false, true);
+					}
+				}), run(() -> moveElevator(createState(Units.feetToMeters(0))))
+						.withTimeout(2.0),
+				runOnce(() -> {
+					if (getError() > Units.inchesToMeters(4)) {
+						addFault(
+								"[System Check] Elevator position off more than 4 inches. Set 0ft, got "
+										+ Units.metersToFeet(getDistance()),
+								false, true);
+					}
+				})).until(() -> !getFaults().isEmpty());
+	}
 }

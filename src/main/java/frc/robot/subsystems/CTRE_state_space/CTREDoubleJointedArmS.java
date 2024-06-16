@@ -1,11 +1,14 @@
 package frc.robot.subsystems.CTRE_state_space;
 
+import java.util.List;
+
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.util.Units;
@@ -15,12 +18,15 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
 import frc.robot.DataHandler;
+import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
-
-public class CTREDoubleJointedArmS extends SubsystemBase {
+import java.util.ArrayList;
+import java.util.HashMap;
+public class CTREDoubleJointedArmS extends SubsystemChecker {
 	private TalonFX armMotor = new TalonFX(
 			CTRESpaceConstants.DoubleJointedArm.kArmMotorID);
 	private TalonFX elbowMotor = new TalonFX(
@@ -71,6 +77,7 @@ public class CTREDoubleJointedArmS extends SubsystemBase {
 		}
 
 		m_updatePositionsNotifier.startPeriodic(1);
+		registerSelfCheckHardware();
 	}
 
 	public void setMotors(double voltsArm, double voltsElbow) {
@@ -85,7 +92,18 @@ public class CTREDoubleJointedArmS extends SubsystemBase {
 			Units.rotationsToRadians(BaseStatusSignal.getLatencyCompensatedValue(m_elbowpos, m_elbowvel))
 		};
 	}
-
+	public double getArmError(double armSet){
+		if (Constants.currentMode == Constants.Mode.SIM){
+			return expectedArmRads-armSet;
+		}
+		return getEncoders()[0]-armSet;
+	}
+	public double getElbowError(double elbowSet){
+		if (Constants.currentMode == Constants.Mode.SIM){
+			return expectedElbowRads-elbowSet;
+		}
+		return getEncoders()[1]-elbowSet;
+	}
 	@Override
 	public void periodic() {
 		if (Constants.currentMode == Constants.Mode.REAL) {
@@ -99,5 +117,68 @@ public class CTREDoubleJointedArmS extends SubsystemBase {
 					.setAngle(Units.radiansToDegrees(expectedElbowRads));
 		}
 		Logger.recordOutput("DoubleJointedArmMechanism", m_mech2d);
+	}
+	public void registerSelfCheckHardware() {
+		super.registerHardware("DoubleArmMotor", armMotor);
+		super.registerHardware("DoubleElbowMotor", elbowMotor);
+
+	  }
+	@Override
+	public List<ParentDevice> getOrchestraDevices() {
+		List<ParentDevice> orchestra = new ArrayList<>(2);
+		orchestra.add(armMotor);
+		orchestra.add(elbowMotor);
+		return orchestra;
+	 }
+	 public HashMap<String, Double> getTemps() {
+		HashMap<String, Double> tempMap = new HashMap<>();
+		tempMap.put("DoubleArmMotorTemp", armMotor.getDeviceTemp().getValueAsDouble());
+		tempMap.put("DoubleElbowMotorTemp", elbowMotor.getDeviceTemp().getValueAsDouble());
+		return tempMap;
+	}
+	public double getArmRads(){
+		if (Constants.currentMode == Constants.Mode.SIM){
+			return expectedArmRads;
+		}
+		return getEncoders()[0];
+	}
+	public double getElbowRads(){
+		if (Constants.currentMode == Constants.Mode.SIM){
+			return expectedElbowRads;
+		}
+		return getEncoders()[1];
+	}
+	/**
+	 * @return a double list which contains an x coordinate in meters for the endpoint, and y.
+	 */
+	public double[] getCoordinate(){
+		double armPos = getArmRads();
+		double elbowPos = getElbowRads()+getArmRads();
+		double x = Math.cos(armPos) * CTRESpaceConstants.DoubleJointedArm.armLength + Math.cos(elbowPos) * CTRESpaceConstants.DoubleJointedArm.elbowLength;
+		double y = Math.sin(armPos) * CTRESpaceConstants.DoubleJointedArm.armLength + Math.sin(elbowPos) * CTRESpaceConstants.DoubleJointedArm.elbowLength;
+		return new double[]{x,y};
+	}
+	@Override
+	protected Command systemCheckCommand() { 
+	return Commands.sequence(run(() -> DataHandler.logData(
+		CTRESpaceConstants.DoubleJointedArm.macroTopRight,
+		"DoubleJointSetpoint")).withTimeout(5),
+				runOnce(() ->{
+					double[] coordinate = getCoordinate();
+					if (Math.abs(coordinate[0]-CTRESpaceConstants.DoubleJointedArm.macroTopRight[0]) > Units.inchesToMeters(5) || Math.abs(coordinate[1]-CTRESpaceConstants.DoubleJointedArm.macroTopRight[1]) > Units.inchesToMeters(5)){
+						addFault("[System Check] Arm position was off more than 5 in. Wanted 1.5,1.1, got " + coordinate[0] + "," + coordinate[1], false,true);
+					}
+				}),run(() -> DataHandler.logData(
+					CTRESpaceConstants.DoubleJointedArm.macroTopLeft,
+					"DoubleJointSetpoint")).withTimeout(5),
+							runOnce(() ->{
+								double[] coordinate = getCoordinate();
+								if (Math.abs(coordinate[0]-CTRESpaceConstants.DoubleJointedArm.macroTopLeft[0]) > Units.inchesToMeters(5) || Math.abs(coordinate[1]-CTRESpaceConstants.DoubleJointedArm.macroTopLeft[1]) > Units.inchesToMeters(5)){
+									addFault("[System Check] Arm position was off more than 5 in. Wanted -1.5,1.0, got " + coordinate[0] + "," + coordinate[1], false,true);
+								}
+							}))
+        .until(
+            () ->
+                !getFaults().isEmpty());
 	}
 }

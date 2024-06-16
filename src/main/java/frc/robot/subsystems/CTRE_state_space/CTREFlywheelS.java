@@ -1,8 +1,8 @@
 package frc.robot.subsystems.CTRE_state_space;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
@@ -26,20 +26,25 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.List;
+import java.util.HashMap;
+import java.util.ArrayList;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.SignalLogger;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-
 import frc.robot.Constants;
+import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
 
-public class CTREFlywheelS extends SubsystemBase {
+public class CTREFlywheelS extends SubsystemChecker {
 	//initialize motors
-	private static TalonFX flywheel = new TalonFX(CTRESpaceConstants.Flywheel.kMotorID);
+	private static TalonFX flywheel = new TalonFX(
+			CTRESpaceConstants.Flywheel.kMotorID);
 	//System ID Routine
 	Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1)); // for going FROM ZERO PER SECOND, this is 1v per 1sec.
 	Measure<Voltage> holdVoltage = Volts.of(4); //what voltage should I hold during Quas test?
@@ -47,28 +52,21 @@ public class CTREFlywheelS extends SubsystemBase {
 	//update cycle time
 	private static double dtSeconds = .02; //20 ms
 	private final VoltageOut m_voltReq = new VoltageOut(0.0).withEnableFOC(true);
-
 	/**
 	 * We cannot have multiple sysIdRoutines run on the same robot-cycle. If we
 	 * want to run this and another sysIdRoutine, you must first POWER CYCLE the
 	 * robot.
 	 */
-
-private final SysIdRoutine sysIdRoutine =
-   new SysIdRoutine(
-      new SysIdRoutine.Config(
-         rampRate,        // Use default ramp rate (1 V/s)
-         holdVoltage, // Reduce dynamic step voltage to 4 to prevent brownout
-         timeout,        // Use default timeout (10 s)
-                      // Log state with Phoenix SignalLogger class
-         (state) -> SignalLogger.writeString("state", state.toString())
-      ),
-      new SysIdRoutine.Mechanism(
-         (volts) -> flywheel.setControl(m_voltReq.withOutput(volts.in(Volts))),
-         null,
-         this
-      )
-   );
+	private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
+			new SysIdRoutine.Config(rampRate, // Use default ramp rate (1 V/s)
+					holdVoltage, // Reduce dynamic step voltage to 4 to prevent brownout
+					timeout, // Use default timeout (10 s)
+					// Log state with Phoenix SignalLogger class
+					(state) -> SignalLogger.writeString("state", state.toString())),
+			new SysIdRoutine.Mechanism(
+					(volts) -> flywheel
+							.setControl(m_voltReq.withOutput(volts.in(Volts))),
+					null, this));
 	/**
 	 * This Plant holds a state-space model of our flywheel. It has the following
 	 * properties: States: Velocity, in Rad/s. (will match Output) Inputs: Volts.
@@ -101,8 +99,7 @@ private final SysIdRoutine sysIdRoutine =
 	 * our RPM, and penalizes HEAVILY for incorrectness.
 	 */
 	private final static LinearQuadraticRegulator<N1, N1, N1> m_controller = new LinearQuadraticRegulator<>(
-			flywheelPlant,
-			VecBuilder.fill(CTRESpaceConstants.Flywheel.m_LQRQelms),
+			flywheelPlant, VecBuilder.fill(CTRESpaceConstants.Flywheel.m_LQRQelms),
 			VecBuilder.fill(CTRESpaceConstants.Flywheel.m_LQRRVolts), dtSeconds);
 	/**
 	 * A state-space loop combines a controller, observer, feedforward, and plant
@@ -116,7 +113,9 @@ private final SysIdRoutine sysIdRoutine =
 	 * Now, we define how it reacts in simulation. A gearing greater than 1 is a
 	 * reduction.
 	 */
-	private final DCMotorSim motorSim = new DCMotorSim(DCMotor.getKrakenX60Foc(1),1/CTRESpaceConstants.Flywheel.flywheelGearing,.001);
+	private final DCMotorSim motorSim = new DCMotorSim(
+			DCMotor.getKrakenX60Foc(1),
+			1 / CTRESpaceConstants.Flywheel.flywheelGearing, .001);
 	private double nextVoltage;
 
 	public CTREFlywheelS() {
@@ -128,36 +127,39 @@ private final SysIdRoutine sysIdRoutine =
 		motorConfig.MotorOutput.NeutralMode = CTRESpaceConstants.Flywheel.mode;
 		motorConfig.Feedback.SensorToMechanismRatio = CTRESpaceConstants.Flywheel.flywheelGearing;
 		talonFXConfigurator.apply(motorConfig);
-	
 		//Tell our controllers that the encoders have a 19.5 ms delay (sparks)
 		m_controller.latencyCompensate(flywheelPlant, dtSeconds, .01); //may be .02
 		m_loop.setNextR(0); //go to zero
 		m_loop.reset(getEncoderRotations());
+		registerSelfCheckHardware();
 	}
 
 	private static Vector<N1> getEncoderRotations() {
-		return VecBuilder
-				.fill(flywheel.getVelocity().getValueAsDouble()*CTRESpaceConstants.Flywheel.flywheelGearing*60);
+		return VecBuilder.fill(flywheel.getVelocity().getValueAsDouble()
+				* CTRESpaceConstants.Flywheel.flywheelGearing * 60);
 	}
-	
+
 	@Override
 	public void periodic() {
 		m_loop.correct(getEncoderRotations());
 		m_loop.predict(dtSeconds);
 		nextVoltage = m_loop.getU(0); //get model's control output
 		flywheel.setControl(m_voltReq.withOutput(nextVoltage));
-		if (Constants.currentMode == Constants.Mode.SIM){
+		if (Constants.currentMode == Constants.Mode.SIM) {
 			var talonFXSim = flywheel.getSimState();
 			talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 			double motorVoltage = talonFXSim.getMotorVoltage();
 			motorSim.setInputVoltage(motorVoltage);
 			motorSim.update(dtSeconds);
 			talonFXSim.setRawRotorPosition(motorSim.getAngularPositionRotations());
-			talonFXSim.setRotorVelocity(Units.radiansToRotations(motorSim.getAngularVelocityRadPerSec()));
+			talonFXSim.setRotorVelocity(Units
+					.radiansToRotations(motorSim.getAngularVelocityRadPerSec()));
 		}
 		if (CTRESpaceConstants.debug) {
-			SmartDashboard.putNumber("Flywheel Speed", getEncoderRotations().get(0));
-			SmartDashboard.putNumber("FlywheelError", CTREFlywheelS.getSpeedError());
+			SmartDashboard.putNumber("Flywheel Speed",
+					getEncoderRotations().get(0));
+			SmartDashboard.putNumber("FlywheelError",
+					CTREFlywheelS.getSpeedError());
 		}
 	}
 
@@ -165,24 +167,26 @@ private final SysIdRoutine sysIdRoutine =
 	 * @param direction forward/reverse ("kForward" or "kReverse")
 	 * @return command which runs wanted test
 	 */
-public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-		return sysIdRoutine.quasistatic(direction).beforeStarting(optimizeForSysID(250));
+	public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+		return sysIdRoutine.quasistatic(direction)
+				.beforeStarting(optimizeForSysID(250));
 	}
 
 	public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-		return sysIdRoutine.dynamic(direction).beforeStarting(optimizeForSysID(250));
+		return sysIdRoutine.dynamic(direction)
+				.beforeStarting(optimizeForSysID(250));
 	}
+
 	public Command optimizeForSysID(int freq) {
-		return new InstantCommand(() ->{
-			BaseStatusSignal.setUpdateFrequencyForAll(
-				freq,
-				flywheel.getPosition(),
-				flywheel.getVelocity(),
-				flywheel.getMotorVoltage());
+		return new InstantCommand(() -> {
+			BaseStatusSignal.setUpdateFrequencyForAll(freq, flywheel.getPosition(),
+					flywheel.getVelocity(), flywheel.getMotorVoltage());
 		});
-	 }
+	}
+
 	public static double getSpeedError() {
-		return Math.abs(getEncoderRotations().get(0) - m_loop.getNextR().get(0,0));
+		return Math
+				.abs(getEncoderRotations().get(0) - m_loop.getNextR().get(0, 0));
 	}
 
 	/*
@@ -191,8 +195,48 @@ public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
 	 */
 	public void setRPM(double rpm) { m_loop.setNextR(VecBuilder.fill(rpm)); }
 
+	public double getRPM() { return getEncoderRotations().get(0); }
+
 	//Sim Only
 	public double getDrawnCurrentAmps() {
 		return Math.abs(motorSim.getCurrentDrawAmps());
+	}
+
+	public void registerSelfCheckHardware() {
+		super.registerHardware("Flywheel", flywheel);
+	}
+
+	@Override
+	public List<ParentDevice> getOrchestraDevices() {
+		List<ParentDevice> orchestra = new ArrayList<>(1);
+		orchestra.add(flywheel);
+		return orchestra;
+	}
+
+	public HashMap<String, Double> getTemps() {
+		HashMap<String, Double> tempMap = new HashMap<>();
+		tempMap.put("FlywheelTemp", flywheel.getDeviceTemp().getValueAsDouble());
+		return tempMap;
+	}
+
+	@Override
+	protected Command systemCheckCommand() {
+		return Commands
+				.sequence(run(() -> setRPM(4000)).withTimeout(1.5), runOnce(() -> {
+					if (getSpeedError() > 50) {
+						addFault(
+								"[System Check] Flywheel speed off more than 50. Set 4000, got "
+										+ getRPM(),
+								false, true);
+					}
+				}), run(() -> setRPM(6000)).withTimeout(1.5), runOnce(() -> {
+					if (getSpeedError() > 100) {
+						addFault(
+								"[System Check] Flywheel speed off more than 100. Set 6000, got "
+										+ getRPM(),
+								false, true);
+					}
+				})).until(() -> !getFaults().isEmpty())
+				.andThen(runOnce(() -> setRPM(0)));
 	}
 }

@@ -8,6 +8,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.Nat;
@@ -36,18 +37,23 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
 import frc.robot.utils.drive.DriveConstants;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.function.BooleanSupplier;
 
-public class CTRESingleJointedArmS extends SubsystemBase {
+public class CTRESingleJointedArmS extends SubsystemChecker {
 	//initalize motors
 	private TalonFX armMotor = new TalonFX(CTRESpaceConstants.SingleJointedArm.kMotorID);
 	//update cycle time
@@ -181,6 +187,7 @@ private final SysIdRoutine sysIdRoutine =
 		m_loop.reset(VecBuilder.fill(getDistance(), getVelocity()));
 		m_lastProfiledReference = new TrapezoidProfile.State(getDistance(),
 				getVelocity());
+		registerSelfCheckHardware();
 	}
 
 	/**
@@ -354,5 +361,43 @@ private final SysIdRoutine sysIdRoutine =
 	//Sim Only
 	public double getDrawnCurrentAmps() {
 			return Math.abs(simArm.getCurrentDrawAmps());
+	}
+	public void registerSelfCheckHardware() {
+		super.registerHardware("SingleArm", armMotor);
+	}
+
+	@Override
+	public List<ParentDevice> getOrchestraDevices() {
+		List<ParentDevice> orchestra = new ArrayList<>(1);
+		orchestra.add(armMotor);
+		return orchestra;
+	}
+	public HashMap<String, Double> getTemps() {
+		HashMap<String, Double> tempMap = new HashMap<>();
+		tempMap.put("SingleArmTemp", armMotor.getDeviceTemp().getValueAsDouble());
+		return tempMap;
+	}
+	@Override
+	protected Command systemCheckCommand() {
+		return Commands.sequence(
+				run(() -> deployIntake(createState(Units.degreesToRadians(45))))
+						.withTimeout(2.0),
+				runOnce(() -> {
+					if (getError() > Units.degreesToRadians(5)) {
+						addFault(
+								"[System Check] Arm angle off more than 5 degrees. Set 45, got "
+										+ Units.radiansToDegrees(getDistance()),
+								false, true);
+					}
+				}), run(() -> deployIntake(createState(Units.degreesToRadians(0))))
+						.withTimeout(2.0),
+				runOnce(() -> {
+					if (getError() > Units.degreesToRadians(5)) {
+						addFault(
+								"[System Check] Arm angle off more than 5 degrees. Set 0, got "
+										+ Units.radiansToDegrees(getDistance()),
+								false, true);
+					}
+				})).until(() -> !getFaults().isEmpty());
 	}
 }

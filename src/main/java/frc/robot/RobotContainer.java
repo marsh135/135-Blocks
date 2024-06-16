@@ -9,7 +9,6 @@ import frc.robot.commands.CTRE_state_space.CTRESingleJointedArmC;
 import frc.robot.commands.CTRE_state_space.CTREDoubleJointedArmC;
 import frc.robot.commands.CTRE_state_space.CTREElevatorC;
 import frc.robot.commands.CTRE_state_space.CTREFlywheelC;
-import frc.robot.commands.drive.SwerveC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumConstantContainer;
@@ -283,9 +282,9 @@ public class RobotContainer {
 	 */
 	public static double[] getCurrentDraw() {
 		return new double[] {Math.min(drivetrainS.getCurrent(), 200),
-      elevatorS.getDrawnCurrentAmps(),
-			flywheelS.getDrawnCurrentAmps(),
+      flywheelS.getDrawnCurrentAmps(),
 			armS.getDrawnCurrentAmps(),
+			elevatorS.getDrawnCurrentAmps(),
 		};
 	}
 	private static void addNTCommands() {
@@ -297,7 +296,7 @@ public class RobotContainer {
 	 * @return a command with all of them in a sequence.
 	 */
 	public static Command allSystemsCheck() {
-	return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand());
+	return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand(),flywheelS.getSystemCheckCommand(),armS.getSystemCheckCommand(),elevatorS.getSystemCheckCommand(),doubleJointedArmS.getSystemCheckCommand());
 	}
 	public static HashMap<String, Double> combineMaps(List<HashMap<String, Double>> maps) {
 		HashMap<String, Double> combinedMap = new HashMap<>();
@@ -312,7 +311,11 @@ public class RobotContainer {
 
 	public static HashMap<String, Double> getAllTemps(){
 		// List of HashMaps
-		List<HashMap<String, Double>> maps = List.of(drivetrainS.getTemps());
+		List<HashMap<String, Double>> maps = List.of(drivetrainS.getTemps(),
+		flywheelS.getTemps(),
+		armS.getTemps(),
+		elevatorS.getTemps(),
+		doubleJointedArmS.getTemps());
 
 		// Combine all maps
 		HashMap<String, Double> combinedMap = combineMaps(maps);
@@ -323,6 +326,10 @@ public class RobotContainer {
 	 * @return true if ALL systems were good.
 	 */
 	public static boolean allSystemsOK() {
-		return drivetrainS.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK;
+		return drivetrainS.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& flywheelS.getSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& elevatorS.getSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& armS.getSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& doubleJointedArmS.getSystemStatus() == SubsystemChecker.SystemStatus.OK;
 	 }
 }
