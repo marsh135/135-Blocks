@@ -3,7 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
-
+import frc.robot.commands.auto.SimDefenseBot;
 import frc.robot.commands.drive.DrivetrainC;
 import frc.robot.commands.CTRE_state_space.CTRESingleJointedArmC;
 import frc.robot.commands.CTRE_state_space.CTREDoubleJointedArmC;
@@ -189,6 +189,7 @@ public class RobotContainer {
 		//new Pair<String, Command>("BranchGrabbingGamePiece", new BranchAuto("grabGamePieceBranch",new Pose2d(0,0,new Rotation2d())))
 		//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
 		//new Pair<String,Command>("PlayMiiSong", new OrchestraC("mii")),
+		new Pair<String,Command>("SimBot",new SimDefenseBot())
 		);
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		NamedCommands.registerCommands(autoCommands);
