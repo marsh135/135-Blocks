@@ -65,6 +65,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -339,10 +340,23 @@ public class RobotContainer {
 		&& doubleJointedArmS.getSystemStatus() == SubsystemChecker.SystemStatus.OK;
 	 }
 	public static Collection<ParentDevice> getOrchestraDevices() {
-
+    
 		Collection<ParentDevice> devices = new ArrayList<>();
 		devices.addAll(drivetrainS.getDriveOrchestraDevices());
 		devices.addAll(flywheelS.getOrchestraDevices());
+		devices.addAll(elevatorS.getOrchestraDevices());
+    devices.addAll(armS.getOrchestraDevices());
+		devices.addAll(doubleJointedArmS.getOrchestraDevices());
+
     return devices;
+	}
+	public static Subsystem[] getAllSubsystems(){
+		Subsystem[] subsystems = new Subsystem[5];
+		subsystems[0] = drivetrainS;
+    subsystems[1] = flywheelS;
+    subsystems[2] = elevatorS;
+    subsystems[3] = armS;
+    subsystems[4] = doubleJointedArmS:
+		return subsystems;
 	}
 }

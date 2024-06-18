@@ -22,7 +22,7 @@ public class OrchestraC extends Command{
 		}else{
 			System.out.println(orchestra.loadMusic("orchestra/"+fileName+".chrp"));
 		}
-		addRequirements(RobotContainer.drivetrainS); //add all orchestra groups!
+		addRequirements(RobotContainer.getAllSubsystems()); //add all orchestra groups!
 	}
 	@Override
 	public void initialize(){
