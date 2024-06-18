@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
+import frc.robot.commands.OrchestraC;
 import frc.robot.commands.auto.SimDefenseBot;
 import frc.robot.commands.drive.DrivetrainC;
 import frc.robot.commands.CTRE_state_space.CTRESingleJointedArmC;
@@ -36,6 +37,7 @@ import frc.robot.utils.drive.DriveConstants.TrainConstants;
 import frc.robot.utils.drive.LocalADStarAK;
 import frc.robot.utils.drive.PathFinder;
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.hardware.ParentDevice;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathfindingCommand;
@@ -53,6 +55,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.util.Collection;
+
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
@@ -98,6 +102,7 @@ public class RobotContainer {
 	public static int currentTest = 0, currentGamePieceStatus = 0;
 	public static String currentPath = "";
 	public static Field2d field = new Field2d();
+   public static Pose2d opposingBotPose;
 
 	// POVButton manipPOVZero = new POVButton(manipController, 0);
 	// POVButton manipPOV180 = new POVButton(manipController, 180);
@@ -188,7 +193,7 @@ public class RobotContainer {
 		//new Pair<String,Command>("AimAtAmp",new AimToPose(drivetrainS, new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(0)))))
 		//new Pair<String, Command>("BranchGrabbingGamePiece", new BranchAuto("grabGamePieceBranch",new Pose2d(0,0,new Rotation2d())))
 		//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
-		//new Pair<String,Command>("PlayMiiSong", new OrchestraC("mii")),
+		new Pair<String,Command>("PlayMiiSong", new OrchestraC("mii")),
 		new Pair<String,Command>("SimBot",new SimDefenseBot())
 		);
 		Pathfinding.setPathfinder(new LocalADStarAK());
@@ -334,4 +339,7 @@ public class RobotContainer {
 		&& armS.getSystemStatus() == SubsystemChecker.SystemStatus.OK
 		&& doubleJointedArmS.getSystemStatus() == SubsystemChecker.SystemStatus.OK;
 	 }
+	public static Collection<ParentDevice> getOrchestraDevices() {
+		return drivetrainS.getDriveOrchestraDevices().addAll(flywheelS.getOrchestraDevices()).addAll(elevatorS.getOrchestraDevices()).addAll(armS.getOrchestraDevices()).addAll(doubleJointedArmS.getOrchestraDevices());
+	}
 }
