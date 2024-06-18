@@ -52,6 +52,7 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -338,6 +339,11 @@ public class RobotContainer {
 		&& doubleJointedArmS.getSystemStatus() == SubsystemChecker.SystemStatus.OK;
 	 }
 	public static Collection<ParentDevice> getOrchestraDevices() {
-		return drivetrainS.getDriveOrchestraDevices().addAll(flywheelS.getOrchestraDevices()).addAll(elevatorS.getOrchestraDevices()).addAll(armS.getOrchestraDevices()).addAll(doubleJointedArmS.getOrchestraDevices());
+
+		Collection<ParentDevice> devices = new ArrayList<>();
+		devices.addAll(drivetrainS.getDriveOrchestraDevices());
+		devices.addAll(flywheelS.getOrchestraDevices());
+
+		return devices;
 	}
 }
