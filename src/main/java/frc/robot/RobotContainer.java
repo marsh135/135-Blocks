@@ -343,7 +343,6 @@ public class RobotContainer {
 		Collection<ParentDevice> devices = new ArrayList<>();
 		devices.addAll(drivetrainS.getDriveOrchestraDevices());
 		devices.addAll(flywheelS.getOrchestraDevices());
-
-		return devices;
+    return devices;
 	}
 }
