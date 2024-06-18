@@ -353,10 +353,10 @@ public class RobotContainer {
 	public static Subsystem[] getAllSubsystems(){
 		Subsystem[] subsystems = new Subsystem[5];
 		subsystems[0] = drivetrainS;
-    subsystems[1] = flywheelS;
-    subsystems[2] = elevatorS;
-    subsystems[3] = armS;
-    subsystems[4] = doubleJointedArmS:
+    	subsystems[1] = flywheelS;
+    	subsystems[2] = elevatorS;
+    	subsystems[3] = armS;
+    	subsystems[4] = doubleJointedArmS;
 		return subsystems;
 	}
 }
