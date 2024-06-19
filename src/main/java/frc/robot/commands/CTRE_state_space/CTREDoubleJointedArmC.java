@@ -5,11 +5,10 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.DataHandler;
 import frc.robot.subsystems.CTRE_state_space.CTREDoubleJointedArmS;
 import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
-import java.util.List;
 
 public class CTREDoubleJointedArmC extends Command {
+	@SuppressWarnings("unused")
 	private final CTREDoubleJointedArmS armS;
-	public static List<Double> voltages;
 
 	public CTREDoubleJointedArmC(CTREDoubleJointedArmS armS) {
 		this.armS = armS;
@@ -30,8 +29,6 @@ public class CTREDoubleJointedArmC extends Command {
 
 	@Override
 	public void execute() {
-		if (voltages != null) {
-			armS.setMotors(voltages.get(0), voltages.get(1));
-		}
+		
 	}
 }

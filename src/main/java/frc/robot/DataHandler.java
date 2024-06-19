@@ -19,7 +19,6 @@ import com.google.gson.reflect.TypeToken;
 
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.commands.CTRE_state_space.CTREDoubleJointedArmC;
 import frc.robot.subsystems.CTRE_state_space.CTREDoubleJointedArmS;
 
 import java.io.InputStreamReader;
@@ -507,7 +506,7 @@ public class DataHandler {
 				String rawData = receivedData.get("voltages").getAsString();
 				List<Double> voltages = makeDoubleList(rawData);
 				//System.out.println(voltages);
-				CTREDoubleJointedArmC.voltages = voltages.subList(0, 2);
+				CTREDoubleJointedArmS.voltages = voltages.subList(0, 2);
 				CTREDoubleJointedArmS.expectedArmRads = voltages.get(2);
 				CTREDoubleJointedArmS.expectedElbowRads = voltages.get(3);
 

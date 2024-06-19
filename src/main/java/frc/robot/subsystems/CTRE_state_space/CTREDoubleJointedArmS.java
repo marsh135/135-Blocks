@@ -54,6 +54,8 @@ public class CTREDoubleJointedArmS extends SubsystemChecker {
   private final StatusSignal<Double> m_elbowpos = elbowMotor.getPosition();
   private final StatusSignal<Double> m_armvel = armMotor.getVelocity();
   private final StatusSignal<Double> m_elbowvel = elbowMotor.getVelocity();
+  public static List<Double> voltages;
+
 	public CTREDoubleJointedArmS() {
 		TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 		motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -106,6 +108,10 @@ public class CTREDoubleJointedArmS extends SubsystemChecker {
 	}
 	@Override
 	public void periodic() {
+		if (voltages != null) {
+			setMotors(voltages.get(0), voltages.get(1));
+
+		}
 		if (Constants.currentMode == Constants.Mode.REAL) {
 			m_DoubleJointedArm.setAngle(Units
 					.rotationsToDegrees(armMotor.getPosition().getValueAsDouble()));
