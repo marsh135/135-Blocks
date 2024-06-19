@@ -132,7 +132,7 @@ public class CTREElevatorS extends SubsystemChecker {
 			CTRESpaceConstants.Elevator.physicalY);
 	private final MechanismLigament2d m_elevatorMech2d = m_mech2dRoot
 			.append(new MechanismLigament2d("Elevator",
-					simElevator.getPositionMeters(), 90));
+					m_position, 90));
 
 	public CTREElevatorS() {
 		//initalize elevator motor
