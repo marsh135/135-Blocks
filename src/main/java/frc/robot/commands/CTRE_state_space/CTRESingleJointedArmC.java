@@ -20,12 +20,12 @@ public class CTRESingleJointedArmC extends Command {
 		CTRESpaceConstants.Controls.go45Button
 						.onTrue(new InstantCommand(() -> {
 							armPos = Units.degreesToRadians(45);
-							armS.deployIntake(armS.createState(armPos));
+							armS.deployArm(armS.createState(armPos));
 						}));
 		CTRESpaceConstants.Controls.go0Button
 						.onTrue(new InstantCommand(() -> {
 							armPos = Units.degreesToRadians(0);
-							armS.deployIntake(armS.createState(armPos));
+							armS.deployArm(armS.createState(armPos));
 						}));
 	}
 
@@ -46,9 +46,9 @@ public class CTRESingleJointedArmC extends Command {
 			}
 		}
 		if (armSpeed == 0) {
-			armS.deployIntake(armS.createState(armPos));
+			armS.deployArm(armS.createState(armPos));
 		} else {
-			armS.deployIntake(armS.createState(armPos, armSpeed));
+			armS.deployArm(armS.createState(armPos, armSpeed));
 		}
 	}
 

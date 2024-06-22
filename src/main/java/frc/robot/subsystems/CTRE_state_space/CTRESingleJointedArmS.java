@@ -263,7 +263,7 @@ private final SysIdRoutine sysIdRoutine =
 	 * For cleanliness of code, create State is in SingleJointedArmS, called everywhere else.
 	 * 
 	 * @param angle IN RADS
-	 * @return state, pass through to deployIntake.
+	 * @return state, pass through to deployArm.
 	 */
 	public TrapezoidProfile.State createState(double angle) {
 		return new TrapezoidProfile.State(angle, 0);
@@ -273,7 +273,7 @@ private final SysIdRoutine sysIdRoutine =
 	/**
 	 * @param position in RADIANS
 	 * @param velocity in RADIANS/SECOND
-	 * @return state, pass through to deployIntake.
+	 * @return state, pass through to deployArm.
 	 */
 	public TrapezoidProfile.State createState(double position, double velocity) {
 		return new TrapezoidProfile.State(position, velocity);
@@ -297,7 +297,7 @@ private final SysIdRoutine sysIdRoutine =
 	 */
 	public double getError() { return m_position - goal.position; }
 
-	public void deployIntake(TrapezoidProfile.State state) { goal = state; }
+	public void deployArm(TrapezoidProfile.State state) { goal = state; }
 
 	public void updateEncoders() {
 		switch (Constants.currentMode) {
@@ -314,7 +314,7 @@ private final SysIdRoutine sysIdRoutine =
 		}
 	}
 
-	public void setIntakeMotorVolts(double volts) { armMotor.setVoltage(volts); }
+	public void setArmMotorVolts(double volts) { armMotor.setVoltage(volts); }
 
 	@Override
 	public void periodic() {
@@ -378,7 +378,7 @@ private final SysIdRoutine sysIdRoutine =
 	@Override
 	protected Command systemCheckCommand() {
 		return Commands.sequence(
-				run(() -> deployIntake(createState(Units.degreesToRadians(45))))
+				run(() -> deployArm(createState(Units.degreesToRadians(45))))
 						.withTimeout(2.0),
 				runOnce(() -> {
 					if (getError() > Units.degreesToRadians(5)) {
@@ -387,7 +387,7 @@ private final SysIdRoutine sysIdRoutine =
 										+ Units.radiansToDegrees(getDistance()),
 								false, true);
 					}
-				}), run(() -> deployIntake(createState(Units.degreesToRadians(0))))
+				}), run(() -> deployArm(createState(Units.degreesToRadians(0))))
 						.withTimeout(2.0),
 				runOnce(() -> {
 					if (getError() > Units.degreesToRadians(5)) {

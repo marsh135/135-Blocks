@@ -238,7 +238,7 @@ public class CTREElevatorS extends SubsystemChecker {
 	/**
 	 * @param position in METERS
 	 * @param velocity in METERS/SECOND
-	 * @return state, pass through to deployIntake.
+	 * @return state, pass through to moveElevator.
 	 */
 	public TrapezoidProfile.State createState(double position, double velocity) {
 		return new TrapezoidProfile.State(position, velocity);
