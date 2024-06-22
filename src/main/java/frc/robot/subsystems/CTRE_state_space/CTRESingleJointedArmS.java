@@ -41,7 +41,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
-import frc.robot.Constants.Mode;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
 import frc.robot.utils.drive.DriveConstants;
@@ -95,14 +94,14 @@ private final SysIdRoutine sysIdRoutine =
 	 * All SingleJointedArm Statespace uses an N2 at the first position, because we care about velocity AND position of the SingleJointedarm.
 	 * First position in the Nat is for Position, second is Velocity.
 	 */
-	//private final LinearSystem<N2,N1,N1> m_SingleJointedarmPlant = 
-	//   LinearSystemId.createSingleJointedSingleJointedArmSystem(DCMotor.getKrakenX60Foc(1), SingleJointedSingleJointedArmSim.estimateMOI(Units.inchesToMeters(10), Units.lbsToKilograms(6)), 150);
-	private final LinearSystem<N2, N1, N1> m_SingleJointedArmPlant = LinearSystemId
-			.identifyPositionSystem(CTRESpaceConstants.SingleJointedArm.armValueHolder.getKv(),
-					CTRESpaceConstants.SingleJointedArm.armValueHolder.getKa());
+	private final LinearSystem<N2,N1,N1> m_SingleJointedArmPlant = 
+	   LinearSystemId.createSingleJointedArmSystem(DCMotor.getKrakenX60Foc(1), SingleJointedArmSim.estimateMOI(CTRESpaceConstants.SingleJointedArm.armLength, CTRESpaceConstants.SingleJointedArm.armMass), CTRESpaceConstants.SingleJointedArm.armGearing);
+	//private final LinearSystem<N2, N1, N1> m_SingleJointedArmPlant = LinearSystemId
+	//		.identifyPositionSystem(CTRESpaceConstants.SingleJointedArm.armValueHolder.getKv(),
+	//				CTRESpaceConstants.SingleJointedArm.armValueHolder.getKa());
 	private final KalmanFilter<N2, N1, N1> m_observer = new KalmanFilter<>(
 			Nat.N2(), Nat.N1(), m_SingleJointedArmPlant,
-			VecBuilder.fill(CTRESpaceConstants.Elevator.m_KalmanModelPosition,
+			VecBuilder.fill(CTRESpaceConstants.SingleJointedArm.m_KalmanModelPosition,
 					CTRESpaceConstants.SingleJointedArm.m_KalmanModelVelocity),
 			VecBuilder.fill(CTRESpaceConstants.SingleJointedArm.m_KalmanEncoder), dtSeconds);
 	private final LinearQuadraticRegulator<N2, N1, N1> m_controller = new LinearQuadraticRegulator<>(
@@ -149,11 +148,11 @@ private final SysIdRoutine sysIdRoutine =
 	 *                            monitoring and control purposes.
 	 */
 	private SingleJointedArmSim simArm = new SingleJointedArmSim(m_SingleJointedArmPlant,
-			DCMotor.getKrakenX60Foc(1), CTRESpaceConstants.SingleJointedArm.armGearing,
+			DCMotor.getKrakenX60Foc(1),CTRESpaceConstants.SingleJointedArm.armGearing,
 			CTRESpaceConstants.SingleJointedArm.armLength,
 			CTRESpaceConstants.SingleJointedArm.startingPosition,
 			CTRESpaceConstants.SingleJointedArm.maxPosition, false,
-			CTRESpaceConstants.SingleJointedArm.startingPosition);
+			CTRESpaceConstants.SingleJointedArm.startingPosition,VecBuilder.fill(CTRESpaceConstants.SingleJointedArm.m_KalmanEncoder));
 	// Create a Mechanism2d display of an SingleJointedArm with a fixed SingleJointedArmTower and moving SingleJointedArm.
 	/*
 	 * Mechanism2d is really just an output of the robot, used to debug SingleJointedarm movement in simulation.
@@ -170,7 +169,7 @@ private final SysIdRoutine sysIdRoutine =
 			CTRESpaceConstants.SingleJointedArm.physicalX, CTRESpaceConstants.SingleJointedArm.physicalY);
 	private final MechanismLigament2d m_SingleJointedarm = m_SingleJointedarmPivot.append(
 			new MechanismLigament2d("SingleJointedArm", CTRESpaceConstants.SingleJointedArm.armLength,
-					Units.radiansToDegrees(m_lastProfiledReference.position), 1, new Color8Bit(Color.kYellow)));
+					Units.radiansToDegrees(m_position), 1, new Color8Bit(Color.kYellow)));
 
 	public CTRESingleJointedArmS() {
 		//initalize SingleJointedarm motor
@@ -310,7 +309,7 @@ private final SysIdRoutine sysIdRoutine =
 		default:
 			m_position = simArm.getAngleRads();
 			m_velocity = simArm.getVelocityRadPerSec();
-			m_SingleJointedarm.setAngle(m_position);
+			m_SingleJointedarm.setAngle(Units.radiansToDegrees(m_position));
 			break;
 		}
 	}
@@ -324,10 +323,8 @@ private final SysIdRoutine sysIdRoutine =
 				m_lastProfiledReference, goal); //calculate where it SHOULD be.
 		m_loop.setNextR(m_lastProfiledReference.position,
 				m_lastProfiledReference.velocity); //Tell our motors to get there
-		// Correct our Kalman filter's state vector estimate with encoder data ONLY if real
-		if (Constants.currentMode == Mode.REAL) {
-			m_loop.correct(VecBuilder.fill(getDistance()));
-		}
+		// Correct our Kalman filter's state vector estimate with encoder data
+		m_loop.correct(VecBuilder.fill(getDistance()));
 		// Update our LQR to generate new voltage commands and use the voltages to predict the next
 		// state with out Kalman filter.
 		m_loop.predict(dtSeconds);
@@ -349,6 +346,7 @@ private final SysIdRoutine sysIdRoutine =
 				new Rotation3d(0, -m_position, 0.0));
 		Logger.recordOutput("Mechanism3d/SingleJointedArm/", SingleJointedarmPose);
 		if (CTRESpaceConstants.debug) {
+			SmartDashboard.putNumber("SetVoltage", nextVoltage);
 			SmartDashboard.putNumber("Angle Error SingleJointedARM", Units.radiansToDegrees(getError()));
 			SmartDashboard.putNumber("SETPOINT SingleJointedARM",
 					Units.radiansToDegrees(goal.position));
