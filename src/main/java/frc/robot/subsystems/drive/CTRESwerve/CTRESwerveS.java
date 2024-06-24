@@ -159,8 +159,11 @@ public class CTRESwerveS extends SwerveDrivetrain implements DrivetrainS {
 				minTranslationalVelocity = velocity;
 			}
 		}
-		double velocityRatio = maxTranslationalVelocity
-				/ minTranslationalVelocity;
+		double velocityRatio = 1;
+		if (maxTranslationalVelocity > .5){
+			velocityRatio = maxTranslationalVelocity
+			/ minTranslationalVelocity;
+		}
 		SmartDashboard.putNumber("VELOCITY RATIO", velocityRatio);
 		final double SKID_THRESHOLD = 2;
 		return velocityRatio > SKID_THRESHOLD;
