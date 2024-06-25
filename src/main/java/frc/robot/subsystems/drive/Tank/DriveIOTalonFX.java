@@ -1,15 +1,6 @@
-// Copyright 2021-2024 FRC 6328
+// IO implementation creation files are from
 // http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
+// Be sure to understand how it creates the "inputs" variable and edits it!
 package frc.robot.subsystems.drive.Tank;
 
 import java.util.ArrayList;
@@ -73,12 +64,11 @@ public class DriveIOTalonFX implements DriveIO {
 			.getDeviceTemp();
 	private final Pigeon2 pigeon = new Pigeon2(30);
 	private final StatusSignal<Double> yaw = pigeon.getYaw();
-	private final StatusSignal<Double> accelX = pigeon
-			.getAccelerationX();
-	private final StatusSignal<Double> accelY = pigeon
-			.getAccelerationY();
+	private final StatusSignal<Double> accelX = pigeon.getAccelerationX();
+	private final StatusSignal<Double> accelY = pigeon.getAccelerationY();
 	private double last_world_linear_accel_x;
 	private double last_world_linear_accel_y;
+
 	public DriveIOTalonFX() {
 		var config = new TalonFXConfiguration();
 		config.CurrentLimits.SupplyCurrentLimit = DriveConstants.kMaxDriveCurrent;
@@ -166,10 +156,10 @@ public class DriveIOTalonFX implements DriveIO {
 		}
 		inputs.collisionDetected = false;
 	}
+
 	@Override
-	public void reset(){
-		pigeon.reset();
-	}
+	public void reset() { pigeon.reset(); }
+
 	@Override
 	public void setVoltage(double leftVolts, double rightVolts) {
 		leftLeader.setControl(new VoltageOut(leftVolts));

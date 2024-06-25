@@ -1,7 +1,6 @@
 // IO implementation creation files are from
 // http://github.com/Mechanical-Advantage
 // Be sure to understand how it creates the "inputs" variable and edits it!
-
 package frc.robot.subsystems.drive.FastSwerve;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -28,11 +27,8 @@ public class GyroIOPigeon2 implements GyroIO {
 	private final Queue<Double> yawTimestampQueue;
 	private final StatusSignal<Double> yawVelocity = pigeon
 			.getAngularVelocityZWorld();
-	private final StatusSignal<Double> accelX = pigeon
-			.getAccelerationX();
-	private final StatusSignal<Double> accelY = pigeon
-			.getAccelerationY();
-							
+	private final StatusSignal<Double> accelX = pigeon.getAccelerationX();
+	private final StatusSignal<Double> accelY = pigeon.getAccelerationY();
 	private double last_world_linear_accel_x, last_world_linear_accel_y;
 
 	public GyroIOPigeon2(boolean phoenixDrive) {
@@ -67,14 +63,14 @@ public class GyroIOPigeon2 implements GyroIO {
 		hardware.add(new SelfCheckingPigeon2("IMU", pigeon));
 		return hardware;
 	}
+
 	@Override
-	public void reset(){
-		pigeon.reset();
-	}
+	public void reset() { pigeon.reset(); }
+
 	@Override
 	public void updateInputs(GyroIOInputs inputs) {
-		inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity, accelX, accelY)
-				.equals(StatusCode.OK);
+		inputs.connected = BaseStatusSignal
+				.refreshAll(yaw, yawVelocity, accelX, accelY).equals(StatusCode.OK);
 		inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
 		inputs.yawVelocityRadPerSec = Units
 				.degreesToRadians(yawVelocity.getValueAsDouble());

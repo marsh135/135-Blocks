@@ -1,4 +1,5 @@
-//This system was repurposed from the 6328 Swerve Example, and fed into our bigger system.
+// This system was repurposed from the 6328 Swerve Example, and fed into our
+// bigger system.
 package frc.robot.subsystems.drive.FastSwerve;
 
 import static edu.wpi.first.units.Units.*;
@@ -86,8 +87,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 				new HolonomicPathFollowerConfig(
 						DriveConstants.kMaxSpeedMetersPerSecond, DRIVE_BASE_RADIUS,
 						new ReplanningConfig(true, true)),
-				() -> Robot.isRed,
-				this);
+				() -> Robot.isRed, this);
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		PathPlannerLogging.setLogActivePathCallback((activePath) -> {
 			Logger.recordOutput("Odometry/Trajectory",
@@ -175,9 +175,12 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		isSkidding = calculateSkidding();
 		Logger.recordOutput("Skids", isSkidding);
 	}
-		/**
-	 * Calculates the translational vectors of each module, and confirms it is within .25 m/s of the median vector.
-	 * If it isn't that module is said to be "Skidding"
+
+	/**
+	 * Calculates the translational vectors of each module, and confirms it is
+	 * within .25 m/s of the median vector. If it isn't that module is said to be
+	 * "Skidding"
+	 * 
 	 * @apiNote TEST ON BOT NEEDED
 	 * @param m_ChassisSpeeds
 	 * @return
@@ -187,7 +190,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		ChassisSpeeds currentChassisSpeeds = getChassisSpeeds();
 		// Step 1: Create a ChassisSpeeds object with solely the rotation component
 		ChassisSpeeds rotationOnlySpeeds = new ChassisSpeeds(0.0, 0.0,
-			currentChassisSpeeds.omegaRadiansPerSecond+.05);
+				currentChassisSpeeds.omegaRadiansPerSecond + .05);
 		double[] xComponentList = new double[4];
 		double[] yComponentList = new double[4];
 		// Step 2: Convert it into module states with kinematics
@@ -203,29 +206,30 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 					* Math.sin(moduleStates[i].angle.getRadians())
 					- rotationalStates[i].speedMetersPerSecond
 							* Math.sin(rotationalStates[i].angle.getRadians());
-			xComponentList[i] = deltaX; 
+			xComponentList[i] = deltaX;
 			yComponentList[i] = deltaY;
 		}
 		Arrays.sort(xComponentList);
 		Arrays.sort(yComponentList);
 		SmartDashboard.putNumberArray("Module Skid X", xComponentList);
 		SmartDashboard.putNumberArray("Module Skid Y", yComponentList);
-
 		double deltaMedianX = (xComponentList[1] + xComponentList[2]) / 2;
 		double deltaMedianY = (yComponentList[1] + yComponentList[2]) / 2;
-
 		boolean[] areModulesSkidding = new boolean[4];
-		for (int i = 0; i < 4; i++){
+		for (int i = 0; i < 4; i++) {
 			double deltaX = xComponentList[i];
 			double deltaY = yComponentList[i];
-			if (Math.abs(deltaX - deltaMedianX) > DriveConstants.SKID_THRESHOLD || Math.abs(deltaY - deltaMedianY) > DriveConstants.SKID_THRESHOLD){
+			if (Math.abs(deltaX - deltaMedianX) > DriveConstants.SKID_THRESHOLD
+					|| Math.abs(
+							deltaY - deltaMedianY) > DriveConstants.SKID_THRESHOLD) {
 				areModulesSkidding[i] = true;
-			}else{
+			} else {
 				areModulesSkidding[i] = false;
 			}
 		}
 		return areModulesSkidding;
 	}
+
 	/**
 	 * Runs the drive at the desired velocity.
 	 *

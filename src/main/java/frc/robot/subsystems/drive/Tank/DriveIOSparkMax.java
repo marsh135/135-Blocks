@@ -1,15 +1,6 @@
-// Copyright 2021-2024 FRC 6328
+// IO implementation creation files are from
 // http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
+// Be sure to understand how it creates the "inputs" variable and edits it!
 package frc.robot.subsystems.drive.Tank;
 
 import java.util.ArrayList;
@@ -56,12 +47,11 @@ public class DriveIOSparkMax implements DriveIO {
 	private final SparkPIDController rightPID = rightLeader.getPIDController();
 	private final Pigeon2 pigeon = new Pigeon2(30);
 	private final StatusSignal<Double> yaw = pigeon.getYaw();
-	private final StatusSignal<Double> accelX = pigeon
-			.getAccelerationX();
-	private final StatusSignal<Double> accelY = pigeon
-			.getAccelerationY();
+	private final StatusSignal<Double> accelX = pigeon.getAccelerationX();
+	private final StatusSignal<Double> accelY = pigeon.getAccelerationY();
 	private double last_world_linear_accel_x;
 	private double last_world_linear_accel_y;
+
 	public DriveIOSparkMax() {
 		leftLeader.restoreFactoryDefaults();
 		rightLeader.restoreFactoryDefaults();
@@ -118,7 +108,7 @@ public class DriveIOSparkMax implements DriveIO {
 		};
 		inputs.frontRightDriveTemp = rightLeader.getMotorTemperature();
 		inputs.backRightDriveTemp = rightFollower.getMotorTemperature();
-				inputs.gyroConnected = BaseStatusSignal.refreshAll(yaw,accelX,accelY)
+		inputs.gyroConnected = BaseStatusSignal.refreshAll(yaw, accelX, accelY)
 				.equals(StatusCode.OK);
 		inputs.gyroYaw = Rotation2d.fromDegrees(yaw.refresh().getValueAsDouble());
 		double curr_world_linear_accel_x = accelX.getValueAsDouble();
@@ -141,10 +131,10 @@ public class DriveIOSparkMax implements DriveIO {
 		leftLeader.setVoltage(leftVolts);
 		rightLeader.setVoltage(rightVolts);
 	}
+
 	@Override
-	public void reset(){
-		pigeon.reset();
-	}
+	public void reset() { pigeon.reset(); }
+
 	@Override
 	public void setVelocity(double leftRadPerSec, double rightRadPerSec,
 			double leftFFVolts, double rightFFVolts) {

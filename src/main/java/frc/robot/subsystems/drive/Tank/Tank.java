@@ -1,15 +1,6 @@
-// Copyright 2021-2024 FRC 6328
+// IO implementation creation files are from
 // http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
+// Be sure to understand how it creates the "inputs" variable and edits it!
 package frc.robot.subsystems.drive.Tank;
 
 import static edu.wpi.first.units.Units.*;
@@ -130,13 +121,12 @@ public class Tank extends SubsystemChecker implements DrivetrainS {
 		Logger.processInputs("Drive", inputs);
 		// Update odometry
 		wheelPositions = getPositionsWithTimestamp(getWheelPositions());
-					ChassisSpeeds m_ChassisSpeeds = getChassisSpeeds();
-			Translation2d linearFieldVelocity = new Translation2d(
-					m_ChassisSpeeds.vxMetersPerSecond,
-					m_ChassisSpeeds.vyMetersPerSecond).rotateBy(getRotation2d());
-			fieldVelocity = new Twist2d(linearFieldVelocity.getX(),
-					linearFieldVelocity.getY(),
-					m_ChassisSpeeds.omegaRadiansPerSecond);
+		ChassisSpeeds m_ChassisSpeeds = getChassisSpeeds();
+		Translation2d linearFieldVelocity = new Translation2d(
+				m_ChassisSpeeds.vxMetersPerSecond,
+				m_ChassisSpeeds.vyMetersPerSecond).rotateBy(getRotation2d());
+		fieldVelocity = new Twist2d(linearFieldVelocity.getX(),
+				linearFieldVelocity.getY(), m_ChassisSpeeds.omegaRadiansPerSecond);
 		pose = poseEstimator.updateWithTime(wheelPositions.getTimestamp(),
 				getRotation2d(), wheelPositions.getPositions());
 		collisionDetected = collisionDetected();
@@ -246,7 +236,7 @@ public class Tank extends SubsystemChecker implements DrivetrainS {
 		return getOrchestraDevices();
 	}
 
-@Override
+	@Override
 	protected Command systemCheckCommand() {
 		return Commands.sequence(
 				run(() -> setChassisSpeeds(new ChassisSpeeds(0, 0, 0.5)))
