@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.CTRE_state_space.CTREElevatorS;
-import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
+import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
 
 public class CTREElevatorC extends Command {
 	private final CTREElevatorS elevatorS;
@@ -17,12 +17,12 @@ public class CTREElevatorC extends Command {
 
 	@Override
 	public void initialize() {
-		CTRESpaceConstants.Controls.go0ftButton
+		StateSpaceConstants.Controls.go0ftButton
 						.onTrue(new InstantCommand(() -> {
 							elevatorPos = Units.feetToMeters(0);
 							elevatorS.moveElevator(elevatorS.createState(elevatorPos));
 						}));
-		CTRESpaceConstants.Controls.go2ftButton
+		StateSpaceConstants.Controls.go2ftButton
 						.onTrue(new InstantCommand(() -> {
 							elevatorPos = Units.feetToMeters(2);
 							elevatorS.moveElevator(elevatorS.createState(elevatorPos));
@@ -33,15 +33,15 @@ public class CTREElevatorC extends Command {
 	public void execute() {
 		double elevatorSpeed = 0, desSpeed = -RobotContainer.manipController.getLeftY();
 		elevatorPos = CTREElevatorS.getSetpoint();
-		if (Math.abs(desSpeed) > CTRESpaceConstants.Controls.kArmDeadband) {
-			if (elevatorPos >= CTRESpaceConstants.Elevator.maxPosition && desSpeed > 0) {
-				elevatorPos = CTRESpaceConstants.Elevator.maxPosition;
-			} else if (elevatorPos <= CTRESpaceConstants.Elevator.startingPosition
+		if (Math.abs(desSpeed) > StateSpaceConstants.Controls.kArmDeadband) {
+			if (elevatorPos >= StateSpaceConstants.Elevator.maxPosition && desSpeed > 0) {
+				elevatorPos = StateSpaceConstants.Elevator.maxPosition;
+			} else if (elevatorPos <= StateSpaceConstants.Elevator.startingPosition
 					&& desSpeed < 0) {
-				elevatorPos = CTRESpaceConstants.Elevator.startingPosition;
+				elevatorPos = StateSpaceConstants.Elevator.startingPosition;
 			} else {
-				elevatorSpeed = desSpeed * CTRESpaceConstants.Elevator.maxAcceleration
-						* CTRESpaceConstants.Controls.elevatorMoveSpeed;
+				elevatorSpeed = desSpeed * StateSpaceConstants.Elevator.maxAcceleration
+						* StateSpaceConstants.Controls.elevatorMoveSpeed;
 				elevatorPos += (elevatorSpeed * CTREElevatorS.dtSeconds); //add to our current position 20 MS of that accel
 			}
 		}

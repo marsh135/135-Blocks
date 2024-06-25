@@ -23,31 +23,31 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
 import frc.robot.DataHandler;
 import frc.robot.subsystems.SubsystemChecker;
-import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
+import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
 public class CTREDoubleJointedArmS extends SubsystemChecker {
 	private TalonFX armMotor = new TalonFX(
-			CTRESpaceConstants.DoubleJointedArm.kArmMotorID);
+			StateSpaceConstants.DoubleJointedArm.kArmMotorID);
 	private TalonFX elbowMotor = new TalonFX(
-			CTRESpaceConstants.DoubleJointedArm.kElbowMotorID);
+			StateSpaceConstants.DoubleJointedArm.kElbowMotorID);
 	private Notifier m_updatePositionsNotifier = null; //Checks for updates
 	public static double expectedArmRads = 0, expectedElbowRads = 0;
 	private final VoltageOut m_voltReq = new VoltageOut(0.0);
 	private final Mechanism2d m_mech2d = new Mechanism2d(
-			CTRESpaceConstants.DoubleJointedArm.simSizeWidth,
-			CTRESpaceConstants.DoubleJointedArm.simSizeLength);
+			StateSpaceConstants.DoubleJointedArm.simSizeWidth,
+			StateSpaceConstants.DoubleJointedArm.simSizeLength);
 	private final MechanismRoot2d m_DoubleJointedarmPivot = m_mech2d.getRoot(
-			"DoubleJointedArmPivot", CTRESpaceConstants.DoubleJointedArm.physicalX,
-			CTRESpaceConstants.DoubleJointedArm.physicalY);
+			"DoubleJointedArmPivot", StateSpaceConstants.DoubleJointedArm.physicalX,
+			StateSpaceConstants.DoubleJointedArm.physicalY);
 	private final MechanismLigament2d m_DoubleJointedArm = m_DoubleJointedarmPivot
 			.append(new MechanismLigament2d("DoubleJointedArm",
-					CTRESpaceConstants.DoubleJointedArm.armLength,
+					StateSpaceConstants.DoubleJointedArm.armLength,
 					Units.radiansToDegrees(expectedArmRads), 1,
 					new Color8Bit(Color.kYellow)));
 	private final MechanismLigament2d m_DoubleJointedElbow = m_DoubleJointedArm
 			.append(new MechanismLigament2d("DoubleJointedElbow",
-					CTRESpaceConstants.DoubleJointedArm.elbowLength,
+					StateSpaceConstants.DoubleJointedArm.elbowLength,
 					Units.radiansToDegrees(expectedElbowRads), 1,
 					new Color8Bit(Color.kYellow)));
   private final StatusSignal<Double> m_armpos = armMotor.getPosition();
@@ -59,14 +59,14 @@ public class CTREDoubleJointedArmS extends SubsystemChecker {
 	public CTREDoubleJointedArmS() {
 		TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 		motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-		motorConfig.CurrentLimits.StatorCurrentLimit = CTRESpaceConstants.DoubleJointedArm.armStatorCurrentLimit;
-		motorConfig.MotorOutput.Inverted = CTRESpaceConstants.DoubleJointedArm.inverted;
-		motorConfig.MotorOutput.NeutralMode = CTRESpaceConstants.DoubleJointedArm.mode;
-		motorConfig.Feedback.SensorToMechanismRatio = CTRESpaceConstants.DoubleJointedArm.armGearing;
+		motorConfig.CurrentLimits.StatorCurrentLimit = StateSpaceConstants.DoubleJointedArm.armStatorCurrentLimit;
+		motorConfig.MotorOutput.Inverted = StateSpaceConstants.DoubleJointedArm.inverted;
+		motorConfig.MotorOutput.NeutralMode = StateSpaceConstants.DoubleJointedArm.mode;
+		motorConfig.Feedback.SensorToMechanismRatio = StateSpaceConstants.DoubleJointedArm.armGearing;
 		armMotor.getConfigurator().apply(motorConfig);
 		//do elbow
-		motorConfig.CurrentLimits.StatorCurrentLimit = CTRESpaceConstants.DoubleJointedArm.elbowStatorCurrentLimit;
-		motorConfig.Feedback.SensorToMechanismRatio = CTRESpaceConstants.DoubleJointedArm.elbowGearing;
+		motorConfig.CurrentLimits.StatorCurrentLimit = StateSpaceConstants.DoubleJointedArm.elbowStatorCurrentLimit;
+		motorConfig.Feedback.SensorToMechanismRatio = StateSpaceConstants.DoubleJointedArm.elbowGearing;
 		elbowMotor.getConfigurator().apply(motorConfig);
 		if (Constants.currentMode == Constants.Mode.SIM){
 			m_updatePositionsNotifier = new Notifier(() -> {
@@ -160,26 +160,26 @@ public class CTREDoubleJointedArmS extends SubsystemChecker {
 	public double[] getCoordinate(){
 		double armPos = getArmRads();
 		double elbowPos = getElbowRads()+getArmRads();
-		double x = Math.cos(armPos) * CTRESpaceConstants.DoubleJointedArm.armLength + Math.cos(elbowPos) * CTRESpaceConstants.DoubleJointedArm.elbowLength;
-		double y = Math.sin(armPos) * CTRESpaceConstants.DoubleJointedArm.armLength + Math.sin(elbowPos) * CTRESpaceConstants.DoubleJointedArm.elbowLength;
+		double x = Math.cos(armPos) * StateSpaceConstants.DoubleJointedArm.armLength + Math.cos(elbowPos) * StateSpaceConstants.DoubleJointedArm.elbowLength;
+		double y = Math.sin(armPos) * StateSpaceConstants.DoubleJointedArm.armLength + Math.sin(elbowPos) * StateSpaceConstants.DoubleJointedArm.elbowLength;
 		return new double[]{x,y};
 	}
 	@Override
 	protected Command systemCheckCommand() { 
 	return Commands.sequence(run(() -> DataHandler.logData(
-		CTRESpaceConstants.DoubleJointedArm.macroTopRight,
+		StateSpaceConstants.DoubleJointedArm.macroTopRight,
 		"DoubleJointSetpoint")).withTimeout(5),
 				runOnce(() ->{
 					double[] coordinate = getCoordinate();
-					if (Math.abs(coordinate[0]-CTRESpaceConstants.DoubleJointedArm.macroTopRight[0]) > Units.inchesToMeters(5) || Math.abs(coordinate[1]-CTRESpaceConstants.DoubleJointedArm.macroTopRight[1]) > Units.inchesToMeters(5)){
+					if (Math.abs(coordinate[0]-StateSpaceConstants.DoubleJointedArm.macroTopRight[0]) > Units.inchesToMeters(5) || Math.abs(coordinate[1]-StateSpaceConstants.DoubleJointedArm.macroTopRight[1]) > Units.inchesToMeters(5)){
 						addFault("[System Check] Arm position was off more than 5 in. Wanted 1.5,1.1, got " + coordinate[0] + "," + coordinate[1], false,true);
 					}
 				}),run(() -> DataHandler.logData(
-					CTRESpaceConstants.DoubleJointedArm.macroTopLeft,
+					StateSpaceConstants.DoubleJointedArm.macroTopLeft,
 					"DoubleJointSetpoint")).withTimeout(5),
 							runOnce(() ->{
 								double[] coordinate = getCoordinate();
-								if (Math.abs(coordinate[0]-CTRESpaceConstants.DoubleJointedArm.macroTopLeft[0]) > Units.inchesToMeters(5) || Math.abs(coordinate[1]-CTRESpaceConstants.DoubleJointedArm.macroTopLeft[1]) > Units.inchesToMeters(5)){
+								if (Math.abs(coordinate[0]-StateSpaceConstants.DoubleJointedArm.macroTopLeft[0]) > Units.inchesToMeters(5) || Math.abs(coordinate[1]-StateSpaceConstants.DoubleJointedArm.macroTopLeft[1]) > Units.inchesToMeters(5)){
 									addFault("[System Check] Arm position was off more than 5 in. Wanted -1.5,1.0, got " + coordinate[0] + "," + coordinate[1], false,true);
 								}
 							}))
@@ -187,4 +187,8 @@ public class CTREDoubleJointedArmS extends SubsystemChecker {
             () ->
                 !getFaults().isEmpty());
 	}
+
+	@Override
+	public double getCurrent() { // TODO Auto-generated method stub
+	throw new UnsupportedOperationException("Unimplemented method 'getCurrent'"); }
 }

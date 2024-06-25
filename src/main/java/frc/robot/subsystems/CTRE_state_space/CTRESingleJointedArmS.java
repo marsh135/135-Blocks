@@ -42,7 +42,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.subsystems.SubsystemChecker;
-import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
+import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
 import frc.robot.utils.drive.DriveConstants;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -54,7 +54,7 @@ import java.util.function.BooleanSupplier;
 
 public class CTRESingleJointedArmS extends SubsystemChecker {
 	//initalize motors
-	private TalonFX armMotor = new TalonFX(CTRESpaceConstants.SingleJointedArm.kMotorID);
+	private TalonFX armMotor = new TalonFX(StateSpaceConstants.SingleJointedArm.kMotorID);
 	//update cycle time
 	public static double dtSeconds = .02; //20 ms
 	//live tuning, only enabled in Debug.
@@ -95,20 +95,20 @@ private final SysIdRoutine sysIdRoutine =
 	 * First position in the Nat is for Position, second is Velocity.
 	 */
 	private final LinearSystem<N2,N1,N1> m_SingleJointedArmPlant = 
-	   LinearSystemId.createSingleJointedArmSystem(DCMotor.getKrakenX60Foc(1), SingleJointedArmSim.estimateMOI(CTRESpaceConstants.SingleJointedArm.armLength, CTRESpaceConstants.SingleJointedArm.armMass), CTRESpaceConstants.SingleJointedArm.armGearing);
+	   LinearSystemId.createSingleJointedArmSystem(DCMotor.getKrakenX60Foc(1), SingleJointedArmSim.estimateMOI(StateSpaceConstants.SingleJointedArm.armLength, StateSpaceConstants.SingleJointedArm.armMass), StateSpaceConstants.SingleJointedArm.armGearing);
 	//private final LinearSystem<N2, N1, N1> m_SingleJointedArmPlant = LinearSystemId
 	//		.identifyPositionSystem(CTRESpaceConstants.SingleJointedArm.armValueHolder.getKv(),
 	//				CTRESpaceConstants.SingleJointedArm.armValueHolder.getKa());
 	private final KalmanFilter<N2, N1, N1> m_observer = new KalmanFilter<>(
 			Nat.N2(), Nat.N1(), m_SingleJointedArmPlant,
-			VecBuilder.fill(CTRESpaceConstants.SingleJointedArm.m_KalmanModelPosition,
-					CTRESpaceConstants.SingleJointedArm.m_KalmanModelVelocity),
-			VecBuilder.fill(CTRESpaceConstants.SingleJointedArm.m_KalmanEncoder), dtSeconds);
+			VecBuilder.fill(StateSpaceConstants.SingleJointedArm.m_KalmanModelPosition,
+					StateSpaceConstants.SingleJointedArm.m_KalmanModelVelocity),
+			VecBuilder.fill(StateSpaceConstants.SingleJointedArm.m_KalmanEncoder), dtSeconds);
 	private final LinearQuadraticRegulator<N2, N1, N1> m_controller = new LinearQuadraticRegulator<>(
 			m_SingleJointedArmPlant,
-			VecBuilder.fill(CTRESpaceConstants.SingleJointedArm.m_LQRQelmsPosition,
-					CTRESpaceConstants.SingleJointedArm.m_LQRQelmsVelocity),
-			VecBuilder.fill(CTRESpaceConstants.SingleJointedArm.m_LQRRVolts), dtSeconds);
+			VecBuilder.fill(StateSpaceConstants.SingleJointedArm.m_LQRQelmsPosition,
+					StateSpaceConstants.SingleJointedArm.m_LQRQelmsVelocity),
+			VecBuilder.fill(StateSpaceConstants.SingleJointedArm.m_LQRRVolts), dtSeconds);
 	// lower if using notifiers.
 	// The state-space loop combines a controller, observer, feedforward and plant for easy control.
 	private final LinearSystemLoop<N2, N1, N1> m_loop = new LinearSystemLoop<>(
@@ -121,8 +121,8 @@ private final SysIdRoutine sysIdRoutine =
 	 * these.
 	 */
 	private final TrapezoidProfile m_profile = new TrapezoidProfile(
-			new TrapezoidProfile.Constraints(CTRESpaceConstants.SingleJointedArm.maxSpeed, //placeholder
-					CTRESpaceConstants.SingleJointedArm.maxAcceleration));
+			new TrapezoidProfile.Constraints(StateSpaceConstants.SingleJointedArm.maxSpeed, //placeholder
+					StateSpaceConstants.SingleJointedArm.maxAcceleration));
 	private TrapezoidProfile.State m_lastProfiledReference = new TrapezoidProfile.State();
 	//set our starting position for the SingleJointedarm
 	/*
@@ -130,7 +130,7 @@ private final SysIdRoutine sysIdRoutine =
 	 * Here, we provide our starting position.
 	 */
 	private static TrapezoidProfile.State goal = new TrapezoidProfile.State(
-			CTRESpaceConstants.SingleJointedArm.startingPosition, 0);
+			StateSpaceConstants.SingleJointedArm.startingPosition, 0);
 	/**
 	 * Constructs a single-jointed SingleJointedarm simulation with the given parameters.
 	 * 
@@ -148,11 +148,11 @@ private final SysIdRoutine sysIdRoutine =
 	 *                            monitoring and control purposes.
 	 */
 	private SingleJointedArmSim simArm = new SingleJointedArmSim(m_SingleJointedArmPlant,
-			DCMotor.getKrakenX60Foc(1),CTRESpaceConstants.SingleJointedArm.armGearing,
-			CTRESpaceConstants.SingleJointedArm.armLength,
-			CTRESpaceConstants.SingleJointedArm.startingPosition,
-			CTRESpaceConstants.SingleJointedArm.maxPosition, false,
-			CTRESpaceConstants.SingleJointedArm.startingPosition,VecBuilder.fill(CTRESpaceConstants.SingleJointedArm.m_KalmanEncoder));
+			DCMotor.getKrakenX60Foc(1),StateSpaceConstants.SingleJointedArm.armGearing,
+			StateSpaceConstants.SingleJointedArm.armLength,
+			StateSpaceConstants.SingleJointedArm.startingPosition,
+			StateSpaceConstants.SingleJointedArm.maxPosition, false,
+			StateSpaceConstants.SingleJointedArm.startingPosition,VecBuilder.fill(StateSpaceConstants.SingleJointedArm.m_KalmanEncoder));
 	// Create a Mechanism2d display of an SingleJointedArm with a fixed SingleJointedArmTower and moving SingleJointedArm.
 	/*
 	 * Mechanism2d is really just an output of the robot, used to debug SingleJointedarm movement in simulation.
@@ -166,9 +166,9 @@ private final SysIdRoutine sysIdRoutine =
 	private final Mechanism2d m_mech2d = new Mechanism2d(
 			DriveConstants.kChassisWidth, DriveConstants.kChassisLength);
 	private final MechanismRoot2d m_SingleJointedarmPivot = m_mech2d.getRoot("SingleJointedArmPivot",
-			CTRESpaceConstants.SingleJointedArm.physicalX, CTRESpaceConstants.SingleJointedArm.physicalY);
+			StateSpaceConstants.SingleJointedArm.physicalX, StateSpaceConstants.SingleJointedArm.physicalY);
 	private final MechanismLigament2d m_SingleJointedarm = m_SingleJointedarmPivot.append(
-			new MechanismLigament2d("SingleJointedArm", CTRESpaceConstants.SingleJointedArm.armLength,
+			new MechanismLigament2d("SingleJointedArm", StateSpaceConstants.SingleJointedArm.armLength,
 					Units.radiansToDegrees(m_position), 1, new Color8Bit(Color.kYellow)));
 
 	public CTRESingleJointedArmS() {
@@ -176,10 +176,10 @@ private final SysIdRoutine sysIdRoutine =
 		var talonFXConfigurator = armMotor.getConfigurator();
 		TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 		motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-		motorConfig.CurrentLimits.StatorCurrentLimit = CTRESpaceConstants.SingleJointedArm.statorCurrentLimit;
-		motorConfig.MotorOutput.Inverted = CTRESpaceConstants.SingleJointedArm.inverted;
-		motorConfig.MotorOutput.NeutralMode = CTRESpaceConstants.SingleJointedArm.mode;
-		motorConfig.Feedback.SensorToMechanismRatio = CTRESpaceConstants.SingleJointedArm.armGearing;
+		motorConfig.CurrentLimits.StatorCurrentLimit = StateSpaceConstants.SingleJointedArm.statorCurrentLimit;
+		motorConfig.MotorOutput.Inverted = StateSpaceConstants.SingleJointedArm.inverted;
+		motorConfig.MotorOutput.NeutralMode = StateSpaceConstants.SingleJointedArm.mode;
+		motorConfig.Feedback.SensorToMechanismRatio = StateSpaceConstants.SingleJointedArm.armGearing;
 		talonFXConfigurator.apply(motorConfig);
 	
 		//reset our position (getDistance just because it's zero usually, and IF the robot died on field and rebooted, it'd still be accurate.)
@@ -227,14 +227,14 @@ private final SysIdRoutine sysIdRoutine =
 	public BooleanSupplier withinLimits(SysIdRoutine.Direction direction) {
 		BooleanSupplier returnVal;
 		if (direction.toString() == "kReverse") {
-			if (getDistance() < CTRESpaceConstants.SingleJointedArm.startingPosition) {
+			if (getDistance() < StateSpaceConstants.SingleJointedArm.startingPosition) {
 				returnVal = () -> false;
 				return returnVal;
 			}
 		}
 		//second set of conditionals (below) checks to see if the SingleJointedarm is within the hard limits, and stops it if it is
 		if (direction.toString() == "kForward") {
-			if (getDistance() > CTRESpaceConstants.SingleJointedArm.maxPosition) {
+			if (getDistance() > StateSpaceConstants.SingleJointedArm.maxPosition) {
 				returnVal = () -> false;
 				return returnVal;
 			}
@@ -249,14 +249,14 @@ private final SysIdRoutine sysIdRoutine =
 	 */
 	public TrapezoidProfile.State startingState() {
 		return new TrapezoidProfile.State(
-				CTRESpaceConstants.SingleJointedArm.startingPosition, 0);
+				StateSpaceConstants.SingleJointedArm.startingPosition, 0);
 	}
 
 	/*
 	 * Create a state that is the MAXIMUM position
 	 */
 	public TrapezoidProfile.State maxState() {
-		return new TrapezoidProfile.State(CTRESpaceConstants.SingleJointedArm.maxPosition, 0);
+		return new TrapezoidProfile.State(StateSpaceConstants.SingleJointedArm.maxPosition, 0);
 	}
 
 	/**
@@ -342,10 +342,10 @@ private final SysIdRoutine sysIdRoutine =
 		//Push the mechanism to AdvantageScope
 		Logger.recordOutput("SingleJointedArmMechanism", m_mech2d);
 		//calcualate SingleJointedarm pose
-		var SingleJointedarmPose = new Pose3d(CTRESpaceConstants.SingleJointedArm.simX, CTRESpaceConstants.SingleJointedArm.simY, CTRESpaceConstants.SingleJointedArm.simZ,
+		var SingleJointedarmPose = new Pose3d(StateSpaceConstants.SingleJointedArm.simX, StateSpaceConstants.SingleJointedArm.simY, StateSpaceConstants.SingleJointedArm.simZ,
 				new Rotation3d(0, -m_position, 0.0));
 		Logger.recordOutput("Mechanism3d/SingleJointedArm/", SingleJointedarmPose);
-		if (CTRESpaceConstants.debug) {
+		if (StateSpaceConstants.debug) {
 			SmartDashboard.putNumber("SetVoltage", nextVoltage);
 			SmartDashboard.putNumber("Angle Error SingleJointedARM", Units.radiansToDegrees(getError()));
 			SmartDashboard.putNumber("SETPOINT SingleJointedARM",
@@ -398,4 +398,8 @@ private final SysIdRoutine sysIdRoutine =
 					}
 				})).until(() -> !getFaults().isEmpty());
 	}
+
+	@Override
+	public double getCurrent() { // TODO Auto-generated method stub
+	throw new UnsupportedOperationException("Unimplemented method 'getCurrent'"); }
 }

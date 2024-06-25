@@ -39,7 +39,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.SubsystemChecker;
-import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
+import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -51,7 +51,7 @@ import java.util.function.BooleanSupplier;
 public class CTREElevatorS extends SubsystemChecker {
 	//initialize motors
 	private TalonFX elevatorMotor = new TalonFX(
-			CTRESpaceConstants.Elevator.kMotorID);
+			StateSpaceConstants.Elevator.kMotorID);
 	public static double dtSeconds = .02; //20 ms
 	private static double m_velocity, m_oldPosition, m_position;
 	/**
@@ -88,15 +88,15 @@ public class CTREElevatorS extends SubsystemChecker {
 	*/
 	private final LinearSystem<N2, N1, N1> m_elevatorPlant = LinearSystemId
 			.createElevatorSystem(DCMotor.getKrakenX60Foc(1),
-					CTRESpaceConstants.Elevator.carriageMass,
-					CTRESpaceConstants.Elevator.drumRadius,
-					CTRESpaceConstants.Elevator.elevatorGearing);
+					StateSpaceConstants.Elevator.carriageMass,
+					StateSpaceConstants.Elevator.drumRadius,
+					StateSpaceConstants.Elevator.elevatorGearing);
 	private final KalmanFilter<N2, N1, N1> m_observer = new KalmanFilter<>(
 			Nat.N2(), Nat.N1(), m_elevatorPlant,
-			VecBuilder.fill(CTRESpaceConstants.Elevator.m_KalmanModelPosition,
-					CTRESpaceConstants.Elevator.m_KalmanModelVelocity), // How accurate we
+			VecBuilder.fill(StateSpaceConstants.Elevator.m_KalmanModelPosition,
+					StateSpaceConstants.Elevator.m_KalmanModelVelocity), // How accurate we
 			// think our model is, in meters and meters/second.
-			VecBuilder.fill(CTRESpaceConstants.Elevator.m_KalmanEncoder), // How accurate we think our encoder position
+			VecBuilder.fill(StateSpaceConstants.Elevator.m_KalmanEncoder), // How accurate we think our encoder position
 			// data is. In this case we very highly trust our encoder position reading.
 			dtSeconds);
 	private final LinearQuadraticRegulator<N2, N1, N1> m_controller = new LinearQuadraticRegulator<>(
@@ -114,22 +114,22 @@ public class CTREElevatorS extends SubsystemChecker {
 	 * @see ArmS
 	 */
 	private final TrapezoidProfile m_profile = new TrapezoidProfile(
-			new TrapezoidProfile.Constraints(CTRESpaceConstants.Elevator.maxSpeed,
-					CTRESpaceConstants.Elevator.maxAcceleration)); // Max elevator speed and acceleration.
+			new TrapezoidProfile.Constraints(StateSpaceConstants.Elevator.maxSpeed,
+					StateSpaceConstants.Elevator.maxAcceleration)); // Max elevator speed and acceleration.
 	private TrapezoidProfile.State m_lastProfiledReference = new TrapezoidProfile.State();
 	private static TrapezoidProfile.State goal = new TrapezoidProfile.State(
-			CTRESpaceConstants.Elevator.startingPosition, 0);
+			StateSpaceConstants.Elevator.startingPosition, 0);
 	private ElevatorSim simElevator = new ElevatorSim(m_elevatorPlant,
-			DCMotor.getNEO(1), CTRESpaceConstants.Elevator.startingPosition,
-			CTRESpaceConstants.Elevator.maxPosition, false,
-			CTRESpaceConstants.Elevator.startingPosition);
+			DCMotor.getNEO(1), StateSpaceConstants.Elevator.startingPosition,
+			StateSpaceConstants.Elevator.maxPosition, false,
+			StateSpaceConstants.Elevator.startingPosition);
 	// Create a Mechanism2d visualization of the elevator
 	private final Mechanism2d m_mech2d = new Mechanism2d(
-			CTRESpaceConstants.Elevator.maxPosition + .25,
-			CTRESpaceConstants.Elevator.maxPosition + .25);
+			StateSpaceConstants.Elevator.maxPosition + .25,
+			StateSpaceConstants.Elevator.maxPosition + .25);
 	private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot(
-			"Elevator Root", CTRESpaceConstants.Elevator.physicalX,
-			CTRESpaceConstants.Elevator.physicalY);
+			"Elevator Root", StateSpaceConstants.Elevator.physicalX,
+			StateSpaceConstants.Elevator.physicalY);
 	private final MechanismLigament2d m_elevatorMech2d = m_mech2dRoot
 			.append(new MechanismLigament2d("Elevator",
 					m_position, 90));
@@ -139,10 +139,10 @@ public class CTREElevatorS extends SubsystemChecker {
 		var talonFXConfigurator = elevatorMotor.getConfigurator();
 		TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 		motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-		motorConfig.CurrentLimits.StatorCurrentLimit = CTRESpaceConstants.Elevator.statorCurrentLimit;
-		motorConfig.MotorOutput.Inverted = CTRESpaceConstants.Elevator.inverted;
-		motorConfig.MotorOutput.NeutralMode = CTRESpaceConstants.Elevator.mode;
-		motorConfig.Feedback.SensorToMechanismRatio = CTRESpaceConstants.Elevator.elevatorGearing;
+		motorConfig.CurrentLimits.StatorCurrentLimit = StateSpaceConstants.Elevator.statorCurrentLimit;
+		motorConfig.MotorOutput.Inverted = StateSpaceConstants.Elevator.inverted;
+		motorConfig.MotorOutput.NeutralMode = StateSpaceConstants.Elevator.mode;
+		motorConfig.Feedback.SensorToMechanismRatio = StateSpaceConstants.Elevator.elevatorGearing;
 		talonFXConfigurator.apply(motorConfig);
 		//reset our position
 		m_loop.reset(VecBuilder.fill(getDistance(), getVelocity()));
@@ -190,14 +190,14 @@ public class CTREElevatorS extends SubsystemChecker {
 	public BooleanSupplier withinLimits(SysIdRoutine.Direction direction) {
 		BooleanSupplier returnVal;
 		if (direction.toString() == "kReverse") {
-			if (getDistance() < CTRESpaceConstants.Elevator.startingPosition) {
+			if (getDistance() < StateSpaceConstants.Elevator.startingPosition) {
 				returnVal = () -> false;
 				return returnVal;
 			}
 		}
 		//second set of conditionals (below) checks to see if the elevator is within the hard limits, and stops it if it is
 		if (direction.toString() == "kForward") {
-			if (getDistance() > CTRESpaceConstants.Elevator.maxPosition) {
+			if (getDistance() > StateSpaceConstants.Elevator.maxPosition) {
 				returnVal = () -> false;
 				return returnVal;
 			}
@@ -212,14 +212,14 @@ public class CTREElevatorS extends SubsystemChecker {
 	 */
 	public TrapezoidProfile.State startingState() {
 		return new TrapezoidProfile.State(
-				CTRESpaceConstants.Elevator.startingPosition, 0);
+				StateSpaceConstants.Elevator.startingPosition, 0);
 	}
 
 	/*
 	 * Create a state that is the MAXIMUM position
 	 */
 	public TrapezoidProfile.State maxState() {
-		return new TrapezoidProfile.State(CTRESpaceConstants.Elevator.maxPosition,
+		return new TrapezoidProfile.State(StateSpaceConstants.Elevator.maxPosition,
 				0);
 	}
 
@@ -286,7 +286,7 @@ public class CTREElevatorS extends SubsystemChecker {
 	@Override
 	public void periodic() {
 		updateEncoders();
-		if (CTRESpaceConstants.debug) {
+		if (StateSpaceConstants.debug) {
 			SmartDashboard.putNumber("Position Error Ele.", getError());
 			SmartDashboard.putNumber("SETPOINT Ele.", goal.position);
 			SmartDashboard.putNumber("CURRENT WANTED Ele.",
@@ -316,8 +316,8 @@ public class CTREElevatorS extends SubsystemChecker {
 		//Push the mechanism to AdvantageScope
 		Logger.recordOutput("ElevatorMechanism", m_mech2d);
 		//calcualate arm pose
-		var elevatorPose = new Pose3d(CTRESpaceConstants.Elevator.simX,
-				CTRESpaceConstants.Elevator.simY, CTRESpaceConstants.Elevator.simZ,
+		var elevatorPose = new Pose3d(StateSpaceConstants.Elevator.simX,
+				StateSpaceConstants.Elevator.simY, StateSpaceConstants.Elevator.simZ,
 				new Rotation3d(0, 0, 0.0));
 		Logger.recordOutput("Mechanism3d/Elevator/", elevatorPose);
 	}
@@ -365,4 +365,8 @@ public class CTREElevatorS extends SubsystemChecker {
 					}
 				})).until(() -> !getFaults().isEmpty());
 	}
+
+	@Override
+	public double getCurrent() { // TODO Auto-generated method stub
+	throw new UnsupportedOperationException("Unimplemented method 'getCurrent'"); }
 }

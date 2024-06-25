@@ -3,21 +3,21 @@ package frc.robot.commands.CTRE_state_space;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.CTRE_state_space.CTREFlywheelS;
-import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
+import frc.robot.subsystems.CTRE_state_space.Flywheel.FlywheelS;
+import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
 
-public class CTREFlywheelC extends Command {
-	private final CTREFlywheelS flywheelS;
+public class FlywheelC extends Command {
+	private final FlywheelS flywheelS;
 	private double flywheelSpeed;
 
-	public CTREFlywheelC(CTREFlywheelS flywheelS) {
+	public FlywheelC(FlywheelS flywheelS) {
 		this.flywheelS = flywheelS;
 		addRequirements(flywheelS);
 	}
 
 	@Override
 	public void initialize() {
-		CTRESpaceConstants.Controls.goto4000Button
+		StateSpaceConstants.Controls.goto4000Button
 				.whileTrue(new InstantCommand(() -> {
 					flywheelSpeed = 4000;
 					flywheelS.setRPM(flywheelSpeed);
@@ -31,9 +31,9 @@ public class CTREFlywheelC extends Command {
 	public void execute() {
 		if (flywheelSpeed != 4000) {
 			if (RobotContainer.manipController
-					.getLeftTriggerAxis() > CTRESpaceConstants.Controls.kDeadband) {
+					.getLeftTriggerAxis() > StateSpaceConstants.Controls.kDeadband) {
 				flywheelSpeed = RobotContainer.manipController.getLeftTriggerAxis()
-						* CTRESpaceConstants.Flywheel.maxRPM;
+						* StateSpaceConstants.Flywheel.maxRPM;
 			} else {
 				flywheelSpeed = 0;
 			}

@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.DataHandler;
 import frc.robot.subsystems.CTRE_state_space.CTREDoubleJointedArmS;
-import frc.robot.utils.CTRE_state_space.CTRESpaceConstants;
+import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
 
 public class CTREDoubleJointedArmC extends Command {
 	@SuppressWarnings("unused")
@@ -17,13 +17,13 @@ public class CTREDoubleJointedArmC extends Command {
 
 	@Override
 	public void initialize() {
-		CTRESpaceConstants.Controls.gotoUpRight
+		StateSpaceConstants.Controls.gotoUpRight
 				.onTrue(new InstantCommand(() -> DataHandler.logData(
-						CTRESpaceConstants.DoubleJointedArm.macroTopRight,
+						StateSpaceConstants.DoubleJointedArm.macroTopRight,
 						"DoubleJointSetpoint")));
-		CTRESpaceConstants.Controls.gotoUpLeft
+		StateSpaceConstants.Controls.gotoUpLeft
 						.onTrue(new InstantCommand(() -> DataHandler.logData(
-								CTRESpaceConstants.DoubleJointedArm.macroTopLeft,
+								StateSpaceConstants.DoubleJointedArm.macroTopLeft,
 								"DoubleJointSetpoint")));
 	}
 

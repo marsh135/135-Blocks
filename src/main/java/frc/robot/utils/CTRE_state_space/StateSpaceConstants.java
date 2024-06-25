@@ -8,9 +8,10 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.RobotContainer;
 import frc.robot.utils.drive.DriveConstants;
+import frc.robot.utils.drive.DriveConstants.MotorVendor;
 import frc.robot.utils.MotorConstantContainer;
 
-public class CTRESpaceConstants {
+public class StateSpaceConstants {
 	public static boolean debug = true;
 
 	public class Controls {
@@ -33,14 +34,15 @@ public class CTRESpaceConstants {
 	}
 
 	public class Flywheel {
-		public static InvertedValue inverted = InvertedValue.CounterClockwise_Positive;
-		public static NeutralModeValue mode = NeutralModeValue.Coast;
-		public static int kMotorID = 20, maxRPM = 8700;
+		public static MotorVendor motorVendor = MotorVendor.CTRE_MOTORS;
+		public static boolean inverted = false;
+		public static boolean isBrake = false;
+		public static int kMotorID = 20, maxRPM = 8700,currentLimit = 20;
 		public static MotorConstantContainer flywheelValueHolder = new MotorConstantContainer(
-				-0.089838, 0.0015425 * .88, 0.00039717 * 1, 0, 0);
-		public static double statorCurrentLimit = 150, m_KalmanModel = 3,
+				-0.089838, 0.0015425 * .88, 0.0039717 * 1, 0, 0);
+		public static double  m_KalmanModel = 3,
 				m_KalmanEncoder = 0.01, m_LQRQelms = 1, m_LQRRVolts = 12,
-				flywheelGearing = 1.5;
+				flywheelGearing = 1.5, MOI = 0.001;
 	}
 
 	public class DoubleJointedArm {
