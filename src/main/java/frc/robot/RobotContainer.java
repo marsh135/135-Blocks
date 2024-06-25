@@ -4,6 +4,10 @@
 package frc.robot;
 
 import frc.robot.commands.drive.DrivetrainC;
+import frc.robot.commands.CTRE_state_space.CTRESingleJointedArmC;
+import frc.robot.commands.CTRE_state_space.CTREDoubleJointedArmC;
+import frc.robot.commands.CTRE_state_space.CTREElevatorC;
+import frc.robot.commands.CTRE_state_space.CTREFlywheelC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumConstantContainer;
@@ -68,6 +72,10 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
+	public static final CTREFlywheelS flywheelS = new CTREFlywheelS();
+	public static final CTRESingleJointedArmS armS = new CTRESingleJointedArmS();
+	public static final CTREDoubleJointedArmS doubleJointedArmS = new CTREDoubleJointedArmS();
+	public static final CTREElevatorS elevatorS = new CTREElevatorS();
 	private final SendableChooser<Command> autoChooser;
 	static PowerDistribution PDH = new PowerDistribution(
 			Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
@@ -219,7 +227,6 @@ y	 * @throws NotActiveException IF mecanum and Replay
 		);
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		NamedCommands.registerCommands(autoCommands);
-		PathfindingCommand.warmupCommand().schedule();
 		if (Constants.isCompetition) {
 			PPLibTelemetry.enableCompetitionMode();
 		}
@@ -227,6 +234,10 @@ y	 * @throws NotActiveException IF mecanum and Replay
 		.finallyDo(() -> RobotContainer.field.getObject("target pose")
 				.setPose(new Pose2d(-50, -50, new Rotation2d())))
 		.schedule();
+		flywheelS.setDefaultCommand(new CTREFlywheelC(flywheelS));
+		armS.setDefaultCommand(new CTRESingleJointedArmC(armS));
+		elevatorS.setDefaultCommand(new CTREElevatorC(elevatorS));
+		doubleJointedArmS.setDefaultCommand(new CTREDoubleJointedArmC(doubleJointedArmS));
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData(field);
 		SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -306,7 +317,10 @@ y	 * @throws NotActiveException IF mecanum and Replay
 	 * @return Current in amps.
 	 */
 	public static double[] getCurrentDraw() {
-		return new double[] {Math.min(drivetrainS.getCurrent(), 200)
+		return new double[] {Math.min(drivetrainS.getCurrent(), 200),
+      flywheelS.getDrawnCurrentAmps(),
+			armS.getDrawnCurrentAmps(),
+			elevatorS.getDrawnCurrentAmps(),
 		};
 	}
 	private static void addNTCommands() {
@@ -318,7 +332,7 @@ y	 * @throws NotActiveException IF mecanum and Replay
 	 * @return a command with all of them in a sequence.
 	 */
 	public static Command allSystemsCheck() {
-	return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand());
+	return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand(),flywheelS.getSystemCheckCommand(),armS.getSystemCheckCommand(),elevatorS.getSystemCheckCommand(),doubleJointedArmS.getSystemCheckCommand());
 	}
 	public static HashMap<String, Double> combineMaps(List<HashMap<String, Double>> maps) {
 		HashMap<String, Double> combinedMap = new HashMap<>();
@@ -333,7 +347,11 @@ y	 * @throws NotActiveException IF mecanum and Replay
 
 	public static HashMap<String, Double> getAllTemps(){
 		// List of HashMaps
-		List<HashMap<String, Double>> maps = List.of(drivetrainS.getTemps());
+		List<HashMap<String, Double>> maps = List.of(drivetrainS.getTemps(),
+		flywheelS.getTemps(),
+		armS.getTemps(),
+		elevatorS.getTemps(),
+		doubleJointedArmS.getTemps());
 
 		// Combine all maps
 		HashMap<String, Double> combinedMap = combineMaps(maps);
@@ -344,16 +362,30 @@ y	 * @throws NotActiveException IF mecanum and Replay
 	 * @return true if ALL systems were good.
 	 */
 	public static boolean allSystemsOK() {
-		return drivetrainS.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK;
+		return drivetrainS.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& flywheelS.getSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& elevatorS.getSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& armS.getSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& doubleJointedArmS.getSystemStatus() == SubsystemChecker.SystemStatus.OK;
 	 }
 	public static Collection<ParentDevice> getOrchestraDevices() {
+    
 		Collection<ParentDevice> devices = new ArrayList<>();
 		devices.addAll(drivetrainS.getDriveOrchestraDevices());
-		return devices;
+		devices.addAll(flywheelS.getOrchestraDevices());
+		devices.addAll(elevatorS.getOrchestraDevices());
+    devices.addAll(armS.getOrchestraDevices());
+		devices.addAll(doubleJointedArmS.getOrchestraDevices());
+
+    return devices;
 	}
 	public static Subsystem[] getAllSubsystems(){
-		Subsystem[] subsystems = new Subsystem[1];
+		Subsystem[] subsystems = new Subsystem[5];
 		subsystems[0] = drivetrainS;
+    	subsystems[1] = flywheelS;
+    	subsystems[2] = elevatorS;
+    	subsystems[3] = armS;
+    	subsystems[4] = doubleJointedArmS;
 		return subsystems;
 	}
 }
