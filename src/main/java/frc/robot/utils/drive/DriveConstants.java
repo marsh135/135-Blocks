@@ -24,7 +24,6 @@ public class DriveConstants {
 	public enum driveTrainType {
 		SWERVE, TANK, MECANUM
 	}
-
 	public static boolean fieldOriented = true;
 	//135-Blocks was tested on a chassis with all CANSparkMaxes, as well as all Kraken-x60s.
 	public static final double kChassisWidth = Units.inchesToMeters(24.25), // Distance between Left and Right wheels
@@ -66,7 +65,9 @@ public class DriveConstants {
 			kBackLeftAbsEncoderPort = 3, // 3
 			kBackRightDrivePort = 12, // 14
 			kBackRightTurningPort = 13, // 24
-			kBackRightAbsEncoderPort = 1; // 4
+			kBackRightAbsEncoderPort = 1, // 4
+			kMaxDriveCurrent = 40,
+			kMaxTurnCurrent = 30;
 	public static boolean kFrontLeftDriveReversed = true,
 			kFrontLeftTurningReversed = true, kFrontLeftAbsEncoderReversed = false,
 			kFrontRightDriveReversed = false, kFrontRightTurningReversed = true,
@@ -91,7 +92,10 @@ public class DriveConstants {
 				kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad/60,
 				kDeadband = 0.1;
 		public static final MotorConstantContainer overallTurningMotorConstantContainer = new MotorConstantContainer(
-				.2907325, .002131625, .000203095, 1.07062 * 4, 0.019508), //Average the turning motors for these vals.
+				0.001, 0.001, 0.001, 7, 0.001), //Average the turning motors for these vals.
+				overallDriveMotorConstantContainer = new MotorConstantContainer(
+						.1, .13, 0.001,
+						0.05, 0.001),
 				frontRightDriveMotorConstantContainer = new MotorConstantContainer(
 						.04248, 2.9041, 1.52, 2.4646, 0),
 				frontLeftDriveMotorConstantContainer = new MotorConstantContainer(
