@@ -391,7 +391,10 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		}
 		return orchestra;
 	}
-
+	@Override
+	public double getCurrent(){
+		return modules[0].getCurrent() + modules[1].getCurrent() + modules[2].getCurrent() + modules[3].getCurrent();
+	}
 	@Override
 	public SystemStatus getTrueSystemStatus() { return getSystemStatus(); }
 

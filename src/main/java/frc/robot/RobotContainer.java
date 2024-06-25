@@ -145,8 +145,7 @@ y	 * @throws NotActiveException IF mecanum and Replay
 							DriveConstants.kDriveBaseRadius,
 							DriveConstants.kModuleTranslations));
 					break;
-				case NEO_SPARK_MAX:
-				case VORTEX_SPARK_FLEX:
+				default:
 					//10, 11, 12, 13, 80, 7.5,
 					drivetrainS = new REVMecanumS(new REVMecanumConstantContainer(10,
 							11, 12, 13, 80, 7.5, TrainConstants.kWheelDiameter,
@@ -173,7 +172,7 @@ y	 * @throws NotActiveException IF mecanum and Replay
 			System.err.println("MAKING");
 				drivetrainS = new Tank(new DriveIOSim());
 				break;
-			case MECANUM:
+			default:
 				switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
 					drivetrainS = new CTREMecanumS(new CTREMecanumConstantContainer(
@@ -188,8 +187,7 @@ y	 * @throws NotActiveException IF mecanum and Replay
 							DriveConstants.kDriveBaseRadius,
 							DriveConstants.kModuleTranslations));
 					break;
-				case NEO_SPARK_MAX:
-				case VORTEX_SPARK_FLEX:
+				default:
 					//10, 11, 12, 13, 80, 7.5,
 					drivetrainS = new REVMecanumS(new REVMecanumConstantContainer(10,
 							11, 12, 13, 80, 7.5, TrainConstants.kWheelDiameter,

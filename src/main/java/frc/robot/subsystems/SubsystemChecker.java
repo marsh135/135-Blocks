@@ -74,7 +74,7 @@ public abstract class SubsystemChecker extends SubsystemBase {
   }
 
   public abstract List<ParentDevice> getOrchestraDevices();
-
+  public abstract double getCurrent();
   private void setupCallbacks() {
     Robot.addPeriodic(this::checkForFaults, 0.25);
     Robot.addPeriodic(this::publishStatus, 1.0);
