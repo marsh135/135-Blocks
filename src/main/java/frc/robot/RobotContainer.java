@@ -8,8 +8,6 @@ import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumConstantContainer;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumS;
-import frc.robot.subsystems.drive.CTRETank.CTRETankConstantContainer;
-import frc.robot.subsystems.drive.CTRETank.CTRETankS;
 import frc.robot.subsystems.drive.FastSwerve.Swerve;
 import frc.robot.subsystems.drive.FastSwerve.GyroIO;
 import frc.robot.subsystems.drive.FastSwerve.GyroIOPigeon2;
@@ -18,8 +16,11 @@ import frc.robot.subsystems.drive.FastSwerve.ModuleIOSim;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIOSparkMax;
 import frc.robot.subsystems.drive.REVMecanum.REVMecanumConstantContainer;
 import frc.robot.subsystems.drive.REVMecanum.REVMecanumS;
-import frc.robot.subsystems.drive.REVTank.REVTankConstantContainer;
-import frc.robot.subsystems.drive.REVTank.REVTankS;
+import frc.robot.subsystems.drive.Tank.DriveIO;
+import frc.robot.subsystems.drive.Tank.DriveIOSim;
+import frc.robot.subsystems.drive.Tank.DriveIOSparkMax;
+import frc.robot.subsystems.drive.Tank.DriveIOTalonFX;
+import frc.robot.subsystems.drive.Tank.Tank;
 import frc.robot.utils.RunTest;
 import frc.robot.utils.drive.DriveConstants;
 
@@ -34,7 +35,6 @@ import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PPLibTelemetry;
-import com.revrobotics.CANSparkBase.IdleMode;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,6 +96,7 @@ public class RobotContainer {
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and
 	 * commands.
+y	 * @throws NotActiveException IF mecanum and Replay
 	 */
 	public RobotContainer() {
 		//We check to see what drivetrain type we have here, and create the correct drivetrain system based on that. 
@@ -113,24 +114,11 @@ public class RobotContainer {
 			case TANK:
 				switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
-					drivetrainS = new CTRETankS(new CTRETankConstantContainer(30,
-							DriveConstants.kFrontLeftDrivePort,
-							DriveConstants.kBackLeftDrivePort,
-							DriveConstants.kFrontRightDrivePort,
-							DriveConstants.kBackRightDrivePort,
-							TrainConstants.kDriveMotorGearRatio,
-							DriveConstants.kChassisLength,
-							TrainConstants.kDriveEncoderRot2Meter,
-							Units.inchesToMeters(6), false, false,
-							DriveConstants.kMaxSpeedMetersPerSecond));
+					drivetrainS = new Tank(new DriveIOTalonFX());
 					break;
 				case NEO_SPARK_MAX:
 				case VORTEX_SPARK_FLEX:
-					//10, 11, 12, 13, false, false, false, false, IdleMode.kBrake, 80, 7.5, Units.inchesToMeters(6)
-					drivetrainS = new REVTankS(new REVTankConstantContainer(10, 11,
-							12, 13, false, false, false, false, IdleMode.kBrake, 80,
-							7.5, Units.inchesToMeters(6),
-							DriveConstants.kChassisLength));
+					drivetrainS = new Tank(new DriveIOSparkMax());
 					break;
 				}
 				break;
@@ -168,12 +156,57 @@ public class RobotContainer {
 			}
 			break;
 		case SIM:
-			drivetrainS = new Swerve(new GyroIO() {}, new ModuleIOSim(),
-					new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
+			switch (DriveConstants.driveType) {
+			case SWERVE:
+				drivetrainS = new Swerve(new GyroIO() {}, new ModuleIOSim(),
+						new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
+				break;
+			case TANK:
+			System.err.println("MAKING");
+				drivetrainS = new Tank(new DriveIOSim());
+				break;
+			case MECANUM:
+				switch (DriveConstants.robotMotorController) {
+				case CTRE_MOTORS:
+					drivetrainS = new CTREMecanumS(new CTREMecanumConstantContainer(
+							30, DriveConstants.kFrontLeftDrivePort,
+							DriveConstants.kBackLeftDrivePort,
+							DriveConstants.kFrontRightDrivePort,
+							DriveConstants.kBackRightDrivePort,
+							DriveConstants.kChassisWidth,
+							TrainConstants.kDriveMotorGearRatio,
+							TrainConstants.kDriveEncoderRot2Meter,
+							DriveConstants.kMaxSpeedMetersPerSecond,
+							DriveConstants.kDriveBaseRadius,
+							DriveConstants.kModuleTranslations));
+					break;
+				case NEO_SPARK_MAX:
+				case VORTEX_SPARK_FLEX:
+					//10, 11, 12, 13, 80, 7.5,
+					drivetrainS = new REVMecanumS(new REVMecanumConstantContainer(10,
+							11, 12, 13, 80, 7.5, TrainConstants.kWheelDiameter,
+							DriveConstants.kModuleTranslations,
+							Units.inchesToMeters(6)));
+					break;
+				}
+				PPHolonomicDriveController
+						.setRotationTargetOverride(this::getRotationTargetOverride);
+				break;
+			}
 			break;
 		default:
-			drivetrainS = new Swerve(new GyroIO() {}, new ModuleIO() {},
-					new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
+			switch (DriveConstants.driveType) {
+			case SWERVE:
+				drivetrainS = new Swerve(new GyroIO() {}, new ModuleIO() {},
+						new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
+				break;
+			case TANK:
+				drivetrainS = new Tank(new DriveIO() {});
+				break;
+			case MECANUM:
+				throw new IllegalArgumentException(
+						"Mecanum does NOT support replay.");
+			}
 		}
 		
 		drivetrainS.setDefaultCommand(new DrivetrainC(drivetrainS));

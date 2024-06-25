@@ -28,6 +28,11 @@ public class GyroIOPigeon2 implements GyroIO {
 	private final Queue<Double> yawTimestampQueue;
 	private final StatusSignal<Double> yawVelocity = pigeon
 			.getAngularVelocityZWorld();
+	private final StatusSignal<Double> accelX = pigeon
+			.getAccelerationX();
+	private final StatusSignal<Double> accelY = pigeon
+			.getAccelerationY();
+							
 	private double last_world_linear_accel_x, last_world_linear_accel_y;
 
 	public GyroIOPigeon2(boolean phoenixDrive) {
@@ -68,7 +73,7 @@ public class GyroIOPigeon2 implements GyroIO {
 	}
 	@Override
 	public void updateInputs(GyroIOInputs inputs) {
-		inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity)
+		inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity, accelX, accelY)
 				.equals(StatusCode.OK);
 		inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
 		inputs.yawVelocityRadPerSec = Units
@@ -80,13 +85,11 @@ public class GyroIOPigeon2 implements GyroIO {
 				.toArray(Rotation2d[]::new);
 		yawTimestampQueue.clear();
 		yawPositionQueue.clear();
-		double curr_world_linear_accel_x = pigeon.getAccelerationX()
-				.getValueAsDouble();
+		double curr_world_linear_accel_x = accelX.getValueAsDouble();
 		double currentJerkX = curr_world_linear_accel_x
 				- last_world_linear_accel_x;
 		last_world_linear_accel_x = curr_world_linear_accel_x;
-		double curr_world_linear_accel_y = pigeon.getAccelerationY()
-				.getValueAsDouble();
+		double curr_world_linear_accel_y = accelY.getValueAsDouble();
 		double currentJerkY = curr_world_linear_accel_y
 				- last_world_linear_accel_y;
 		last_world_linear_accel_y = curr_world_linear_accel_y;

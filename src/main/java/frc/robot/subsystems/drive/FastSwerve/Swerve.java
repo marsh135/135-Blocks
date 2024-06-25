@@ -24,12 +24,12 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Robot;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.utils.drive.DriveConstants;
@@ -86,8 +86,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 				new HolonomicPathFollowerConfig(
 						DriveConstants.kMaxSpeedMetersPerSecond, DRIVE_BASE_RADIUS,
 						new ReplanningConfig(true, true)),
-				() -> DriverStation.getAlliance().isPresent()
-						&& DriverStation.getAlliance().get() == Alliance.Red,
+				() -> Robot.isRed,
 				this);
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		PathPlannerLogging.setLogActivePathCallback((activePath) -> {
