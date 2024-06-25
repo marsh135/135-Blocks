@@ -66,7 +66,7 @@ public class Module {
 	 * useful since these updates need to be properly thread-locked.
 	 */
 	public void updateInputs() { io.updateInputs(inputs); }
-
+	public double getCurrent(){ return Math.abs(inputs.driveCurrentAmps[0]) + Math.abs(inputs.turnCurrentAmps[0]);}
 	public ModuleIO getIO() { return io; }
 
 	public void periodic() {

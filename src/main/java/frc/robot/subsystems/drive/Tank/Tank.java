@@ -222,7 +222,10 @@ public class Tank extends SubsystemChecker implements DrivetrainS {
 		}
 		return orchestra;
 	}
-
+	@Override
+	public double getCurrent(){
+		return inputs.leftCurrentAmps[0] + inputs.leftCurrentAmps[1] + inputs.rightCurrentAmps[0] + inputs.rightCurrentAmps[1];
+	}
 	@Override
 	public SystemStatus getTrueSystemStatus() { return getSystemStatus(); }
 
