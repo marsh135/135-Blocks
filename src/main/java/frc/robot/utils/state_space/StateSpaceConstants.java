@@ -1,4 +1,4 @@
-package frc.robot.utils.CTRE_state_space;
+package frc.robot.utils.state_space;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -60,8 +60,9 @@ public class StateSpaceConstants {
 	}
 
 	public class SingleJointedArm {
-		public static InvertedValue inverted = InvertedValue.CounterClockwise_Positive;
-		public static NeutralModeValue mode = NeutralModeValue.Brake;
+		public static MotorVendor motorVendor = MotorVendor.CTRE_MOTORS;
+		public static boolean inverted = false;
+		public static boolean isBrake = false;
 		public static int kMotorID = 30;
 		public static MotorConstantContainer armValueHolder = new MotorConstantContainer(
 				.001, .001, .001, 0, 0); //must have position set in SysId
@@ -79,6 +80,7 @@ public class StateSpaceConstants {
 				physicalY = Units.inchesToMeters(DriveConstants.kChassisWidth / 2),
 				simX = Units.inchesToMeters(11.5), simY = Units.inchesToMeters(0),
 				simZ = Units.inchesToMeters(4.82);
+        public static int currentLimit = 60;
 	}
 
 	public class Elevator {

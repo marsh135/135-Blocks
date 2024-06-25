@@ -1,16 +1,16 @@
-package frc.robot.commands.CTRE_state_space;
+package frc.robot.commands.state_space;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.CTRE_state_space.CTRESingleJointedArmS;
-import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
+import frc.robot.subsystems.state_space.SingleJointedArm.SingleJointedArmS;
+import frc.robot.utils.state_space.StateSpaceConstants;
 
-public class CTRESingleJointedArmC extends Command {
-	private final CTRESingleJointedArmS armS;
+public class SingleJointedArmC extends Command {
+	private final SingleJointedArmS armS;
 	double armPos = 0;
-	public CTRESingleJointedArmC(CTRESingleJointedArmS armS) {
+	public SingleJointedArmC(SingleJointedArmS armS) {
 		this.armS = armS;
 		addRequirements(armS);
 	}
@@ -20,19 +20,19 @@ public class CTRESingleJointedArmC extends Command {
 		StateSpaceConstants.Controls.go45Button
 						.onTrue(new InstantCommand(() -> {
 							armPos = Units.degreesToRadians(45);
-							armS.deployArm(armS.createState(armPos));
+							armS.setState(armS.createState(armPos));
 						}));
 		StateSpaceConstants.Controls.go0Button
 						.onTrue(new InstantCommand(() -> {
 							armPos = Units.degreesToRadians(0);
-							armS.deployArm(armS.createState(armPos));
+							armS.setState(armS.createState(armPos));
 						}));
 	}
 
 	@Override
 	public void execute() {
 		double armSpeed = 0, desSpeed = -RobotContainer.manipController.getRightY();
-		armPos = CTRESingleJointedArmS.getSetpoint();
+		armPos = armS.getSetpoint();
 		if (Math.abs(desSpeed) > StateSpaceConstants.Controls.kArmDeadband) {
 			if (armPos >= StateSpaceConstants.SingleJointedArm.maxPosition && desSpeed > 0) {
 				armPos = StateSpaceConstants.SingleJointedArm.maxPosition;
@@ -42,13 +42,13 @@ public class CTRESingleJointedArmC extends Command {
 			} else {
 				armSpeed = desSpeed * StateSpaceConstants.SingleJointedArm.maxAcceleration
 						* StateSpaceConstants.Controls.armMoveSpeed;
-				armPos += (armSpeed * CTRESingleJointedArmS.dtSeconds); //add to our current position 20 MS of that accel
+				armPos += (armSpeed * .02); //add to our current position 20 MS of that accel
 			}
 		}
 		if (armSpeed == 0) {
-			armS.deployArm(armS.createState(armPos));
+			armS.setState(armS.createState(armPos));
 		} else {
-			armS.deployArm(armS.createState(armPos, armSpeed));
+			armS.setState(armS.createState(armPos, armSpeed));
 		}
 	}
 

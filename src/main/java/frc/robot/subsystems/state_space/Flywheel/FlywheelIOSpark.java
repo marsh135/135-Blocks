@@ -1,14 +1,14 @@
-package frc.robot.subsystems.CTRE_state_space.Flywheel;
+package frc.robot.subsystems.state_space.Flywheel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkFlex;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Nat;
@@ -20,19 +20,16 @@ import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.LinearSystemLoop;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
-import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
+import frc.robot.utils.drive.DriveConstants.MotorVendor;
 import frc.robot.utils.selfCheck.SelfChecking;
-import frc.robot.utils.selfCheck.SelfCheckingTalonFX;
+import frc.robot.utils.selfCheck.SelfCheckingSparkBase;
+import frc.robot.utils.state_space.StateSpaceConstants;
 
-public class FlywheelIOTalon implements FlywheelIO {
+public class FlywheelIOSpark implements FlywheelIO {
 	private double appliedVolts = 0.0;
 	private boolean closedLoop = true;
-	private TalonFX flywheel;
-	private final StatusSignal<Double> flywheelPosition = flywheel.getPosition();
-   private final StatusSignal<Double> flywheelVelocity = flywheel.getVelocity();
-   private final StatusSignal<Double> flywheelAppliedVolts = flywheel.getMotorVoltage();
-   private final StatusSignal<Double> flywheelCurrent = flywheel.getSupplyCurrent();
-	private final StatusSignal<Double> flywheelTemp = flywheel.getDeviceTemp();
+	private CANSparkBase flywheel;
+	private RelativeEncoder encoder;
 	/**
 	 * This Plant holds a state-space model of our flywheel. It has the following
 	 * properties: States: Velocity, in Rad/s. (will match Output) Inputs: Volts.
@@ -40,7 +37,7 @@ public class FlywheelIOTalon implements FlywheelIO {
 	 * which are found using SysId.
 	 */
 	private final static LinearSystem<N1, N1, N1> flywheelPlant = LinearSystemId
-			//.createFlywheelSystem(DCMotor.getKrakenX60(1),StateSpaceConstants.Flywheel.MOI,StateSpaceConstants.Flywheel.flywheelGearing);
+			//.createFlywheelSystem(DCMotor.getNEO(1),StateSpaceConstants.Flywheel.MOI,StateSpaceConstants.Flywheel.flywheelGearing);
 			.identifyVelocitySystem(StateSpaceConstants.Flywheel.flywheelValueHolder.getKv(), StateSpaceConstants.Flywheel.flywheelValueHolder.getKa());
 	/**
 	 * Kalman filters are optional, and help to predict the actual state of the
@@ -73,35 +70,36 @@ public class FlywheelIOTalon implements FlywheelIO {
 	 */
 	private final static LinearSystemLoop<N1, N1, N1> m_loop = new LinearSystemLoop<>(
 			flywheelPlant, m_controller, m_observer, 12, .02);
-	public FlywheelIOTalon(){
-		flywheel = new TalonFX(StateSpaceConstants.Flywheel.kMotorID);
-		var config = new TalonFXConfiguration();
-    	config.CurrentLimits.SupplyCurrentLimit = StateSpaceConstants.Flywheel.currentLimit;
-    	config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    	config.MotorOutput.NeutralMode = StateSpaceConstants.Flywheel.isBrake ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-		config.MotorOutput.Inverted = StateSpaceConstants.Flywheel.inverted ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
-    	flywheel.getConfigurator().apply(config);
- 		BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0, flywheelPosition, flywheelVelocity, flywheelAppliedVolts, flywheelCurrent, flywheelTemp);
-      flywheel.optimizeBusUtilization();
+	public FlywheelIOSpark(){
+		if (StateSpaceConstants.Flywheel.motorVendor == MotorVendor.NEO_SPARK_MAX){
+			flywheel = new CANSparkMax(StateSpaceConstants.Flywheel.kMotorID, MotorType.kBrushless);
+		}else{
+			flywheel = new CANSparkFlex(StateSpaceConstants.Flywheel.kMotorID, MotorType.kBrushless);
+		}
+		flywheel.enableVoltageCompensation(12);
+		flywheel.setIdleMode(StateSpaceConstants.Flywheel.isBrake ? IdleMode.kBrake : IdleMode.kCoast);
+		flywheel.setCANTimeout(250);
+		flywheel.setInverted(StateSpaceConstants.Flywheel.inverted);
+		flywheel.setSmartCurrentLimit(StateSpaceConstants.Flywheel.currentLimit);
+		encoder = flywheel.getEncoder();
+		flywheel.burnFlash();
+		
 		m_loop.setNextR(0); //go to zero
 		m_loop.reset(VecBuilder.fill(0));
 	}
 	@Override
 	public void updateInputs(FlywheelIOInputs inputs) {
-		BaseStatusSignal.refreshAll(
-			flywheelPosition, flywheelVelocity, flywheelAppliedVolts, flywheelCurrent, flywheelTemp);
-		m_loop.correct(VecBuilder.fill(Units.rotationsToRadians(flywheelVelocity.getValue() * StateSpaceConstants.Flywheel.flywheelGearing)));
+		m_loop.correct(VecBuilder.fill(Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity() * StateSpaceConstants.Flywheel.flywheelGearing)));
 		m_loop.predict(.02);
 		if (closedLoop){
 			appliedVolts = MathUtil.clamp(m_loop.getU(0), -12, 12);
 			flywheel.setVoltage(appliedVolts);
 		}
 		inputs.appliedVolts = appliedVolts;
-		inputs.positionRad = Units.rotationsToRadians(flywheelPosition.getValue() * StateSpaceConstants.Flywheel.flywheelGearing);
-		inputs.velocityRadPerSec = Units.rotationsToRadians(flywheelVelocity.getValue() * StateSpaceConstants.Flywheel.flywheelGearing);
-		inputs.currentAmps = new double[] {flywheelCurrent.getValue()};
-		inputs.flywheelTemp = flywheelTemp.getValue();
+		inputs.positionRad = Units.rotationsToRadians(encoder.getPosition() * StateSpaceConstants.Flywheel.flywheelGearing);
+		inputs.velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity() * StateSpaceConstants.Flywheel.flywheelGearing);
+		inputs.currentAmps = new double[] {flywheel.getOutputCurrent()};
+		inputs.flywheelTemp = flywheel.getMotorTemperature();
 	}
 	@Override
 	/**Set the flywheel to a given velocity in radians per second. */
@@ -123,12 +121,12 @@ public class FlywheelIOTalon implements FlywheelIO {
 	/**Get the velocity error in radians per second */
 	public double getError() {
 		return Math
-				.abs(flywheelPosition.getValue()*StateSpaceConstants.Flywheel.flywheelGearing  - m_loop.getNextR().get(0, 0));
+				.abs(encoder.getVelocity()*StateSpaceConstants.Flywheel.flywheelGearing  - m_loop.getNextR().get(0, 0));
 	}
 	@Override
 	public List<SelfChecking> getSelfCheckingHardware(){
 		List<SelfChecking> hardware = new ArrayList<SelfChecking>();
-		hardware.add(new SelfCheckingTalonFX("Flywheel", flywheel));
+		hardware.add(new SelfCheckingSparkBase("Flywheel", flywheel));
 		return hardware;
 	}
 }

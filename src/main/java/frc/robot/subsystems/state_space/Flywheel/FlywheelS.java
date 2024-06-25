@@ -1,4 +1,4 @@
-package frc.robot.subsystems.CTRE_state_space.Flywheel;
+package frc.robot.subsystems.state_space.Flywheel;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -93,7 +93,7 @@ public class FlywheelS extends SubsystemChecker{
   public double getCharacterizationVelocity() {
     return inputs.velocityRadPerSec;
   }
-private void registerSelfCheckHardware() {
+	private void registerSelfCheckHardware() {
 		super.registerAllHardware(io.getSelfCheckingHardware());
 	}
 

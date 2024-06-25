@@ -1,4 +1,4 @@
-package frc.robot.subsystems.CTRE_state_space.Flywheel;
+package frc.robot.subsystems.state_space.Flywheel;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Nat;
@@ -11,7 +11,7 @@ import edu.wpi.first.math.system.LinearSystemLoop;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
+import frc.robot.utils.state_space.StateSpaceConstants;
 
 public class FlywheelIOSim implements FlywheelIO {
 	private double appliedVolts = 0.0;

@@ -1,10 +1,10 @@
-package frc.robot.commands.CTRE_state_space;
+package frc.robot.commands.state_space;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.CTRE_state_space.Flywheel.FlywheelS;
-import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
+import frc.robot.subsystems.state_space.Flywheel.FlywheelS;
+import frc.robot.utils.state_space.StateSpaceConstants;
 
 public class FlywheelC extends Command {
 	private final FlywheelS flywheelS;

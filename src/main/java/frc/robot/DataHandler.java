@@ -19,7 +19,7 @@ import com.google.gson.reflect.TypeToken;
 
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.subsystems.CTRE_state_space.CTREDoubleJointedArmS;
+import frc.robot.subsystems.state_space.CTREDoubleJointedArmS;
 
 import java.io.InputStreamReader;
 import java.io.PrintWriter;

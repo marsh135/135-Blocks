@@ -1,4 +1,4 @@
-package frc.robot.subsystems.CTRE_state_space;
+package frc.robot.subsystems.state_space;
 
 import java.util.List;
 
@@ -23,7 +23,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
 import frc.robot.DataHandler;
 import frc.robot.subsystems.SubsystemChecker;
-import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
+import frc.robot.utils.state_space.StateSpaceConstants;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 public class CTREDoubleJointedArmS extends SubsystemChecker {

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.CTRE_state_space;
+package frc.robot.subsystems.state_space;
 
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.Nat;
@@ -39,7 +39,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.SubsystemChecker;
-import frc.robot.utils.CTRE_state_space.StateSpaceConstants;
+import frc.robot.utils.state_space.StateSpaceConstants;
+
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 

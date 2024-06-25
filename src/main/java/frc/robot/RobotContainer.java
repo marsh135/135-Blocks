@@ -4,10 +4,10 @@
 package frc.robot;
 
 import frc.robot.commands.drive.DrivetrainC;
-import frc.robot.commands.CTRE_state_space.CTRESingleJointedArmC;
-import frc.robot.commands.CTRE_state_space.CTREDoubleJointedArmC;
-import frc.robot.commands.CTRE_state_space.CTREElevatorC;
-import frc.robot.commands.CTRE_state_space.CTREFlywheelC;
+import frc.robot.commands.state_space.CTREDoubleJointedArmC;
+import frc.robot.commands.state_space.CTREElevatorC;
+import frc.robot.commands.state_space.SingleJointedArmC;
+import frc.robot.commands.state_space.FlywheelC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumConstantContainer;
@@ -25,10 +25,20 @@ import frc.robot.subsystems.drive.Tank.DriveIOSim;
 import frc.robot.subsystems.drive.Tank.DriveIOSparkMax;
 import frc.robot.subsystems.drive.Tank.DriveIOTalonFX;
 import frc.robot.subsystems.drive.Tank.Tank;
+import frc.robot.subsystems.state_space.CTREDoubleJointedArmS;
+import frc.robot.subsystems.state_space.CTREElevatorS;
+import frc.robot.subsystems.state_space.Flywheel.FlywheelIO;
+import frc.robot.subsystems.state_space.Flywheel.FlywheelIOSim;
+import frc.robot.subsystems.state_space.Flywheel.FlywheelIOSpark;
+import frc.robot.subsystems.state_space.Flywheel.FlywheelIOTalon;
+import frc.robot.subsystems.state_space.Flywheel.FlywheelS;
+import frc.robot.subsystems.state_space.SingleJointedArm.SingleJointedArmIOSim;
+import frc.robot.subsystems.state_space.SingleJointedArm.SingleJointedArmS;
 import frc.robot.utils.RunTest;
 import frc.robot.utils.drive.DriveConstants;
 
 import frc.robot.utils.drive.DriveConstants.TrainConstants;
+import frc.robot.utils.state_space.StateSpaceConstants;
 import frc.robot.utils.drive.LocalADStarAK;
 import frc.robot.utils.drive.PathFinder;
 import com.ctre.phoenix6.SignalLogger;
@@ -72,10 +82,10 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
-	public static final CTREFlywheelS flywheelS = new CTREFlywheelS();
-	public static final CTRESingleJointedArmS armS = new CTRESingleJointedArmS();
-	public static final CTREDoubleJointedArmS doubleJointedArmS = new CTREDoubleJointedArmS();
+	public static FlywheelS flywheelS;
+	public static SingleJointedArmS armS;
 	public static final CTREElevatorS elevatorS = new CTREElevatorS();
+	public static final CTREDoubleJointedArmS doubleJointedArmS = new CTREDoubleJointedArmS();
 	private final SendableChooser<Command> autoChooser;
 	static PowerDistribution PDH = new PowerDistribution(
 			Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
@@ -161,6 +171,16 @@ y	 * @throws NotActiveException IF mecanum and Replay
 				throw new IllegalArgumentException(
 						"Unknown implementation type, please check DriveConstants.java!");
 			}
+			
+			switch (StateSpaceConstants.Flywheel.motorVendor){
+				case CTRE_MOTORS:
+				flywheelS = new FlywheelS(new FlywheelIOTalon());
+
+				break;
+				default:
+				flywheelS = new FlywheelS(new FlywheelIOSpark());
+				break;
+			}
 			break;
 		case SIM:
 			switch (DriveConstants.driveType) {
@@ -199,6 +219,10 @@ y	 * @throws NotActiveException IF mecanum and Replay
 						.setRotationTargetOverride(this::getRotationTargetOverride);
 				break;
 			}
+			
+			flywheelS = new FlywheelS(new FlywheelIOSim());
+			armS = new SingleJointedArmS(new SingleJointedArmIOSim());
+
 			break;
 		default:
 			switch (DriveConstants.driveType) {
@@ -213,6 +237,7 @@ y	 * @throws NotActiveException IF mecanum and Replay
 				throw new IllegalArgumentException(
 						"Mecanum does NOT support replay.");
 			}
+			flywheelS = new FlywheelS(new FlywheelIO(){});
 		}
 		
 		drivetrainS.setDefaultCommand(new DrivetrainC(drivetrainS));
@@ -232,8 +257,8 @@ y	 * @throws NotActiveException IF mecanum and Replay
 		.finallyDo(() -> RobotContainer.field.getObject("target pose")
 				.setPose(new Pose2d(-50, -50, new Rotation2d())))
 		.schedule();
-		flywheelS.setDefaultCommand(new CTREFlywheelC(flywheelS));
-		armS.setDefaultCommand(new CTRESingleJointedArmC(armS));
+		flywheelS.setDefaultCommand(new FlywheelC(flywheelS));
+		armS.setDefaultCommand(new SingleJointedArmC(armS));
 		elevatorS.setDefaultCommand(new CTREElevatorC(elevatorS));
 		doubleJointedArmS.setDefaultCommand(new CTREDoubleJointedArmC(doubleJointedArmS));
 		autoChooser = AutoBuilder.buildAutoChooser();
@@ -316,8 +341,8 @@ y	 * @throws NotActiveException IF mecanum and Replay
 	 */
 	public static double[] getCurrentDraw() {
 		return new double[] {Math.min(drivetrainS.getCurrent(), 200),
-      flywheelS.getDrawnCurrentAmps(),
-			armS.getDrawnCurrentAmps(),
+      flywheelS.getCurrent(),
+			armS.getCurrent(),
 			elevatorS.getDrawnCurrentAmps(),
 		};
 	}
