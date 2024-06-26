@@ -9,6 +9,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -19,8 +20,19 @@ import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.selfCheck.SelfChecking;
 import frc.robot.utils.state_space.StateSpaceConstants;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.LinearQuadraticRegulator;
+import edu.wpi.first.math.estimator.KalmanFilter;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.LinearSystemLoop;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,7 +48,48 @@ public class SingleJointedArmS extends SubsystemChecker{
 	private final SingleJointedArmIO io;
 	private final SingleJointedArmIOInputsAutoLogged inputs = new SingleJointedArmIOInputsAutoLogged();
 	private final SysIdRoutine sysId;
-	private double setRadians = 0;
+	//using sysId
+	/*
+	 * All SingleJointedArm Statespace uses an N2 at the first position, because we care about velocity AND position of the SingleJointedarm.
+	 * First position in the Nat is for Position, second is Velocity.
+	 */
+	public static final LinearSystem<N2,N1,N1> m_SingleJointedArmPlant = 
+	   LinearSystemId.createSingleJointedArmSystem(DCMotor.getNEO(1), SingleJointedArmSim.estimateMOI(StateSpaceConstants.SingleJointedArm.armLength, StateSpaceConstants.SingleJointedArm.armMass), StateSpaceConstants.SingleJointedArm.armGearing);
+	//private final LinearSystem<N2, N1, N1> m_SingleJointedArmPlant = LinearSystemId
+	//		.identifyPositionSystem(CTRESpaceConstants.SingleJointedArm.armValueHolder.getKv(),
+	//				CTRESpaceConstants.SingleJointedArm.armValueHolder.getKa());
+	private final KalmanFilter<N2, N1, N1> m_observer = new KalmanFilter<>(
+			Nat.N2(), Nat.N1(), m_SingleJointedArmPlant,
+			VecBuilder.fill(StateSpaceConstants.SingleJointedArm.m_KalmanModelPosition,
+					StateSpaceConstants.SingleJointedArm.m_KalmanModelVelocity),
+			VecBuilder.fill(StateSpaceConstants.SingleJointedArm.m_KalmanEncoder), .02);
+	private final LinearQuadraticRegulator<N2, N1, N1> m_controller = new LinearQuadraticRegulator<>(
+			m_SingleJointedArmPlant,
+			VecBuilder.fill(StateSpaceConstants.SingleJointedArm.m_LQRQelmsPosition,
+					StateSpaceConstants.SingleJointedArm.m_LQRQelmsVelocity),
+			VecBuilder.fill(StateSpaceConstants.SingleJointedArm.m_LQRRVolts), .02);
+	// lower if using notifiers.
+	// The state-space loop combines a controller, observer, feedforward and plant for easy control.
+	private final LinearSystemLoop<N2, N1, N1> m_loop = new LinearSystemLoop<>(
+			m_SingleJointedArmPlant, m_controller, m_observer, 12.0, .02);
+	private static double m_velocity, m_position;
+	/**
+	 * Create a TrapezoidProfile, which holds constraints and states of our SingleJointedarm,
+	 * allowing smooth motion control for the SingleJointedarm. Created with constraints based
+	 * on the motor's free speed, but this will vary for every system, try tuning
+	 * these.
+	 */
+	private final TrapezoidProfile m_profile = new TrapezoidProfile(
+			new TrapezoidProfile.Constraints(StateSpaceConstants.SingleJointedArm.maxSpeed, //placeholder
+					StateSpaceConstants.SingleJointedArm.maxAcceleration));
+	private TrapezoidProfile.State m_lastProfiledReference = new TrapezoidProfile.State();
+	//set our starting position for the SingleJointedarm
+	/*
+	 * TrapezoidProfile States are basically just a position in rads with a velocity in Rad/s
+	 * Here, we provide our starting position.
+	 */
+	private static TrapezoidProfile.State goal = new TrapezoidProfile.State(
+			StateSpaceConstants.SingleJointedArm.startingPosition, 0);
 	Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1)); // for going FROM ZERO PER SECOND, this is 1v per 1sec.
 	Measure<Voltage> holdVoltage = Volts.of(4); //what voltage should I hold during Quas test?
 	Measure<Time> timeout = Seconds.of(10); //how many total seconds should I run the test, unless interrupted?
@@ -69,16 +122,33 @@ public class SingleJointedArmS extends SubsystemChecker{
                 (state) -> Logger.recordOutput("SingleJointedArm/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism((voltage) -> runVolts(voltage.in(Volts)), null, this));
 	 registerSelfCheckHardware();
+	 m_loop.reset(VecBuilder.fill(m_position, m_velocity));
+		m_lastProfiledReference = new TrapezoidProfile.State(m_position,
+			m_velocity);
   }
   @Override
   public void periodic() {
+	m_position = inputs.positionRad;
+	m_velocity = inputs.velocityRadPerSec;
+	m_lastProfiledReference = m_profile.calculate(.02,
+				m_lastProfiledReference, goal); //calculate where it SHOULD be.
+	m_loop.setNextR(m_lastProfiledReference.position,
+				m_lastProfiledReference.velocity); //Tell our motors to get there
+		// Correct our Kalman filter's state vector estimate with encoder data
+		m_loop.correct(VecBuilder.fill(m_position));
+		// Update our LQR to generate new voltage commands and use the voltages to predict the next
+		// state with out Kalman filter.
+		m_loop.predict(.02);
+		// Send the new calculated voltage to the motors.
+	 double appliedVolts = MathUtil.clamp(m_loop.getU(0), -12, 12);
+	 io.setVoltage(appliedVolts);
     io.updateInputs(inputs);
     Logger.processInputs("SingleJointedArm", inputs);
-	 m_SingleJointedarm.setAngle(Units.radiansToDegrees(inputs.positionRad));
+	 m_SingleJointedarm.setAngle(Units.radiansToDegrees(m_loop.getXHat(0)));
 	 Logger.recordOutput("SingleJointedArmMechanism", m_mech2d);
 		//calcualate SingleJointedarm pose
 		var SingleJointedarmPose = new Pose3d(StateSpaceConstants.SingleJointedArm.simX, StateSpaceConstants.SingleJointedArm.simY, StateSpaceConstants.SingleJointedArm.simZ,
-				new Rotation3d(0, -inputs.positionRad, 0.0));
+				new Rotation3d(0, -m_loop.getXHat(0), 0.0));
 		Logger.recordOutput("Mechanism3d/SingleJointedArm/", SingleJointedarmPose);
   }
 
@@ -135,8 +205,7 @@ public class SingleJointedArmS extends SubsystemChecker{
 	}
   /** Run closed loop to the specified state. */
   public void setState(TrapezoidProfile.State state) {
-    io.setState(state);
-	 setRadians = state.position;
+    goal = state;
     // Log arm setpoint
     Logger.recordOutput("SingleJointedArm/SetStatePosition", state.position);
 	 Logger.recordOutput("SingleJointedArm/SetStateVelocity", state.velocity);
@@ -145,14 +214,14 @@ public class SingleJointedArmS extends SubsystemChecker{
   	/**
 	 * @return error in radians
 	 */
-	public double getError() { return inputs.errorRad; }
+	public double getError() { return Math.abs(inputs.positionRad - m_loop.getNextR().get(0, 0)); }
   /** Stops the arm. */
   public void stop() {
     io.stop();
   }
-  public double getDistance() { return inputs.positionRad; }
+  public double getDistance() { return m_loop.getXHat(0); }
 
-  public double getSetpoint() { return setRadians; }
+  public double getSetpoint() { return goal.position; }
 
   public double getVelocity() { return inputs.velocityRadPerSec; }
 	/**

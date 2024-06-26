@@ -5,15 +5,12 @@ import java.util.List;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.robot.utils.selfCheck.SelfChecking;
 
 public interface ElevatorIO {
 	@AutoLog
 	public static class ElevatorIOInputs {
 		public double positionMeters = 0.0;
-		public double setpointMeters = 0.0;
-		public double errorMeters = 0.0;
 		public double velocityMetersPerSec = 0.0;
 		public double elevatorTemp = 0.0;
 		public double appliedVolts = 0.0;
@@ -28,6 +25,7 @@ public interface ElevatorIO {
 
 	/** Stop in open loop. */
 	public default void stop() {}
+
 	/** Gets the current draw from the implementation type */
 																				/**
 																				 * Get a list of the
@@ -39,6 +37,4 @@ public interface ElevatorIO {
 	public default List<SelfChecking> getSelfCheckingHardware() {
 		return new ArrayList<SelfChecking>();
 	}
-
-	public default void setState(TrapezoidProfile.State state) {}
 }

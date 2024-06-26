@@ -5,15 +5,12 @@ import java.util.List;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.robot.utils.selfCheck.SelfChecking;
 
 public interface SingleJointedArmIO {
 	@AutoLog
 	public static class SingleJointedArmIOInputs{
 		public double positionRad = 0.0;
-		public double setpointRad = 0.0;
-		public double errorRad = 0.0;
 		public double velocityRadPerSec = 0.0;
 		public double armTemp = 0.0;
 		public double appliedVolts = 0.0;
@@ -33,7 +30,5 @@ public interface SingleJointedArmIO {
 	public default List<SelfChecking> getSelfCheckingHardware() {
 		return new ArrayList<SelfChecking>();
 	}
-
-	public default void setState(TrapezoidProfile.State state){}
 
 }

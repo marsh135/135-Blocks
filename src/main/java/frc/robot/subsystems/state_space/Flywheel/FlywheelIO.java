@@ -11,7 +11,6 @@ public interface FlywheelIO {
 	@AutoLog
 	public static class FlywheelIOInputs{
 		public double positionRad = 0.0;
-		public double positionError = 0.0;
 		public double velocityRadPerSec = 0.0;
 		public double flywheelTemp = 0.0;
 		public double appliedVolts = 0.0;
@@ -20,10 +19,7 @@ public interface FlywheelIO {
 	
   /** Updates the set of loggable inputs. */
   public default void updateInputs(FlywheelIOInputs inputs) {}
-
-  /** Run closed loop at the specified velocity. */
-  public default void setVelocity(double velocityRadPerSec) {}
-  /** Dumb control the Flywheel using volts, no State Space*/
+  /** Set a volatge to the motor*/
   public default void setVoltage(double volts){}
   /** Stop in open loop. */
   public default void stop() {}
