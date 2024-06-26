@@ -187,6 +187,11 @@ public class Robot extends LoggedRobot {
 		/*An FRC teleop period takes 2 minutes and 15 seconds (135 seconds). Endgame occurs during the last 20 seconds.
 		Based on this, endgame should initialize at 115 seconds and end at 135 seconds. */
 		double matchTime = DriverStation.getMatchTime();
+		if (RobotContainer.angleOverrider.isPresent()){
+			Logger.recordOutput("Odometry/AimGoal", new Pose2d(RobotContainer.drivetrainS.getPose().getTranslation(),RobotContainer.angleOverrider.get()));
+		}else{
+			Logger.recordOutput("Odometry/AimGoal",RobotContainer.drivetrainS.getPose());
+		}
 		if (DriverStation.isFMSAttached() || isPracticeDSMode) {
 			if (matchTime > 30) {
 				Constants.currentMatchState = FRCMatchState.TELEOP;
