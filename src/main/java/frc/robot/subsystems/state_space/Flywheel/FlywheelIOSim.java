@@ -71,6 +71,7 @@ public class FlywheelIOSim implements FlywheelIO {
 		}
 		flywheelSim.update(.02);
 		inputs.appliedVolts = appliedVolts;
+		inputs.positionError = Math.abs(flywheelSim.getAngularVelocityRadPerSec() - m_loop.getNextR().get(0, 0));
 		inputs.positionRad = 0.0; //no pos in flywheel
 		inputs.velocityRadPerSec = flywheelSim.getAngularVelocityRadPerSec();
 		inputs.currentAmps = new double[] {MathUtil.clamp(flywheelSim.getCurrentDrawAmps(),-StateSpaceConstants.Flywheel.currentLimit,StateSpaceConstants.Flywheel.currentLimit)}; //Coconut, it somehow pulls "200" amps at full.. Just NO.
@@ -90,11 +91,5 @@ public class FlywheelIOSim implements FlywheelIO {
 	/**Stop the flywheel by telling it to go to 0 rpm. */
 	public void stop(){
 		m_loop.setNextR(VecBuilder.fill(0));
-	}
-	@Override
-	/**Get the velocity error in radians per second */
-	public double getError() {
-		return Math
-				.abs(flywheelSim.getAngularVelocityRadPerSec() - m_loop.getNextR().get(0, 0));
 	}
 }

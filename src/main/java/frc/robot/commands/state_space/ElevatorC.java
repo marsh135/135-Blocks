@@ -4,13 +4,13 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.state_space.CTREElevatorS;
+import frc.robot.subsystems.state_space.Elevator.ElevatorS;
 import frc.robot.utils.state_space.StateSpaceConstants;
 
-public class CTREElevatorC extends Command {
-	private final CTREElevatorS elevatorS;
+public class ElevatorC extends Command {
+	private final ElevatorS elevatorS;
 	double elevatorPos =0;
-	public CTREElevatorC(CTREElevatorS elevatorS) {
+	public ElevatorC(ElevatorS elevatorS) {
 		this.elevatorS = elevatorS;
 		addRequirements(elevatorS);
 	}
@@ -20,19 +20,19 @@ public class CTREElevatorC extends Command {
 		StateSpaceConstants.Controls.go0ftButton
 						.onTrue(new InstantCommand(() -> {
 							elevatorPos = Units.feetToMeters(0);
-							elevatorS.moveElevator(elevatorS.createState(elevatorPos));
+							elevatorS.setState(elevatorS.createState(elevatorPos));
 						}));
 		StateSpaceConstants.Controls.go2ftButton
 						.onTrue(new InstantCommand(() -> {
 							elevatorPos = Units.feetToMeters(2);
-							elevatorS.moveElevator(elevatorS.createState(elevatorPos));
+							elevatorS.setState(elevatorS.createState(elevatorPos));
 						}));
 	}
 
 	@Override
 	public void execute() {
 		double elevatorSpeed = 0, desSpeed = -RobotContainer.manipController.getLeftY();
-		elevatorPos = CTREElevatorS.getSetpoint();
+		elevatorPos = elevatorS.getSetpoint();
 		if (Math.abs(desSpeed) > StateSpaceConstants.Controls.kArmDeadband) {
 			if (elevatorPos >= StateSpaceConstants.Elevator.maxPosition && desSpeed > 0) {
 				elevatorPos = StateSpaceConstants.Elevator.maxPosition;
@@ -42,13 +42,13 @@ public class CTREElevatorC extends Command {
 			} else {
 				elevatorSpeed = desSpeed * StateSpaceConstants.Elevator.maxAcceleration
 						* StateSpaceConstants.Controls.elevatorMoveSpeed;
-				elevatorPos += (elevatorSpeed * CTREElevatorS.dtSeconds); //add to our current position 20 MS of that accel
+				elevatorPos += (elevatorSpeed * .02); //add to our current position 20 MS of that accel
 			}
 		}
 		if (elevatorSpeed == 0) {
-			elevatorS.moveElevator(elevatorS.createState(elevatorPos));
+			elevatorS.setState(elevatorS.createState(elevatorPos));
 		} else {
-			elevatorS.moveElevator(elevatorS.createState(elevatorPos, elevatorSpeed));
+			elevatorS.setState(elevatorS.createState(elevatorPos, elevatorSpeed));
 		}
 	}
 

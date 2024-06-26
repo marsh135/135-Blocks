@@ -83,7 +83,7 @@ public class FlywheelS extends SubsystemChecker{
     return Units.radiansPerSecondToRotationsPerMinute(inputs.velocityRadPerSec);
   }
   public double getError(){
-	return io.getError();
+	return inputs.positionError;
   }
   @Override
   public double getCurrent(){

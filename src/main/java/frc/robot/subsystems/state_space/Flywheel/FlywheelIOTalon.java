@@ -100,6 +100,7 @@ public class FlywheelIOTalon implements FlywheelIO {
 		inputs.appliedVolts = flywheelAppliedVolts.getValue();
 		inputs.positionRad = Units.rotationsToRadians(flywheelPosition.getValue() * StateSpaceConstants.Flywheel.flywheelGearing);
 		inputs.velocityRadPerSec = Units.rotationsToRadians(flywheelVelocity.getValue() * StateSpaceConstants.Flywheel.flywheelGearing);
+		inputs.positionError = Math.abs(flywheelPosition.getValue()*StateSpaceConstants.Flywheel.flywheelGearing  - m_loop.getNextR().get(0, 0));
 		inputs.currentAmps = new double[] {flywheelCurrent.getValue()};
 		inputs.flywheelTemp = flywheelTemp.getValue();
 	}
@@ -118,12 +119,6 @@ public class FlywheelIOTalon implements FlywheelIO {
 	/**Stop the flywheel by telling it to go to 0 rpm. */
 	public void stop(){
 		m_loop.setNextR(VecBuilder.fill(0));
-	}
-	@Override
-	/**Get the velocity error in radians per second */
-	public double getError() {
-		return Math
-				.abs(flywheelPosition.getValue()*StateSpaceConstants.Flywheel.flywheelGearing  - m_loop.getNextR().get(0, 0));
 	}
 	@Override
 	public List<SelfChecking> getSelfCheckingHardware(){

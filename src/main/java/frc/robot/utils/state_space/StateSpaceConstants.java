@@ -84,19 +84,19 @@ public class StateSpaceConstants {
 	}
 
 	public class Elevator {
-		public static InvertedValue inverted = InvertedValue.CounterClockwise_Positive;
-		public static NeutralModeValue mode = NeutralModeValue.Brake;
-		public static int kMotorID = 40;
+		public static MotorVendor motorVendor = MotorVendor.CTRE_MOTORS;
+		public static boolean inverted = false;
+		public static boolean isBrake = false;
+		public static int kMotorID = 40, currentLimit = 60;
 		public static MotorConstantContainer elevatorValueHolder = new MotorConstantContainer(
 				.001, .001, .001, 0, 0); //must have position set in SysId
 		public static double m_KalmanModelPosition = Units.inchesToMeters(1),
-				statorCurrentLimit = 150,
 				m_KalmanModelVelocity = Units.inchesToMeters(40),
 				m_KalmanEncoder = 0.001, m_LQRQelmsPosition = 1,
 				m_LQRQelmsVelocity = 10, m_LQRRVolts = 12, elevatorGearing = 1.5,
 				carriageMass = Units.lbsToKilograms(10),
 				drumRadius = Units.inchesToMeters(.75),
-				maxSpeed = Units.feetToMeters(3),
+				maxSpeed = Units.feetToMeters(6),
 				maxAcceleration = Units.feetToMeters(6),
 				startingPosition = Units.inchesToMeters(0),
 				maxPosition = Units.feetToMeters(3),

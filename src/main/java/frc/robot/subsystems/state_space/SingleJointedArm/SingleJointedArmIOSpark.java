@@ -1,5 +1,8 @@
 package frc.robot.subsystems.state_space.SingleJointedArm;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkFlex;
@@ -22,6 +25,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.utils.drive.DriveConstants.MotorVendor;
+import frc.robot.utils.selfCheck.SelfChecking;
+import frc.robot.utils.selfCheck.SelfCheckingSparkBase;
 import frc.robot.utils.state_space.StateSpaceConstants;
 
 public class SingleJointedArmIOSpark implements SingleJointedArmIO {
@@ -108,6 +113,8 @@ public SingleJointedArmIOSpark(){
 		m_velocity =  Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity() * StateSpaceConstants.SingleJointedArm.armGearing);
 		inputs.appliedVolts = appliedVolts;
 		inputs.positionRad = m_position; 
+		inputs.setpointRad = goal.position;
+		inputs.errorRad = Math.abs(Units.rotationsToRadians(encoder.getPosition() * StateSpaceConstants.SingleJointedArm.armGearing) - m_loop.getNextR().get(0, 0));
 		inputs.armTemp = arm.getMotorTemperature();
 		inputs.velocityRadPerSec = m_velocity;
 		inputs.currentAmps = new double[] {MathUtil.clamp(arm.getOutputCurrent(),-StateSpaceConstants.SingleJointedArm.currentLimit,StateSpaceConstants.SingleJointedArm.currentLimit)}; //Coconut, it somehow pulls "200" amps at full.. Just NO.
@@ -116,6 +123,7 @@ public SingleJointedArmIOSpark(){
 	/**Set the arm to a given state. */
 	public void setState(TrapezoidProfile.State state){
 		goal = state;
+		
 		closedLoop = true;
 	}
 	@Override
@@ -129,14 +137,9 @@ public SingleJointedArmIOSpark(){
 		goal = new TrapezoidProfile.State(m_position, 0);
 	}
 	@Override
-	/**Get the velocity error in radians per second */
-	public double getError() {
-		return Math
-				.abs(Units.rotationsToRadians(encoder.getPosition() * StateSpaceConstants.SingleJointedArm.armGearing) - m_loop.getNextR().get(0, 0));
-	}
-	@Override
-	/**Get the setpoint */
-	public double getSetpoint(){
-		return goal.position;
+	public List<SelfChecking> getSelfCheckingHardware(){
+		List<SelfChecking> hardware = new ArrayList<SelfChecking>();
+		hardware.add(new SelfCheckingSparkBase("SingleArm", arm));
+		return hardware;
 	}
 }

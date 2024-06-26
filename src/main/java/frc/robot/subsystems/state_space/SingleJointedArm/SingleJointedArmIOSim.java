@@ -107,7 +107,9 @@ public SingleJointedArmIOSim(){
 		m_position = simArm.getAngleRads();
 		m_velocity = simArm.getVelocityRadPerSec();
 		inputs.appliedVolts = appliedVolts;
+		inputs.setpointRad = goal.position;
 		inputs.positionRad = m_position; 
+		inputs.errorRad = Math.abs(simArm.getAngleRads() - m_loop.getNextR().get(0, 0));
 		inputs.velocityRadPerSec = m_velocity;
 		inputs.currentAmps = new double[] {MathUtil.clamp(simArm.getCurrentDrawAmps(),-StateSpaceConstants.SingleJointedArm.currentLimit,StateSpaceConstants.SingleJointedArm.currentLimit)}; //Coconut, it somehow pulls "200" amps at full.. Just NO.
 	}
@@ -126,16 +128,5 @@ public SingleJointedArmIOSim(){
 	/**Stop the arm by telling it to go to its same position with 0 speed. */
 	public void stop(){
 		goal = new TrapezoidProfile.State(m_position, 0);
-	}
-	@Override
-	/**Get the velocity error in radians per second */
-	public double getError() {
-		return Math
-				.abs(simArm.getAngleRads() - m_loop.getNextR().get(0, 0));
-	}
-	@Override
-	/**Get the setpoint */
-	public double getSetpoint(){
-		return goal.position;
 	}
 }

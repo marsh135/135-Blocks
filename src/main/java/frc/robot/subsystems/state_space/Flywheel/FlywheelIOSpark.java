@@ -97,6 +97,7 @@ public class FlywheelIOSpark implements FlywheelIO {
 		}
 		inputs.appliedVolts = appliedVolts;
 		inputs.positionRad = Units.rotationsToRadians(encoder.getPosition() * StateSpaceConstants.Flywheel.flywheelGearing);
+		inputs.positionError = Math.abs(encoder.getVelocity()*StateSpaceConstants.Flywheel.flywheelGearing  - m_loop.getNextR().get(0, 0));
 		inputs.velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity() * StateSpaceConstants.Flywheel.flywheelGearing);
 		inputs.currentAmps = new double[] {flywheel.getOutputCurrent()};
 		inputs.flywheelTemp = flywheel.getMotorTemperature();
@@ -116,12 +117,6 @@ public class FlywheelIOSpark implements FlywheelIO {
 	/**Stop the flywheel by telling it to go to 0 rpm. */
 	public void stop(){
 		m_loop.setNextR(VecBuilder.fill(0));
-	}
-	@Override
-	/**Get the velocity error in radians per second */
-	public double getError() {
-		return Math
-				.abs(encoder.getVelocity()*StateSpaceConstants.Flywheel.flywheelGearing  - m_loop.getNextR().get(0, 0));
 	}
 	@Override
 	public List<SelfChecking> getSelfCheckingHardware(){

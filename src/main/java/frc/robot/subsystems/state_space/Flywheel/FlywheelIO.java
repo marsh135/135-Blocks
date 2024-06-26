@@ -11,6 +11,7 @@ public interface FlywheelIO {
 	@AutoLog
 	public static class FlywheelIOInputs{
 		public double positionRad = 0.0;
+		public double positionError = 0.0;
 		public double velocityRadPerSec = 0.0;
 		public double flywheelTemp = 0.0;
 		public double appliedVolts = 0.0;
@@ -26,8 +27,6 @@ public interface FlywheelIO {
   public default void setVoltage(double volts){}
   /** Stop in open loop. */
   public default void stop() {}
-  /** Gets the error from the current setpoint */
-  public default double getError() {return 0;}
   /** Gets the current draw from the implementation type */
   	/**
 	 * Get a list of the SelfChecking interface for all hardware in that

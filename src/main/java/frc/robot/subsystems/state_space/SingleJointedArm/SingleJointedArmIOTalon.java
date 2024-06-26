@@ -1,5 +1,8 @@
 package frc.robot.subsystems.state_space.SingleJointedArm;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -21,6 +24,8 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import frc.robot.utils.selfCheck.SelfChecking;
+import frc.robot.utils.selfCheck.SelfCheckingTalonFX;
 import frc.robot.utils.state_space.StateSpaceConstants;
 
 public class SingleJointedArmIOTalon implements SingleJointedArmIO {
@@ -113,7 +118,9 @@ public SingleJointedArmIOTalon(){
 		}
 		inputs.appliedVolts = appliedVolts;
 		inputs.armTemp = armTemp.getValue();
-		inputs.positionRad = m_position; 
+		inputs.errorRad = Math.abs(Units.rotationsToRadians(armPosition.getValue() * StateSpaceConstants.SingleJointedArm.armGearing) - m_loop.getNextR().get(0, 0));
+		inputs.positionRad = m_position;
+		inputs.setpointRad = goal.position; 
 		inputs.velocityRadPerSec = m_velocity;
 		inputs.currentAmps = new double[] {MathUtil.clamp(armCurrent.getValue(),-StateSpaceConstants.SingleJointedArm.currentLimit,StateSpaceConstants.SingleJointedArm.currentLimit)}; //Coconut, it somehow pulls "200" amps at full.. Just NO.
 	}
@@ -133,15 +140,10 @@ public SingleJointedArmIOTalon(){
 	public void stop(){
 		goal = new TrapezoidProfile.State(m_position, 0);
 	}
-	@Override
-	/**Get the velocity error in radians per second */
-	public double getError() {
-		return Math
-				.abs(Units.rotationsToRadians(armPosition.getValue() * StateSpaceConstants.SingleJointedArm.armGearing) - m_loop.getNextR().get(0, 0));
-	}
-	@Override
-	/**Get the setpoint */
-	public double getSetpoint(){
-		return goal.position;
+		@Override
+	public List<SelfChecking> getSelfCheckingHardware(){
+		List<SelfChecking> hardware = new ArrayList<SelfChecking>();
+		hardware.add(new SelfCheckingTalonFX("SingleArm", arm));
+		return hardware;
 	}
 }
