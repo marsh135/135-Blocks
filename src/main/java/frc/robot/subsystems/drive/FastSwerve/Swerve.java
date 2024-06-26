@@ -518,13 +518,13 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		throw new UnsupportedOperationException(
 				"Unimplemented method 'sysIdQuasistaticTurn'");
 	}
-
+	/**
+	 * UNTESTED!
+	 */
 	@Override
 	public void zeroHeading() {
 		gyroIO.reset();
 		debounce = 1;
-		//gyroIO.updateInputs(gyroInputs);
-		//Logger.processInputs("Drive/Gyro", gyroInputs);
 	}
 
 	@Override
