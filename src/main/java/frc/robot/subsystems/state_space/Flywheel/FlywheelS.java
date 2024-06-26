@@ -105,7 +105,7 @@ public class FlywheelS extends SubsystemChecker{
 	Logger.recordOutput("FlywheelS/Volts", volts);
 	Logger.recordOutput("FlywheelS/AdjustedRPM",Units.radiansPerSecondToRotationsPerMinute(m_loop.getXHat(0)));
 	io.updateInputs(inputs);
-	Logger.processInputs("Flywheel", inputs);
+	Logger.processInputs("FlywheelS", inputs);
 
 	
   }

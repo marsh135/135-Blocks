@@ -35,7 +35,6 @@ public class ElevatorIOSim implements ElevatorIO {
 	@Override
 	public void updateInputs(ElevatorIOInputs inputs) {
 		simElevator.setInputVoltage(appliedVolts);
-		System.out.println(appliedVolts);
 		simElevator.update(.02);
 		inputs.appliedVolts = appliedVolts;
 		inputs.positionMeters = simElevator.getPositionMeters();

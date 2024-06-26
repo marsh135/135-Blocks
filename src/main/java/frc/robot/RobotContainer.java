@@ -4,7 +4,7 @@
 package frc.robot;
 
 import frc.robot.commands.drive.DrivetrainC;
-import frc.robot.commands.state_space.CTREDoubleJointedArmC;
+import frc.robot.commands.state_space.DoubleJointedArmC;
 import frc.robot.commands.state_space.ElevatorC;
 import frc.robot.commands.state_space.SingleJointedArmC;
 import frc.robot.commands.state_space.FlywheelC;
@@ -25,7 +25,10 @@ import frc.robot.subsystems.drive.Tank.DriveIOSim;
 import frc.robot.subsystems.drive.Tank.DriveIOSparkMax;
 import frc.robot.subsystems.drive.Tank.DriveIOTalonFX;
 import frc.robot.subsystems.drive.Tank.Tank;
-import frc.robot.subsystems.state_space.CTREDoubleJointedArmS;
+import frc.robot.subsystems.state_space.DoubleJointedArm.DoubleJointedArmIO;
+import frc.robot.subsystems.state_space.DoubleJointedArm.DoubleJointedArmIOSim;
+import frc.robot.subsystems.state_space.DoubleJointedArm.DoubleJointedArmIOTalon;
+import frc.robot.subsystems.state_space.DoubleJointedArm.DoubleJointedArmS;
 import frc.robot.subsystems.state_space.Elevator.ElevatorIO;
 import frc.robot.subsystems.state_space.Elevator.ElevatorIOSim;
 import frc.robot.subsystems.state_space.Elevator.ElevatorIOSpark;
@@ -92,7 +95,8 @@ public class RobotContainer {
 	public static FlywheelS flywheelS;
 	public static SingleJointedArmS armS;
 	public static ElevatorS elevatorS;
-	public static final CTREDoubleJointedArmS doubleJointedArmS = new CTREDoubleJointedArmS();
+	public static DoubleJointedArmS doubleJointedArmS;
+	public static DoubleJointedArmIOSim doubleJointedArmIOSim = null; //for expected Communicator
 	private final SendableChooser<Command> autoChooser;
 	static PowerDistribution PDH = new PowerDistribution(
 			Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
@@ -206,6 +210,7 @@ y	 * @throws NotActiveException IF mecanum and Replay
 				elevatorS = new ElevatorS(new ElevatorIOSpark());
 				break;
 			}
+			doubleJointedArmS = new DoubleJointedArmS(new DoubleJointedArmIOTalon());
 			break;
 		case SIM:
 			switch (DriveConstants.driveType) {
@@ -248,6 +253,8 @@ y	 * @throws NotActiveException IF mecanum and Replay
 			flywheelS = new FlywheelS(new FlywheelIOSim());
 			armS = new SingleJointedArmS(new SingleJointedArmIOSim());
 			elevatorS = new ElevatorS(new ElevatorIOSim());
+			doubleJointedArmIOSim = new DoubleJointedArmIOSim();
+			doubleJointedArmS = new DoubleJointedArmS(doubleJointedArmIOSim);
 			break;
 		default:
 			switch (DriveConstants.driveType) {
@@ -265,6 +272,7 @@ y	 * @throws NotActiveException IF mecanum and Replay
 			flywheelS = new FlywheelS(new FlywheelIO(){});
 			armS = new SingleJointedArmS(new SingleJointedArmIO(){});
 			elevatorS = new ElevatorS(new ElevatorIO(){});
+			doubleJointedArmS = new DoubleJointedArmS(new DoubleJointedArmIO(){});
 		}
 		
 		drivetrainS.setDefaultCommand(new DrivetrainC(drivetrainS));
@@ -287,7 +295,7 @@ y	 * @throws NotActiveException IF mecanum and Replay
 		flywheelS.setDefaultCommand(new FlywheelC(flywheelS));
 		armS.setDefaultCommand(new SingleJointedArmC(armS));
 		elevatorS.setDefaultCommand(new ElevatorC(elevatorS));
-		doubleJointedArmS.setDefaultCommand(new CTREDoubleJointedArmC(doubleJointedArmS));
+		doubleJointedArmS.setDefaultCommand(new DoubleJointedArmC(doubleJointedArmS));
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData(field);
 		SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -424,7 +432,7 @@ y	 * @throws NotActiveException IF mecanum and Replay
 		devices.addAll(drivetrainS.getDriveOrchestraDevices());
 		devices.addAll(flywheelS.getOrchestraDevices());
 		devices.addAll(elevatorS.getOrchestraDevices());
-    devices.addAll(armS.getOrchestraDevices());
+    	devices.addAll(armS.getOrchestraDevices());
 		devices.addAll(doubleJointedArmS.getOrchestraDevices());
 
     return devices;

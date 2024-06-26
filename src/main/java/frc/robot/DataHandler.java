@@ -19,7 +19,7 @@ import com.google.gson.reflect.TypeToken;
 
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.subsystems.state_space.CTREDoubleJointedArmS;
+import frc.robot.Constants.Mode;
 
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -505,10 +505,12 @@ public class DataHandler {
 			if (receivedData.has("voltages")) {
 				String rawData = receivedData.get("voltages").getAsString();
 				List<Double> voltages = makeDoubleList(rawData);
-				//System.out.println(voltages);
-				CTREDoubleJointedArmS.voltages = voltages.subList(0, 2);
-				CTREDoubleJointedArmS.expectedArmRads = voltages.get(2);
-				CTREDoubleJointedArmS.expectedElbowRads = voltages.get(3);
+				RobotContainer.doubleJointedArmS.setVoltages(voltages.subList(0, 2));
+				if (Constants.currentMode == Mode.SIM){
+					RobotContainer.doubleJointedArmIOSim.expectedArmRads = voltages.get(2);
+					RobotContainer.doubleJointedArmIOSim.expectedElbowRads = voltages.get(3);
+	
+				}
 
 				//System.out.println(voltages);
 			}

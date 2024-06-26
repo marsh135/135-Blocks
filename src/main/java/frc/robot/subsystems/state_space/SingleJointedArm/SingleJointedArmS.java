@@ -119,7 +119,7 @@ public class SingleJointedArmS extends SubsystemChecker{
                 rampRate,
                 holdVoltage,
                 timeout,
-                (state) -> Logger.recordOutput("SingleJointedArm/SysIdState", state.toString())),
+                (state) -> Logger.recordOutput("SingleJointedArmS/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism((voltage) -> runVolts(voltage.in(Volts)), null, this));
 	 registerSelfCheckHardware();
 	 m_loop.reset(VecBuilder.fill(m_position, m_velocity));
@@ -143,7 +143,7 @@ public class SingleJointedArmS extends SubsystemChecker{
 	 double appliedVolts = MathUtil.clamp(m_loop.getU(0), -12, 12);
 	 io.setVoltage(appliedVolts);
     io.updateInputs(inputs);
-    Logger.processInputs("SingleJointedArm", inputs);
+    Logger.processInputs("SingleJointedArmS", inputs);
 	 m_SingleJointedarm.setAngle(Units.radiansToDegrees(m_loop.getXHat(0)));
 	 Logger.recordOutput("SingleJointedArmMechanism", m_mech2d);
 		//calcualate SingleJointedarm pose
@@ -207,8 +207,8 @@ public class SingleJointedArmS extends SubsystemChecker{
   public void setState(TrapezoidProfile.State state) {
     goal = state;
     // Log arm setpoint
-    Logger.recordOutput("SingleJointedArm/SetStatePosition", state.position);
-	 Logger.recordOutput("SingleJointedArm/SetStateVelocity", state.velocity);
+    Logger.recordOutput("SingleJointedArmS/SetStatePosition", state.position);
+	 Logger.recordOutput("SingleJointedArmS/SetStateVelocity", state.velocity);
 
   }
   	/**

@@ -1,7 +1,5 @@
 package frc.robot.utils.state_space;
 
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -46,12 +44,14 @@ public class StateSpaceConstants {
 	}
 
 	public class DoubleJointedArm {
-		public static InvertedValue inverted = InvertedValue.CounterClockwise_Positive;
-		public static NeutralModeValue mode = NeutralModeValue.Brake;
+		public static boolean armInverted = false;
+		public static boolean elbowInverted = false;
+
+		public static boolean isBrake = false;
 		public static int kArmMotorID = 30, kElbowMotorID = 31;
 		public static double[] macroTopLeft = {-1.5,1,0}, macroTopRight = {1.5,1,1}; //0 = false, 1 = true for the last value 
-		public static double armStatorCurrentLimit = 250, armGearing = 70,
-				elbowStatorCurrentLimit = 250, elbowGearing = 45,
+		public static double armCurrentLimit = 60, armGearing = 70,
+				elbowCurrentLimit = 60, elbowGearing = 45,
 				armLength = Units.inchesToMeters(46.25),
 				elbowLength = Units.inchesToMeters(41.8),
 				simSizeWidth = (armLength+elbowLength)*2,simSizeLength = (armLength+elbowLength)*2,

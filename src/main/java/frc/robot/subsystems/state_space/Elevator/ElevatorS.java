@@ -115,7 +115,7 @@ public class ElevatorS extends SubsystemChecker {
 		this.io = io;
 		sysId = new SysIdRoutine(
 				new SysIdRoutine.Config(rampRate, holdVoltage, timeout,
-						(state) -> Logger.recordOutput("Elevator/SysIdState",
+						(state) -> Logger.recordOutput("ElevatorS/SysIdState",
 								state.toString())),
 				new SysIdRoutine.Mechanism((voltage) -> runVolts(voltage.in(Volts)),
 						null, this));
@@ -142,7 +142,7 @@ public class ElevatorS extends SubsystemChecker {
 		double appliedVolts = MathUtil.clamp(m_loop.getU(0), -12, 12);
 		io.setVoltage(appliedVolts);
 		io.updateInputs(inputs);
-		Logger.processInputs("Elevator", inputs);
+		Logger.processInputs("ElevatorS", inputs);
 		m_elevatorMech2d.setLength(m_loop.getXHat(0));
 		//Push the mechanism to AdvantageScope
 		Logger.recordOutput("ElevatorMechanism", m_mech2d);
@@ -212,8 +212,8 @@ public class ElevatorS extends SubsystemChecker {
 	public void setState(TrapezoidProfile.State state) {
 		goal = state;
 		// Log arm setpoint
-		Logger.recordOutput("Elevator/SetStatePosition", state.position);
-		Logger.recordOutput("Elevator/SetStateVelocity", state.velocity);
+		Logger.recordOutput("ElevatorS/SetStatePosition", state.position);
+		Logger.recordOutput("ElevatorS/SetStateVelocity", state.velocity);
 	}
 
 	/**
