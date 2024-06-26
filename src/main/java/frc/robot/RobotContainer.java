@@ -22,6 +22,7 @@ import frc.robot.subsystems.drive.Tank.DriveIOSparkMax;
 import frc.robot.subsystems.drive.Tank.DriveIOTalonFX;
 import frc.robot.subsystems.drive.Tank.Tank;
 import frc.robot.utils.RunTest;
+import frc.robot.subsystems.solenoid.SolenoidS;
 import frc.robot.utils.drive.DriveConstants;
 
 import frc.robot.utils.drive.DriveConstants.TrainConstants;
@@ -68,6 +69,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
+	public static SolenoidS solenoidS = new SolenoidS();
 	private final SendableChooser<Command> autoChooser;
 	static PowerDistribution PDH = new PowerDistribution(
 			Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
@@ -217,7 +219,6 @@ y	 * @throws NotActiveException IF mecanum and Replay
 		);
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		NamedCommands.registerCommands(autoCommands);
-		PathfindingCommand.warmupCommand().schedule();
 		if (Constants.isCompetition) {
 			PPLibTelemetry.enableCompetitionMode();
 		}
