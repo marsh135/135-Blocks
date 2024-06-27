@@ -65,6 +65,7 @@ public class Mecanum extends SubsystemChecker implements DrivetrainS {
 	private Position<MecanumDriveWheelPositions> wheelPositions;
 	private boolean collisionDetected;
 	private Rotation2d rawGyroRotation = new Rotation2d();
+	private int debounce = 0;
 	/** Creates a new Drive. */
 	public Mecanum(MecanumIO io) {
 		this.io = io;
@@ -122,6 +123,11 @@ public class Mecanum extends SubsystemChecker implements DrivetrainS {
 		// Update odometry
 
 		wheelPositions = getPositionsWithTimestamp(getWheelPositions());
+		if (debounce ==1 && isConnected()){
+			poseEstimator.resetPosition(inputs.gyroYaw, wheelPositions.getPositions(),
+			getPose());
+			debounce = 0;
+		}
 		ChassisSpeeds m_ChassisSpeeds = getChassisSpeeds();
 		Logger.recordOutput("Mecanum/ChassisSpeeds", m_ChassisSpeeds);
 		if (inputs.gyroConnected) {
@@ -321,8 +327,7 @@ public class Mecanum extends SubsystemChecker implements DrivetrainS {
 	@Override
 	public void zeroHeading() {
 		io.reset();
-		poseEstimator.resetPosition(getRotation2d(), getWheelPositions(),
-				getPose());
+		debounce = 1;
 	}
 
 	@Override

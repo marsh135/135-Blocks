@@ -61,10 +61,11 @@ public class Tank extends SubsystemChecker implements DrivetrainS {
 	private final SysIdRoutine sysId;
 	private DifferentialDrivePoseEstimator poseEstimator;
 	private Twist2d fieldVelocity;
+	private Rotation2d rawGyroRotation = new Rotation2d();
 	private Pose2d pose = new Pose2d();
 	private Position<DifferentialDriveWheelPositions> wheelPositions;
 	private boolean collisionDetected;
-
+	private int debounce = 0;
 	/** Creates a new Drive. */
 	public Tank(TankIO io) {
 		this.io = io;
@@ -119,9 +120,22 @@ public class Tank extends SubsystemChecker implements DrivetrainS {
 	public void periodic() {
 		io.updateInputs(inputs);
 		Logger.processInputs("Drive", inputs);
+
 		// Update odometry
 		wheelPositions = getPositionsWithTimestamp(getWheelPositions());
+		if (debounce ==1 && isConnected()){
+			poseEstimator.resetPosition(inputs.gyroYaw, wheelPositions.getPositions(),
+			getPose());
+			debounce = 0;
+		}
 		ChassisSpeeds m_ChassisSpeeds = getChassisSpeeds();
+		if (inputs.gyroConnected) {
+			// Use the real gyro angle
+			rawGyroRotation = inputs.gyroYaw;
+		} else {
+			rawGyroRotation = rawGyroRotation
+				.plus(new Rotation2d(m_ChassisSpeeds.omegaRadiansPerSecond*.02));
+		}
 		Translation2d linearFieldVelocity = new Translation2d(
 				m_ChassisSpeeds.vxMetersPerSecond,
 				m_ChassisSpeeds.vyMetersPerSecond).rotateBy(getRotation2d());
@@ -269,7 +283,7 @@ public class Tank extends SubsystemChecker implements DrivetrainS {
 	}
 
 	@Override
-	public Rotation2d getRotation2d() { return inputs.gyroYaw; }
+	public Rotation2d getRotation2d() { return rawGyroRotation; }
 
 	@Override
 	public double getYawVelocity() {
@@ -291,11 +305,13 @@ public class Tank extends SubsystemChecker implements DrivetrainS {
 				"Unimplemented method 'sysIdQuasistaticTurn'");
 	}
 
+	/**
+	 * UNTESTED!
+	 */
 	@Override
 	public void zeroHeading() {
 		io.reset();
-		poseEstimator.resetPosition(inputs.gyroYaw, getWheelPositions(),
-				getPose());
+		debounce = 1;
 	}
 
 	@Override
