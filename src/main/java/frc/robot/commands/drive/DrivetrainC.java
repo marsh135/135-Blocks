@@ -36,12 +36,6 @@ public class DrivetrainC extends Command {
 
 	@Override
 	public void execute() {
-		
-		if (DriveConstants.driveType == DriveConstants.DriveTrainType.SWERVE
-				&& DriveConstants.robotMotorController == DriveConstants.MotorVendor.CTRE_MOTORS) {
-			
-			drivetrainS.applyRequest();
-		} else {
 			// Get desired ChassisSpeeds from controller
 			double xSpeed = -RobotContainer.driveController.getLeftY();
 			double ySpeed = -RobotContainer.driveController.getLeftX();
@@ -111,7 +105,6 @@ public class DrivetrainC extends Command {
 			} else {
 				drivetrainS.setChassisSpeeds(chassisSpeeds);
 			}
-		} 
 	}
 	/*Use this link to compute the regression model:https://planetcalc.com/5992/#google_vignette 
 	 Each of the files has an x and y output so put those in the respective lists, or use a ti-84 stats bar*/
