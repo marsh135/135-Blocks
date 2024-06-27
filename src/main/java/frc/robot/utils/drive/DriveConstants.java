@@ -9,8 +9,8 @@ import frc.robot.utils.MotorConstantContainer;
 public class DriveConstants {
 	//ONLY CTRE_SWERVE IS *FULLY* CURRENT DRAW ACCURATE IN SIM
 	public static MotorVendor robotMotorController = MotorVendor.NEO_SPARK_MAX;
-	public static driveTrainType driveType = driveTrainType.SWERVE;
-
+	public static DriveTrainType driveType = DriveTrainType.SWERVE;
+	public static GyroType gyroType = GyroType.PIGEON;
 	/**
 	 * What motors and motorContollers are we using
 	 */
@@ -21,8 +21,16 @@ public class DriveConstants {
 	/**
 	 * The drivetrain type
 	 */
-	public enum driveTrainType {
+	public enum DriveTrainType {
 		SWERVE, TANK, MECANUM
+	}
+	/**
+	 * The Gyro type
+	 * WILL *ALWAYS* BE A PIGEON 2 IF IN SWERVE.
+	 * NAVX IS NOT SUPPORTED FOR SWERVE.
+	 */
+	public enum GyroType{
+		NAVX, PIGEON
 	}
 	public static boolean fieldOriented = true;
 	//135-Blocks was tested on a chassis with all CANSparkMaxes, as well as all Kraken-x60s.

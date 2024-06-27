@@ -12,7 +12,9 @@ import frc.robot.subsystems.drive.FastSwerve.Swerve;
 import frc.robot.subsystems.drive.Mecanum.Mecanum;
 import frc.robot.subsystems.drive.Mecanum.MecanumIO;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOSim;
+import frc.robot.subsystems.drive.Mecanum.MecanumIOSparkBaseNavx;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOSparkBasePigeon;
+import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFXNavx;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFXPigeon;
 import frc.robot.subsystems.drive.FastSwerve.GyroIO;
 import frc.robot.subsystems.drive.FastSwerve.GyroIOPigeon2;
@@ -22,7 +24,9 @@ import frc.robot.subsystems.drive.FastSwerve.ModuleIOSparkBase;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIOTalonFX;
 import frc.robot.subsystems.drive.Tank.TankIO;
 import frc.robot.subsystems.drive.Tank.TankIOSim;
+import frc.robot.subsystems.drive.Tank.TankIOSparkBaseNavx;
 import frc.robot.subsystems.drive.Tank.TankIOSparkBasePigeon;
+import frc.robot.subsystems.drive.Tank.TankIOTalonFXNavx;
 import frc.robot.subsystems.drive.Tank.TankIOTalonFXPigeon;
 import frc.robot.subsystems.drive.Tank.Tank;
 import frc.robot.utils.RunTest;
@@ -126,22 +130,50 @@ y	 * @throws NotActiveException IF mecanum and Replay
 			case TANK:
 				switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
-					drivetrainS = new Tank(new TankIOTalonFXPigeon());
+					switch (DriveConstants.gyroType){
+						case PIGEON:
+						drivetrainS = new Tank(new TankIOTalonFXPigeon());
+						break;
+						case NAVX:
+						drivetrainS = new Tank(new TankIOTalonFXNavx());
+						break;
+					}
 					break;
 				case NEO_SPARK_MAX:
 				case VORTEX_SPARK_FLEX:
-					drivetrainS = new Tank(new TankIOSparkBasePigeon());
+					switch (DriveConstants.gyroType){
+						case PIGEON:
+						drivetrainS = new Tank(new TankIOSparkBasePigeon());
+						break;
+						case NAVX:
+						drivetrainS = new Tank(new TankIOSparkBaseNavx());
+						break;
+					}
 					break;
 				}
 				break;
 			case MECANUM:
 			switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
-					drivetrainS = new Mecanum(new MecanumIOTalonFXPigeon());
+					switch (DriveConstants.gyroType){
+						case PIGEON:
+						drivetrainS = new Mecanum(new MecanumIOTalonFXPigeon());
+						break;
+						case NAVX:
+						drivetrainS = new Mecanum(new MecanumIOTalonFXNavx());
+						break;
+					}
 					break;
 				case NEO_SPARK_MAX:
 				case VORTEX_SPARK_FLEX:
-					drivetrainS = new Mecanum(new MecanumIOSparkBasePigeon());
+					switch (DriveConstants.gyroType){
+						case PIGEON:
+						drivetrainS = new Mecanum(new MecanumIOSparkBasePigeon());
+						break;
+						case NAVX:
+						drivetrainS = new Mecanum(new MecanumIOSparkBaseNavx());
+						break;
+					}
 					break;
 				}
 				PPHolonomicDriveController
