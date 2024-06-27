@@ -23,7 +23,7 @@ import frc.robot.utils.selfCheck.SelfChecking;
 import frc.robot.utils.selfCheck.SelfCheckingPigeon2;
 import frc.robot.utils.selfCheck.SelfCheckingTalonFX;
 
-public class MecanumIOTalonFX implements MecanumIO {
+public class MecanumIOTalonFXPigeon implements MecanumIO {
 	private static final double GEAR_RATIO = DriveConstants.TrainConstants.kDriveMotorGearRatio;
 	private static final double KP = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
 			.getP();
@@ -76,7 +76,7 @@ public class MecanumIOTalonFX implements MecanumIO {
 	private double last_world_linear_accel_x;
 	private double last_world_linear_accel_y;
 
-	public MecanumIOTalonFX() {
+	public MecanumIOTalonFXPigeon() {
 		var config = new TalonFXConfiguration();
 		config.CurrentLimits.SupplyCurrentLimit = DriveConstants.kMaxDriveCurrent;
 		config.CurrentLimits.SupplyCurrentLimitEnable = true;

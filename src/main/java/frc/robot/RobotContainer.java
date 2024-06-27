@@ -12,8 +12,8 @@ import frc.robot.subsystems.drive.FastSwerve.Swerve;
 import frc.robot.subsystems.drive.Mecanum.Mecanum;
 import frc.robot.subsystems.drive.Mecanum.MecanumIO;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOSim;
-import frc.robot.subsystems.drive.Mecanum.MecanumIOSparkBase;
-import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFX;
+import frc.robot.subsystems.drive.Mecanum.MecanumIOSparkBasePigeon;
+import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFXPigeon;
 import frc.robot.subsystems.drive.FastSwerve.GyroIO;
 import frc.robot.subsystems.drive.FastSwerve.GyroIOPigeon2;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIO;
@@ -22,8 +22,8 @@ import frc.robot.subsystems.drive.FastSwerve.ModuleIOSparkBase;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIOTalonFX;
 import frc.robot.subsystems.drive.Tank.TankIO;
 import frc.robot.subsystems.drive.Tank.TankIOSim;
-import frc.robot.subsystems.drive.Tank.TankIOSparkBase;
-import frc.robot.subsystems.drive.Tank.TankIOTalonFX;
+import frc.robot.subsystems.drive.Tank.TankIOSparkBasePigeon;
+import frc.robot.subsystems.drive.Tank.TankIOTalonFXPigeon;
 import frc.robot.subsystems.drive.Tank.Tank;
 import frc.robot.utils.RunTest;
 import frc.robot.utils.drive.DriveConstants;
@@ -109,7 +109,7 @@ y	 * @throws NotActiveException IF mecanum and Replay
 			case SWERVE:
 				switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
-					drivetrainS = new Swerve(new GyroIOPigeon2(false),
+					drivetrainS = new Swerve(new GyroIOPigeon2(true),
 							new ModuleIOTalonFX(0), new ModuleIOTalonFX(1),
 							new ModuleIOTalonFX(2), new ModuleIOTalonFX(3));
 					break;
@@ -126,22 +126,22 @@ y	 * @throws NotActiveException IF mecanum and Replay
 			case TANK:
 				switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
-					drivetrainS = new Tank(new TankIOTalonFX());
+					drivetrainS = new Tank(new TankIOTalonFXPigeon());
 					break;
 				case NEO_SPARK_MAX:
 				case VORTEX_SPARK_FLEX:
-					drivetrainS = new Tank(new TankIOSparkBase());
+					drivetrainS = new Tank(new TankIOSparkBasePigeon());
 					break;
 				}
 				break;
 			case MECANUM:
 			switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
-					drivetrainS = new Mecanum(new MecanumIOTalonFX());
+					drivetrainS = new Mecanum(new MecanumIOTalonFXPigeon());
 					break;
 				case NEO_SPARK_MAX:
 				case VORTEX_SPARK_FLEX:
-					drivetrainS = new Mecanum(new MecanumIOSparkBase());
+					drivetrainS = new Mecanum(new MecanumIOSparkBasePigeon());
 					break;
 				}
 				PPHolonomicDriveController

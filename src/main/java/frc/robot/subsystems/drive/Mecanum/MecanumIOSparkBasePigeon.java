@@ -26,11 +26,7 @@ import frc.robot.utils.selfCheck.SelfChecking;
 import frc.robot.utils.selfCheck.SelfCheckingPigeon2;
 import frc.robot.utils.selfCheck.SelfCheckingSparkBase;
 
-/**
- * NOTE: To use the Spark Flex / NEO Vortex, replace all instances of
- * "CANSparkMax" with "CANSparkFlex".
- */
-public class MecanumIOSparkBase implements MecanumIO {
+public class MecanumIOSparkBasePigeon implements MecanumIO {
 	private static final double GEAR_RATIO = DriveConstants.TrainConstants.kDriveMotorGearRatio;
 	private static final double KP = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
 			.getP();
@@ -55,7 +51,7 @@ public class MecanumIOSparkBase implements MecanumIO {
 	private double last_world_linear_accel_x;
 	private double last_world_linear_accel_y;
 
-	public MecanumIOSparkBase() {
+	public MecanumIOSparkBasePigeon() {
 		if (DriveConstants.robotMotorController == MotorVendor.NEO_SPARK_MAX) {
 			frontLeft = new CANSparkMax(DriveConstants.kFrontLeftDrivePort,
 					MotorType.kBrushless);
