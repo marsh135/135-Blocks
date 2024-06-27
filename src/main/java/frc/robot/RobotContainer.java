@@ -3,6 +3,9 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
+import frc.robot.commands.auto.BotAborter;
+import frc.robot.commands.auto.BranchAuto;
+import frc.robot.commands.auto.SimDefenseBot;
 import frc.robot.commands.drive.DrivetrainC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
@@ -220,11 +223,12 @@ y	 * @throws NotActiveException IF mecanum and Replay
 		
 		drivetrainS.setDefaultCommand(new DrivetrainC(drivetrainS));
 		List<Pair<String, Command>> autoCommands = Arrays.asList(
-		//new Pair<String,Command>("AimAtAmp",new AimToPose(drivetrainS, new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(0)))))
-		//new Pair<String, Command>("BranchGrabbingGamePiece", new BranchAuto("grabGamePieceBranch",new Pose2d(0,0,new Rotation2d())))
+		//new Pair<String, Command>("AimAtAmp",new AimToPose(drivetrainS, new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(0))))),
+		new Pair<String, Command>("BranchGrabbingGamePiece", new BranchAuto("Shoot",new Pose2d(7.4,5.8,new Rotation2d()),4)),
+		new Pair<String, Command>("BotAborter", new BotAborter(drivetrainS)),
 		//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
-		//new Pair<String,Command>("PlayMiiSong", new OrchestraC("mii")),
-		//new Pair<String,Command>("SimBot",new SimDefenseBot())
+		//new Pair<String, Command>("PlayMiiSong", new OrchestraC("mii")),
+		new Pair<String, Command>("SimBot",new SimDefenseBot())
 		);
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		NamedCommands.registerCommands(autoCommands);
