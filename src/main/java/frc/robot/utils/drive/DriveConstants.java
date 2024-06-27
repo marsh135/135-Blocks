@@ -95,22 +95,6 @@ public class DriveConstants {
 				0.001, 0.001, 0.001, 7, 0.001), //Average the turning motors for these vals.
 				overallDriveMotorConstantContainer = new MotorConstantContainer(
 						.1, .13, 0.001,
-						0.05, 0.001),
-				frontRightDriveMotorConstantContainer = new MotorConstantContainer(
-						.04248, 2.9041, 1.52, 2.4646, 0),
-				frontLeftDriveMotorConstantContainer = new MotorConstantContainer(
-						.22934, 2.8559, 1.7338, 2.3896, 0),
-				backRightDriveMotorConstantContainer = new MotorConstantContainer(
-						.070421, 2.8607, 1.1811, 2.0873, 0),
-				backLeftDriveMotorConstantContainer = new MotorConstantContainer(
-						.01842, 2.7005, 1.4511, 2.3375, 0),
-				frontLeftTurningMotorConstantContainer = new MotorConstantContainer(
-						.34809, .0021885, .00019056, 1.0181, 0),
-				frontRightTurningMotorConstantContainer = new MotorConstantContainer(
-						.28984, .0021057, .00018697, .99768, 0),
-				backLeftTurningMotorConstantContainer = new MotorConstantContainer(
-						.26615, .26615, .0021315, 1.0521, 0),
-				backRightTurningMotorConstantContainer = new MotorConstantContainer(
-						.25885, .0021008, .0002368, 1.2362, 0);
+						0.05, 0.001);
 	}
 }

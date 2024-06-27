@@ -73,7 +73,6 @@ public class REVSwerveModule extends SubsystemBase {
 			this.m_moduleNumber = -1;
 			break;
 		}
-		//TODO: Check if wheelDiameter should be here
 		driveEncoderRot2Meter = container.getDriveMotorGearing()*Math.PI;
 		driveEncoderRPM2MeterPerSec = container.getDriveMotorGearing()*Math.PI/60;
 		turningEncoderRot2Rad = container.getTurnMotorGearing()*2*Math.PI;
