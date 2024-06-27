@@ -8,26 +8,26 @@ import frc.robot.commands.auto.SimDefenseBot;
 import frc.robot.commands.drive.DrivetrainC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
-import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumConstantContainer;
-import frc.robot.subsystems.drive.CTREMecanum.CTREMecanumS;
 import frc.robot.subsystems.drive.FastSwerve.Swerve;
+import frc.robot.subsystems.drive.Mecanum.Mecanum;
+import frc.robot.subsystems.drive.Mecanum.MecanumIO;
+import frc.robot.subsystems.drive.Mecanum.MecanumIOSim;
+import frc.robot.subsystems.drive.Mecanum.MecanumIOSparkBase;
+import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFX;
 import frc.robot.subsystems.drive.FastSwerve.GyroIO;
 import frc.robot.subsystems.drive.FastSwerve.GyroIOPigeon2;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIO;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIOSim;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIOSparkBase;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIOTalonFX;
-import frc.robot.subsystems.drive.REVMecanum.REVMecanumConstantContainer;
-import frc.robot.subsystems.drive.REVMecanum.REVMecanumS;
-import frc.robot.subsystems.drive.Tank.DriveIO;
-import frc.robot.subsystems.drive.Tank.DriveIOSim;
-import frc.robot.subsystems.drive.Tank.DriveIOSparkBase;
-import frc.robot.subsystems.drive.Tank.DriveIOTalonFX;
+import frc.robot.subsystems.drive.Tank.TankIO;
+import frc.robot.subsystems.drive.Tank.TankIOSim;
+import frc.robot.subsystems.drive.Tank.TankIOSparkBase;
+import frc.robot.subsystems.drive.Tank.TankIOTalonFX;
 import frc.robot.subsystems.drive.Tank.Tank;
 import frc.robot.utils.RunTest;
 import frc.robot.utils.drive.DriveConstants;
 
-import frc.robot.utils.drive.DriveConstants.TrainConstants;
 import frc.robot.utils.drive.LocalADStarAK;
 import frc.robot.utils.drive.PathFinder;
 import com.ctre.phoenix6.SignalLogger;
@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -127,35 +126,22 @@ y	 * @throws NotActiveException IF mecanum and Replay
 			case TANK:
 				switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
-					drivetrainS = new Tank(new DriveIOTalonFX());
+					drivetrainS = new Tank(new TankIOTalonFX());
 					break;
 				case NEO_SPARK_MAX:
 				case VORTEX_SPARK_FLEX:
-					drivetrainS = new Tank(new DriveIOSparkBase());
+					drivetrainS = new Tank(new TankIOSparkBase());
 					break;
 				}
 				break;
 			case MECANUM:
-				switch (DriveConstants.robotMotorController) {
+			switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
-					drivetrainS = new CTREMecanumS(new CTREMecanumConstantContainer(
-							30, DriveConstants.kFrontLeftDrivePort,
-							DriveConstants.kBackLeftDrivePort,
-							DriveConstants.kFrontRightDrivePort,
-							DriveConstants.kBackRightDrivePort,
-							DriveConstants.kChassisWidth,
-							TrainConstants.kDriveMotorGearRatio,
-							TrainConstants.kDriveEncoderRot2Meter,
-							DriveConstants.kMaxSpeedMetersPerSecond,
-							DriveConstants.kDriveBaseRadius,
-							DriveConstants.kModuleTranslations));
+					drivetrainS = new Mecanum(new MecanumIOTalonFX());
 					break;
-				default:
-					//10, 11, 12, 13, 80, 7.5,
-					drivetrainS = new REVMecanumS(new REVMecanumConstantContainer(10,
-							11, 12, 13, 80, 7.5, TrainConstants.kWheelDiameter,
-							DriveConstants.kModuleTranslations,
-							Units.inchesToMeters(6)));
+				case NEO_SPARK_MAX:
+				case VORTEX_SPARK_FLEX:
+					drivetrainS = new Mecanum(new MecanumIOSparkBase());
 					break;
 				}
 				PPHolonomicDriveController
@@ -174,32 +160,10 @@ y	 * @throws NotActiveException IF mecanum and Replay
 						new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
 				break;
 			case TANK:
-				System.err.println("MAKING");
-				drivetrainS = new Tank(new DriveIOSim());
+				drivetrainS = new Tank(new TankIOSim());
 				break;
 			default:
-				switch (DriveConstants.robotMotorController) {
-				case CTRE_MOTORS:
-					drivetrainS = new CTREMecanumS(new CTREMecanumConstantContainer(
-							30, DriveConstants.kFrontLeftDrivePort,
-							DriveConstants.kBackLeftDrivePort,
-							DriveConstants.kFrontRightDrivePort,
-							DriveConstants.kBackRightDrivePort,
-							DriveConstants.kChassisWidth,
-							TrainConstants.kDriveMotorGearRatio,
-							TrainConstants.kDriveEncoderRot2Meter,
-							DriveConstants.kMaxSpeedMetersPerSecond,
-							DriveConstants.kDriveBaseRadius,
-							DriveConstants.kModuleTranslations));
-					break;
-				default:
-					//10, 11, 12, 13, 80, 7.5,
-					drivetrainS = new REVMecanumS(new REVMecanumConstantContainer(10,
-							11, 12, 13, 80, 7.5, TrainConstants.kWheelDiameter,
-							DriveConstants.kModuleTranslations,
-							Units.inchesToMeters(6)));
-					break;
-				}
+				drivetrainS = new Mecanum(new MecanumIOSim());
 				PPHolonomicDriveController
 						.setRotationTargetOverride(this::getRotationTargetOverride);
 				break;
@@ -212,11 +176,10 @@ y	 * @throws NotActiveException IF mecanum and Replay
 						new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
 				break;
 			case TANK:
-				drivetrainS = new Tank(new DriveIO() {});
+				drivetrainS = new Tank(new TankIO() {});
 				break;
 			case MECANUM:
-				throw new IllegalArgumentException(
-						"Mecanum does NOT support replay.");
+				drivetrainS = new Mecanum(new MecanumIO() {});
 			}
 		}
 		drivetrainS.setDefaultCommand(new DrivetrainC(drivetrainS));

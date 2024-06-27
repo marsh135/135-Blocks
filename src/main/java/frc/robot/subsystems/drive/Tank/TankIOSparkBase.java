@@ -30,7 +30,7 @@ import frc.robot.utils.selfCheck.SelfCheckingSparkBase;
  * NOTE: To use the Spark Flex / NEO Vortex, replace all instances of
  * "CANSparkMax" with "CANSparkFlex".
  */
-public class DriveIOSparkBase implements DriveIO {
+public class TankIOSparkBase implements TankIO {
 	private static final double GEAR_RATIO = DriveConstants.TrainConstants.kDriveMotorGearRatio;
 	private static final double KP = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
 			.getP();
@@ -51,7 +51,7 @@ public class DriveIOSparkBase implements DriveIO {
 	private double last_world_linear_accel_x;
 	private double last_world_linear_accel_y;
 
-	public DriveIOSparkBase() {
+	public TankIOSparkBase() {
 		if (DriveConstants.robotMotorController == MotorVendor.NEO_SPARK_MAX){
 		leftLeader = new CANSparkMax(DriveConstants.kFrontLeftDrivePort,
 				MotorType.kBrushless);
@@ -106,7 +106,7 @@ public class DriveIOSparkBase implements DriveIO {
 	}
 
 	@Override
-	public void updateInputs(DriveIOInputs inputs) {
+	public void updateInputs(TankIOInputs inputs) {
 		inputs.leftPositionRad = Units
 				.rotationsToRadians(leftEncoder.getPosition() / GEAR_RATIO);
 		inputs.leftVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(
@@ -141,7 +141,7 @@ public class DriveIOSparkBase implements DriveIO {
 		double currentJerkY = curr_world_linear_accel_y
 				- last_world_linear_accel_y;
 		last_world_linear_accel_y = curr_world_linear_accel_y;
-		if ((Math.abs(currentJerkX) > DriveConstants.MAX_G)
+		if ((Math.abs(currentJerkX) > DriveConstants.MAX_G) //if we suddenly move .5 G's
 				|| (Math.abs(currentJerkY) > DriveConstants.MAX_G)) {
 			inputs.collisionDetected = true;
 		}

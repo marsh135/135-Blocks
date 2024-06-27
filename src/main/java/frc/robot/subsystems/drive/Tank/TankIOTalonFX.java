@@ -24,7 +24,7 @@ import frc.robot.utils.selfCheck.SelfChecking;
 import frc.robot.utils.selfCheck.SelfCheckingPigeon2;
 import frc.robot.utils.selfCheck.SelfCheckingTalonFX;
 
-public class DriveIOTalonFX implements DriveIO {
+public class TankIOTalonFX implements TankIO {
 	private static final double GEAR_RATIO = DriveConstants.TrainConstants.kDriveMotorGearRatio;
 	private static final double KP = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
 			.getP();
@@ -69,7 +69,7 @@ public class DriveIOTalonFX implements DriveIO {
 	private double last_world_linear_accel_x;
 	private double last_world_linear_accel_y;
 
-	public DriveIOTalonFX() {
+	public TankIOTalonFX() {
 		var config = new TalonFXConfiguration();
 		config.CurrentLimits.SupplyCurrentLimit = DriveConstants.kMaxDriveCurrent;
 		config.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -111,7 +111,7 @@ public class DriveIOTalonFX implements DriveIO {
 	}
 
 	@Override
-	public void updateInputs(DriveIOInputs inputs) {
+	public void updateInputs(TankIOInputs inputs) {
 		BaseStatusSignal.refreshAll(leftPosition, leftVelocity, leftAppliedVolts,
 				leftLeaderCurrent, leftFollowerCurrent, leftLeaderTemp,
 				leftFollowerTemp, rightPosition, rightVelocity, rightAppliedVolts,
@@ -150,7 +150,7 @@ public class DriveIOTalonFX implements DriveIO {
 		double currentJerkY = curr_world_linear_accel_y
 				- last_world_linear_accel_y;
 		last_world_linear_accel_y = curr_world_linear_accel_y;
-		if ((Math.abs(currentJerkX) > DriveConstants.MAX_G)
+		if ((Math.abs(currentJerkX) > DriveConstants.MAX_G) //if we suddenly move .5 G's
 				|| (Math.abs(currentJerkY) > DriveConstants.MAX_G)) {
 			inputs.collisionDetected = true;
 		}
