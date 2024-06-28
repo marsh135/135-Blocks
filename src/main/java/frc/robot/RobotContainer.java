@@ -18,6 +18,7 @@ import frc.robot.subsystems.drive.Mecanum.MecanumIOSparkBasePigeon;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFXNavx;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFXPigeon;
 import frc.robot.subsystems.drive.FastSwerve.GyroIO;
+import frc.robot.subsystems.drive.FastSwerve.GyroIONavX;
 import frc.robot.subsystems.drive.FastSwerve.GyroIOPigeon2;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIO;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIOSim;
@@ -45,8 +46,6 @@ import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PPLibTelemetry;
 import java.util.List;
 import java.util.Optional;
-
-
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -98,14 +97,13 @@ public class RobotContainer {
 	public static int currentTest = 0, currentGamePieceStatus = 0;
 	public static String currentPath = "";
 	public static Field2d field = new Field2d();
-   public static Pose2d opposingBotPose;
+	public static Pose2d opposingBotPose;
 
 	// POVButton manipPOVZero = new POVButton(manipController, 0);
 	// POVButton manipPOV180 = new POVButton(manipController, 180);
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and
-	 * commands.
-y	 * @throws NotActiveException IF mecanum and Replay
+	 * commands. y * @throws NotActiveException IF mecanum and Replay
 	 */
 	public RobotContainer() {
 		//We check to see what drivetrain type we have here, and create the correct drivetrain system based on that. 
@@ -116,15 +114,36 @@ y	 * @throws NotActiveException IF mecanum and Replay
 			case SWERVE:
 				switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
-					drivetrainS = new Swerve(new GyroIOPigeon2(true),
-							new ModuleIOTalonFX(0), new ModuleIOTalonFX(1),
-							new ModuleIOTalonFX(2), new ModuleIOTalonFX(3));
+					switch (DriveConstants.gyroType) {
+					case NAVX:
+						drivetrainS = new Swerve(new GyroIONavX(true),
+								new ModuleIOTalonFX(0), new ModuleIOTalonFX(1),
+								new ModuleIOTalonFX(2), new ModuleIOTalonFX(3));
+						break;
+					case PIGEON:
+						drivetrainS = new Swerve(new GyroIOPigeon2(true),
+								new ModuleIOTalonFX(0), new ModuleIOTalonFX(1),
+								new ModuleIOTalonFX(2), new ModuleIOTalonFX(3));
+						break;
+					default:
+						break;
+					}
 					break;
 				case NEO_SPARK_MAX:
 				case VORTEX_SPARK_FLEX:
-					drivetrainS = new Swerve(new GyroIOPigeon2(false),
-							new ModuleIOSparkBase(0), new ModuleIOSparkBase(1),
-							new ModuleIOSparkBase(2), new ModuleIOSparkBase(3));
+					switch (DriveConstants.gyroType) {
+					case NAVX:
+						drivetrainS = new Swerve(new GyroIONavX(false),
+								new ModuleIOSparkBase(0), new ModuleIOSparkBase(1),
+								new ModuleIOSparkBase(2), new ModuleIOSparkBase(3));
+						break;
+					case PIGEON:
+						drivetrainS = new Swerve(new GyroIOPigeon2(false),
+								new ModuleIOSparkBase(0), new ModuleIOSparkBase(1),
+								new ModuleIOSparkBase(2), new ModuleIOSparkBase(3));
+					default:
+						break;
+					}
 					break;
 				}
 				PPHolonomicDriveController
@@ -133,22 +152,22 @@ y	 * @throws NotActiveException IF mecanum and Replay
 			case TANK:
 				switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
-					switch (DriveConstants.gyroType){
-						case PIGEON:
+					switch (DriveConstants.gyroType) {
+					case PIGEON:
 						drivetrainS = new Tank(new TankIOTalonFXPigeon());
 						break;
-						case NAVX:
+					case NAVX:
 						drivetrainS = new Tank(new TankIOTalonFXNavx());
 						break;
 					}
 					break;
 				case NEO_SPARK_MAX:
 				case VORTEX_SPARK_FLEX:
-					switch (DriveConstants.gyroType){
-						case PIGEON:
+					switch (DriveConstants.gyroType) {
+					case PIGEON:
 						drivetrainS = new Tank(new TankIOSparkBasePigeon());
 						break;
-						case NAVX:
+					case NAVX:
 						drivetrainS = new Tank(new TankIOSparkBaseNavx());
 						break;
 					}
@@ -156,24 +175,24 @@ y	 * @throws NotActiveException IF mecanum and Replay
 				}
 				break;
 			case MECANUM:
-			switch (DriveConstants.robotMotorController) {
+				switch (DriveConstants.robotMotorController) {
 				case CTRE_MOTORS:
-					switch (DriveConstants.gyroType){
-						case PIGEON:
+					switch (DriveConstants.gyroType) {
+					case PIGEON:
 						drivetrainS = new Mecanum(new MecanumIOTalonFXPigeon());
 						break;
-						case NAVX:
+					case NAVX:
 						drivetrainS = new Mecanum(new MecanumIOTalonFXNavx());
 						break;
 					}
 					break;
 				case NEO_SPARK_MAX:
 				case VORTEX_SPARK_FLEX:
-					switch (DriveConstants.gyroType){
-						case PIGEON:
+					switch (DriveConstants.gyroType) {
+					case PIGEON:
 						drivetrainS = new Mecanum(new MecanumIOSparkBasePigeon());
 						break;
-						case NAVX:
+					case NAVX:
 						drivetrainS = new Mecanum(new MecanumIOSparkBaseNavx());
 						break;
 					}
@@ -219,13 +238,14 @@ y	 * @throws NotActiveException IF mecanum and Replay
 		}
 		drivetrainS.setDefaultCommand(new DrivetrainC(drivetrainS));
 		List<Pair<String, Command>> autoCommands = Arrays.asList(
-		//new Pair<String, Command>("AimAtAmp",new AimToPose(drivetrainS, new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(0))))),
-		new Pair<String, Command>("BranchGrabbingGamePiece", new BranchAuto("Shoot",new Pose2d(7.4,5.8,new Rotation2d()),4)),
-		//new Pair<String, Command>("BotAborter", new BotAborter(drivetrainS)), //NEEDS A WAY TO KNOW WHEN TO ABORT FOR THE EXAMPLE AUTO!!!
-		//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
-		//new Pair<String, Command>("PlayMiiSong", new OrchestraC("mii")),
-		new Pair<String, Command>("SimBot",new SimDefenseBot())
-		);
+				//new Pair<String, Command>("AimAtAmp",new AimToPose(drivetrainS, new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(0))))),
+				new Pair<String, Command>("BranchGrabbingGamePiece",
+						new BranchAuto("Shoot",
+								new Pose2d(7.4, 5.8, new Rotation2d()), 4)),
+				//new Pair<String, Command>("BotAborter", new BotAborter(drivetrainS)), //NEEDS A WAY TO KNOW WHEN TO ABORT FOR THE EXAMPLE AUTO!!!
+				//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
+				//new Pair<String, Command>("PlayMiiSong", new OrchestraC("mii")),
+				new Pair<String, Command>("SimBot", new SimDefenseBot()));
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		NamedCommands.registerCommands(autoCommands);
 		PathfindingCommand.warmupCommand().schedule();
@@ -233,9 +253,9 @@ y	 * @throws NotActiveException IF mecanum and Replay
 			PPLibTelemetry.enableCompetitionMode();
 		}
 		PathfindingCommand.warmupCommand()
-		.finallyDo(() -> RobotContainer.field.getObject("target pose")
-				.setPose(new Pose2d(-50, -50, new Rotation2d())))
-		.schedule();
+				.finallyDo(() -> RobotContainer.field.getObject("target pose")
+						.setPose(new Pose2d(-50, -50, new Rotation2d())))
+				.schedule();
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData(field);
 		SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -256,15 +276,17 @@ y	 * @throws NotActiveException IF mecanum and Replay
 		configureBindings();
 		addNTCommands();
 	}
-	public Optional<Rotation2d> getRotationTargetOverride(){
+
+	public Optional<Rotation2d> getRotationTargetOverride() {
 		// Some condition that should decide if we want to override rotation
 		return angleOverrider;
 	}
+
 	private void configureBindings() {
 		xButtonDrive
 				.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest)
 						.negate())
-				.onTrue(new InstantCommand(() -> drivetrainS.zeroHeading()));  //whileTrue(PathFinder.goToPose(new Pose2d(1.9, 7.7,new Rotation2d(Units.degreesToRadians(90))),DriveConstants.pathConstraints, drivetrainS, false))
+				.onTrue(new InstantCommand(() -> drivetrainS.zeroHeading())); //whileTrue(PathFinder.goToPose(new Pose2d(1.9, 7.7,new Rotation2d(Units.degreesToRadians(90))),DriveConstants.pathConstraints, drivetrainS, false))
 		yButtonTest.whileTrue(
 				new RunTest(SysIdRoutine.Direction.kForward, true, drivetrainS));
 		bButtonTest.whileTrue(
@@ -274,7 +296,11 @@ y	 * @throws NotActiveException IF mecanum and Replay
 		xButtonTest.whileTrue(
 				new RunTest(SysIdRoutine.Direction.kReverse, false, drivetrainS));
 		//Example Aim To 2024 Amp Pose, Bind to what you need.
-		yButtonDrive.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest).negate()).whileTrue(new AimToPose(drivetrainS,new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(90)))));
+		yButtonDrive
+				.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest)
+						.negate())
+				.whileTrue(new AimToPose(drivetrainS, new Pose2d(1.9, 7.7,
+						new Rotation2d(Units.degreesToRadians(90)))));
 		//swerve DRIVE tests
 		//When user hits right bumper, go to next test, or wrap back to starting test for SysID.
 		rightBumperTest.onTrue(new InstantCommand(() -> {
@@ -315,52 +341,58 @@ y	 * @throws NotActiveException IF mecanum and Replay
 	 * @return Current in amps.
 	 */
 	public static double[] getCurrentDraw() {
-		return new double[] {Math.min(drivetrainS.getCurrent(), 200)
+		return new double[] { Math.min(drivetrainS.getCurrent(), 200)
 		};
 	}
+
 	private static void addNTCommands() {
 		SmartDashboard.putData("SystemStatus/AllSystemsCheck", allSystemsCheck());
-	 }
+	}
+
 	/**
-	 * RUN EACH system's test command.
-	 * Does NOT run any checks on vision. 
+	 * RUN EACH system's test command. Does NOT run any checks on vision.
+	 * 
 	 * @return a command with all of them in a sequence.
 	 */
 	public static Command allSystemsCheck() {
-	return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand());
+		return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand());
 	}
-	public static HashMap<String, Double> combineMaps(List<HashMap<String, Double>> maps) {
-		HashMap<String, Double> combinedMap = new HashMap<>();
 
+	public static HashMap<String, Double> combineMaps(
+			List<HashMap<String, Double>> maps) {
+		HashMap<String, Double> combinedMap = new HashMap<>();
 		// Iterate over the list of maps
 		for (HashMap<String, Double> map : maps) {
-			 combinedMap.putAll(map);
+			combinedMap.putAll(map);
 		}
-
 		return combinedMap;
-  }
+	}
 
-	public static HashMap<String, Double> getAllTemps(){
+	public static HashMap<String, Double> getAllTemps() {
 		// List of HashMaps
 		List<HashMap<String, Double>> maps = List.of(drivetrainS.getTemps());
-
 		// Combine all maps
 		HashMap<String, Double> combinedMap = combineMaps(maps);
 		return combinedMap;
 	}
+
 	/**
-	 * Checks EACH system's status (DOES NOT RUN THE TESTS)  
+	 * Checks EACH system's status (DOES NOT RUN THE TESTS)
+	 * 
 	 * @return true if ALL systems were good.
 	 */
 	public static boolean allSystemsOK() {
-		return drivetrainS.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK;
-	 }
+		return drivetrainS
+				.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK;
+	}
+
 	public static Collection<ParentDevice> getOrchestraDevices() {
 		Collection<ParentDevice> devices = new ArrayList<>();
 		devices.addAll(drivetrainS.getDriveOrchestraDevices());
 		return devices;
 	}
-	public static Subsystem[] getAllSubsystems(){
+
+	public static Subsystem[] getAllSubsystems() {
 		Subsystem[] subsystems = new Subsystem[1];
 		subsystems[0] = drivetrainS;
 		return subsystems;
