@@ -24,9 +24,8 @@ public class DriveConstants {
 		SWERVE, TANK, MECANUM
 	}
 	/**
-	 * The Gyro type
-	 * WILL *ALWAYS* BE A PIGEON 2 IF IN SWERVE.
-	 * NAVX IS NOT SUPPORTED FOR SWERVE.
+	 * The Gyro type 
+	 * @apiNote NavX Swerve is untested.
 	 */
 	public enum GyroType{
 		NAVX, PIGEON
