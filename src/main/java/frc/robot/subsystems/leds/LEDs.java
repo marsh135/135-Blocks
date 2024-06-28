@@ -131,4 +131,7 @@ public class LEDs extends SubsystemChecker {
 					System.out.println("OVER");
 				})).until(() -> !getFaults().isEmpty());
 	}
+
+	@Override
+	public double getCurrent() { return 0;}
 }
