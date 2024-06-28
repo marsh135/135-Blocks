@@ -28,7 +28,6 @@ public class GyroIONavX implements GyroIO {
 	private double last_world_linear_accel_x, last_world_linear_accel_y, current_angle_position, last_angle_position = 0;
 
 	public GyroIONavX(boolean phoenixDrive) {
-	
 		if (phoenixDrive) {
 			yawTimestampQueue = PhoenixOdometryThread.getInstance()
 					.makeTimestampQueue();

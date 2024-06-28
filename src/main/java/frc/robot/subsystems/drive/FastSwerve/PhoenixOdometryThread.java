@@ -104,7 +104,31 @@ public class PhoenixOdometryThread extends Thread {
 		}
 		return queue;
 	}
-
+	private void periodicGyro() {
+		Swerve.odometryLock.lock();
+		double timestamp = Logger.getTimestamp() / 1e6;
+		try {
+			double[] values = new double[navXSignals.size()];
+			boolean isValid = true;
+			for (int i = 0; i < navXSignals.size(); i++) {
+				OptionalDouble value = navXSignals.get(i).get();
+				if (value.isPresent()) {
+					values[i] = value.getAsDouble();
+				} else {
+					isValid = false;
+					break;
+				}
+			}
+			if (isValid) {
+				for (int i = 0; i < queues.size(); i++) {
+					queues.get(i).offer(values[i]);
+				}
+				for (int i = 0; i < timestampQueues.size(); i++) {
+					timestampQueues.get(i).offer(timestamp);
+				}
+			}
+		}finally{}
+	}
 	@Override
 	public void run() {
 		while (true) {
@@ -120,8 +144,10 @@ public class PhoenixOdometryThread extends Thread {
 					// of Pro licensing. No reasoning for this behavior
 					// is provided by the documentation.
 					Thread.sleep((long) (1000.0 / Module.ODOMETRY_FREQUENCY));
-					if (signals.length > 0)
+					if (signals.length > 0){
 						BaseStatusSignal.refreshAll(signals);
+					}
+
 				}
 			}
 			catch (InterruptedException e) {
@@ -131,6 +157,7 @@ public class PhoenixOdometryThread extends Thread {
 				signalsLock.unlock();
 			}
 			// Save new data to queues
+			periodicGyro();
 			Swerve.odometryLock.lock();
 			try {
 				double timestamp = Logger.getRealTimestamp() / 1e6;
