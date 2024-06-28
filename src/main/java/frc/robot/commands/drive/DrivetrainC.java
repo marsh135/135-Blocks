@@ -70,7 +70,7 @@ public class DrivetrainC extends Command {
 					* DriveConstants.kMaxSpeedMetersPerSecond;
 			ySpeed = yLimiter.calculate(ySpeed)
 					* DriveConstants.kMaxSpeedMetersPerSecond;
-			if (DriveConstants.driveType == DriveConstants.driveTrainType.TANK) {
+			if (DriveConstants.driveType == DriveConstants.DriveTrainType.TANK) {
 				turningSpeed = turningLimiter.calculate(turningSpeed)
 						* DriveConstants.kMaxSpeedMetersPerSecond;
 			} else {
@@ -92,7 +92,7 @@ public class DrivetrainC extends Command {
 			} else {
 				chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
 			}
-			if (DriveConstants.driveType == DriveConstants.driveTrainType.TANK) {
+			if (DriveConstants.driveType == DriveConstants.DriveTrainType.TANK) {
 				chassisSpeeds.vyMetersPerSecond = 0;
 			}
 			// set modules to proper speeds
