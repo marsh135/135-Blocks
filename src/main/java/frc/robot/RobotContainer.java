@@ -97,7 +97,6 @@ public class RobotContainer {
 	public static SingleJointedArmS armS;
 	public static ElevatorS elevatorS;
 	public static DoubleJointedArmS doubleJointedArmS;
-	public static DoubleJointedArmIOSim doubleJointedArmIOSim = null; //for expected Communicator
 	private final SendableChooser<Command> autoChooser;
 	static PowerDistribution PDH = new PowerDistribution(
 			Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
@@ -264,8 +263,7 @@ y	 * @throws NotActiveException IF mecanum and Replay
 			flywheelS = new FlywheelS(new FlywheelIOSim());
 			armS = new SingleJointedArmS(new SingleJointedArmIOSim());
 			elevatorS = new ElevatorS(new ElevatorIOSim());
-			doubleJointedArmIOSim = new DoubleJointedArmIOSim();
-			doubleJointedArmS = new DoubleJointedArmS(doubleJointedArmIOSim);
+			doubleJointedArmS = new DoubleJointedArmS(new DoubleJointedArmIOSim());
 			break;
 		default:
 			switch (DriveConstants.driveType) {

@@ -2,6 +2,7 @@ package frc.robot.subsystems.state_space.DoubleJointedArm;
 
 import java.util.List;
 
+
 public class DoubleJointedArmIOSim implements DoubleJointedArmIO {
 	private double armVolts = 0.0;
 	private double elbowVolts = 0.0;
@@ -17,6 +18,7 @@ public class DoubleJointedArmIOSim implements DoubleJointedArmIO {
 		inputs.positionArmRads = expectedArmRads;
 		inputs.appliedElbowVolts = elbowVolts;
 		inputs.positionElbowRads = expectedElbowRads;
+
 	}
 
 	@Override
@@ -24,7 +26,11 @@ public class DoubleJointedArmIOSim implements DoubleJointedArmIO {
 		armVolts = volts.get(0);
 		elbowVolts = volts.get(1);
 	}
-
+	@Override
+	public void setExpectedPositions(double armRads, double elbowRads){
+		this.expectedArmRads = armRads;
+		this.expectedElbowRads = elbowRads;
+	}
 	@Override
 	/** Stop the arm by telling it to go to 0 arm. */
 	public void stop() {

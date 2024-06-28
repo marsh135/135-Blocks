@@ -26,7 +26,7 @@ public interface DoubleJointedArmIO {
 
 	/** Dumb control the doubleJointedArm using volts, no State Space */
 	public default void setVoltage(List<Double> volts) {}
-
+	public default void setExpectedPositions(double armRads, double elbowRads){}
 	/** Stop in open loop. */
 	public default void stop() {}
 

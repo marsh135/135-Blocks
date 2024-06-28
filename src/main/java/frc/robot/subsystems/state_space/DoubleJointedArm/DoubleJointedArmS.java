@@ -29,6 +29,7 @@ public class DoubleJointedArmS extends SubsystemChecker {
 	private List<Double> voltages;
 	private double armSetRad;
 	private double elbowSetRad;
+	public double latency;
 	private Notifier m_updatePositionsNotifier = null; //Checks for updates
 	private final Mechanism2d m_mech2d = new Mechanism2d(
 			StateSpaceConstants.DoubleJointedArm.simSizeWidth,
@@ -54,7 +55,7 @@ public class DoubleJointedArmS extends SubsystemChecker {
 			DataHandler.logData(new double[] { getArmRads(), getElbowRads()
 			},"DoubleJointedEncoders");
 		});
-		m_updatePositionsNotifier.startPeriodic(1);
+		m_updatePositionsNotifier.startPeriodic(.02);
 		registerSelfCheckHardware();
 	}
 
@@ -89,7 +90,7 @@ public class DoubleJointedArmS extends SubsystemChecker {
 	}
 
 	public double getArmError() { return inputs.positionArmRads - armSetRad; }
-
+	public void setExpectedPositions(List<Double> rads){ io.setExpectedPositions(rads.get(0), rads.get(1));}
 	public double getElbowError() {
 		return inputs.positionElbowRads - elbowSetRad;
 	}
