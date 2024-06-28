@@ -4,12 +4,19 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.ParentDevice;
+
+import frc.robot.utils.drive.DriveConstants;
+import frc.robot.utils.drive.DriveConstants.GyroType;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -25,6 +32,7 @@ import org.littletonrobotics.junction.Logger;
 public class PhoenixOdometryThread extends Thread {
 	private final Lock signalsLock = new ReentrantLock(); // Prevents conflicts when registering signals
 	private BaseStatusSignal[] signals = new BaseStatusSignal[0];
+	private List<Supplier<OptionalDouble>> navXSignals;
 	private final List<Queue<Double>> queues = new ArrayList<>();
 	private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 	private boolean isCANFD = false;
@@ -40,6 +48,9 @@ public class PhoenixOdometryThread extends Thread {
 	private PhoenixOdometryThread() {
 		setName("PhoenixOdometryThread");
 		setDaemon(true);
+		if (DriveConstants.gyroType == GyroType.NAVX){
+			navXSignals = new ArrayList<>();
+		}
 	}
 
 	@Override
@@ -65,6 +76,18 @@ public class PhoenixOdometryThread extends Thread {
 		}
 		finally {
 			signalsLock.unlock();
+			Swerve.odometryLock.unlock();
+		}
+		return queue;
+	}
+	public Queue<Double> registerSignal(Supplier<OptionalDouble> signal) {
+		Queue<Double> queue = new ArrayBlockingQueue<>(20);
+		Swerve.odometryLock.lock();
+		try {
+			navXSignals.add(signal);
+			queues.add(queue);
+		}
+		finally {
 			Swerve.odometryLock.unlock();
 		}
 		return queue;
