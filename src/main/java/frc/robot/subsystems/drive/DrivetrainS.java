@@ -72,28 +72,13 @@ public interface DrivetrainS extends Subsystem {
 	 */
 	Rotation2d getRotation2d();
   /** Returns the current yaw velocity (Z rotation) in radians per second. */
-  public double getYawVelocity();
+  public default double getYawVelocity(){ return 0;}
     /**
    * Returns the measured X, Y, and theta field velocities in meters per sec. The components of the
    * twist are velocities and NOT changes in position.
    */
   public Twist2d getFieldVelocity();
 
-	/**
-	 * SysID Command for drivetrain characterization
-	 * 
-	 * @param kreverse the direction
-	 * @return a command executing the characterization step
-	 */
-	Command sysIdDynamicTurn(Direction kreverse);
-
-	/**
-	 * SysID Command for drivetrain characterization
-	 * 
-	 * @param kreverse the direction
-	 * @return a command executing the characterization step
-	 */
-	Command sysIdQuasistaticTurn(Direction kforwards);
 
 	/**
 	 * SysID Command for drivetrain characterization
