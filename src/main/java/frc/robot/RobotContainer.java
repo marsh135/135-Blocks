@@ -5,7 +5,6 @@ package frc.robot;
 
 import frc.robot.commands.auto.BranchAuto;
 import frc.robot.commands.auto.SimDefenseBot;
-import frc.robot.commands.drive.AimToPose;
 import frc.robot.commands.drive.DrivetrainC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
@@ -18,9 +17,9 @@ import frc.robot.subsystems.drive.Mecanum.MecanumIOSparkBasePigeon;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFXNavx;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFXPigeon;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIO;
+import frc.robot.subsystems.drive.FastSwerve.ModuleIOKrakenFOC;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIOSim;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIOSparkBase;
-import frc.robot.subsystems.drive.FastSwerve.ModuleIOTalonFX;
 import frc.robot.subsystems.drive.Tank.TankIO;
 import frc.robot.subsystems.drive.Tank.TankIOSim;
 import frc.robot.subsystems.drive.Tank.TankIOSparkBaseNavx;
@@ -123,13 +122,13 @@ public class RobotContainer {
 					switch (DriveConstants.gyroType) {
 					case NAVX:
 						drivetrainS = new Swerve(new GyroIONavX(true),
-								new ModuleIOTalonFX(0), new ModuleIOTalonFX(1),
-								new ModuleIOTalonFX(2), new ModuleIOTalonFX(3));
+								new ModuleIOKrakenFOC(0), new ModuleIOKrakenFOC(1),
+								new ModuleIOKrakenFOC(2), new ModuleIOKrakenFOC(3));
 						break;
 					case PIGEON:
 						drivetrainS = new Swerve(new GyroIOPigeon2(true),
-								new ModuleIOTalonFX(0), new ModuleIOTalonFX(1),
-								new ModuleIOTalonFX(2), new ModuleIOTalonFX(3));
+								new ModuleIOKrakenFOC(0), new ModuleIOKrakenFOC(1),
+								new ModuleIOKrakenFOC(2), new ModuleIOKrakenFOC(3));
 						break;
 					default:
 						break;
@@ -216,8 +215,10 @@ public class RobotContainer {
 		case SIM:
 			switch (DriveConstants.driveType) {
 			case SWERVE:
-				drivetrainS = new Swerve(new GyroIO() {}, new ModuleIOSim(),
-						new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
+				drivetrainS = new Swerve(new GyroIO() {}, new ModuleIOSim(0),
+						new ModuleIOSim(1), new ModuleIOSim(2), new ModuleIOSim(3));
+				PPHolonomicDriveController
+						.setRotationTargetOverride(this::getRotationTargetOverride);
 				break;
 			case TANK:
 				drivetrainS = new Tank(new TankIOSim());
@@ -234,12 +235,16 @@ public class RobotContainer {
 			case SWERVE:
 				drivetrainS = new Swerve(new GyroIO() {}, new ModuleIO() {},
 						new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
+				PPHolonomicDriveController
+						.setRotationTargetOverride(this::getRotationTargetOverride);
 				break;
 			case TANK:
 				drivetrainS = new Tank(new TankIO() {});
 				break;
 			case MECANUM:
 				drivetrainS = new Mecanum(new MecanumIO() {});
+				PPHolonomicDriveController
+						.setRotationTargetOverride(this::getRotationTargetOverride);
 			}
 		}
 		drivetrainS.setDefaultCommand(new DrivetrainC(drivetrainS));
@@ -257,11 +262,12 @@ public class RobotContainer {
 		if (Constants.isCompetition) {
 			PPLibTelemetry.enableCompetitionMode();
 		}
-		PathfindingCommand.warmupCommand()
-		.finallyDo(() -> RobotContainer.field.getObject("target pose")
-				.setPose(new Pose2d(-50, -50, new Rotation2d())))
-		.schedule();
+		PathfindingCommand.warmupCommand().andThen(PathFinder.goToPose(new Pose2d(1.9, 7.7,new Rotation2d(Units.degreesToRadians(90))),DriveConstants.pathConstraints, drivetrainS, false,0))
+				.finallyDo(() -> RobotContainer.field.getObject("target pose")
+						.setPose(new Pose2d(-50, -50, new Rotation2d())))
+				.schedule();
 		leds.setDefaultCommand(new LEDGifC(leds, LEDConstants.imageList, 20,2).ignoringDisable(true));
+
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData(field);
 		SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -301,12 +307,11 @@ public class RobotContainer {
 				new RunTest(SysIdRoutine.Direction.kForward, false, drivetrainS));
 		xButtonTest.whileTrue(
 				new RunTest(SysIdRoutine.Direction.kReverse, false, drivetrainS));
-		//Example Aim To 2024 Amp Pose, Bind to what you need.
+		//Example Drive To 2024 Amp Pose, Bind to what you need.
 		yButtonDrive
 				.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest)
 						.negate())
-				.whileTrue(new AimToPose(drivetrainS, new Pose2d(1.9, 7.7,
-						new Rotation2d(Units.degreesToRadians(90)))));
+				.whileTrue(PathFinder.goToPose(new Pose2d(1.9, 7.7,new Rotation2d(Units.degreesToRadians(90))),DriveConstants.pathConstraints, drivetrainS, false,0));
 		//swerve DRIVE tests
 		//When user hits right bumper, go to next test, or wrap back to starting test for SysID.
 		rightBumperTest.onTrue(new InstantCommand(() -> {
