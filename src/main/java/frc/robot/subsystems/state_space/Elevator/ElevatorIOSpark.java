@@ -12,8 +12,8 @@ import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.util.Units;
 import frc.robot.utils.drive.DriveConstants.MotorVendor;
-import frc.robot.utils.selfCheck.SelfChecking;
-import frc.robot.utils.selfCheck.SelfCheckingSparkBase;
+import frc.robot.utils.selfCheck.drive.SelfChecking;
+import frc.robot.utils.selfCheck.drive.SelfCheckingSparkBase;
 import frc.robot.utils.state_space.StateSpaceConstants;
 
 public class ElevatorIOSpark implements ElevatorIO {

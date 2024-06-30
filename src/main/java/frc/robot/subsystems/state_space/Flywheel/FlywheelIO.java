@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import frc.robot.utils.selfCheck.SelfChecking;
+import frc.robot.utils.selfCheck.drive.SelfChecking;
 
 public interface FlywheelIO {
 	@AutoLog

@@ -11,8 +11,8 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.util.Units;
-import frc.robot.utils.selfCheck.SelfChecking;
-import frc.robot.utils.selfCheck.SelfCheckingTalonFX;
+import frc.robot.utils.selfCheck.drive.SelfChecking;
+import frc.robot.utils.selfCheck.drive.SelfCheckingTalonFX;
 import frc.robot.utils.state_space.StateSpaceConstants;
 
 public class ElevatorIOTalon implements ElevatorIO {

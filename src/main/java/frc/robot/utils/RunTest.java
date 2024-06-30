@@ -54,10 +54,6 @@ public class RunTest extends Command {
 				test = RobotContainer.armS.sysIdDynamic(direction);
 			}
 			break;
-		default:
-			System.err.println("NO GIVEN ROUTINE!");
-			break;
-
 		}
 		test.schedule();
 	}

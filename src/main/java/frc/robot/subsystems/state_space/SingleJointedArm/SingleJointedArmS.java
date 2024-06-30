@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.drive.DriveConstants;
-import frc.robot.utils.selfCheck.SelfChecking;
+import frc.robot.utils.selfCheck.drive.SelfChecking;
 import frc.robot.utils.state_space.StateSpaceConstants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Nat;
