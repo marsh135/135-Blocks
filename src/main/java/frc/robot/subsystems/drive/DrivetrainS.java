@@ -132,12 +132,6 @@ public interface DrivetrainS extends Subsystem {
         double timestamp = Logger.getTimestamp();
         return new Position<>(positions, timestamp);
     }
-	/**
-	 * CTRE Nonsense
-	 */
-	default void applyRequest() {
-		throw new UnsupportedOperationException("No support for requests.");
-	}
 	default double getCurrent(){
 		return 0;
 	}

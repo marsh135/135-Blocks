@@ -411,6 +411,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 				currentSetpoint.chassisSpeeds());
 		Logger.recordOutput("Drive/DriveMode", currentDriveMode);
 		collisionDetected = collisionDetected();
+		DrivetrainS.super.periodic();
 	}
 
 	@Override
