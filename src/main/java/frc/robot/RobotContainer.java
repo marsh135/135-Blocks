@@ -5,7 +5,6 @@ package frc.robot;
 
 import frc.robot.commands.auto.BranchAuto;
 import frc.robot.commands.auto.SimDefenseBot;
-import frc.robot.commands.drive.AimToPose;
 import frc.robot.commands.drive.DrivetrainC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
@@ -51,7 +50,6 @@ import java.util.Optional;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -213,6 +211,8 @@ public class RobotContainer {
 			case SWERVE:
 				drivetrainS = new Swerve(new GyroIO() {}, new ModuleIOSim(0),
 						new ModuleIOSim(1), new ModuleIOSim(2), new ModuleIOSim(3));
+				PPHolonomicDriveController
+						.setRotationTargetOverride(this::getRotationTargetOverride);
 				break;
 			case TANK:
 				drivetrainS = new Tank(new TankIOSim());
@@ -229,12 +229,16 @@ public class RobotContainer {
 			case SWERVE:
 				drivetrainS = new Swerve(new GyroIO() {}, new ModuleIO() {},
 						new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
+				PPHolonomicDriveController
+						.setRotationTargetOverride(this::getRotationTargetOverride);
 				break;
 			case TANK:
 				drivetrainS = new Tank(new TankIO() {});
 				break;
 			case MECANUM:
 				drivetrainS = new Mecanum(new MecanumIO() {});
+				PPHolonomicDriveController
+						.setRotationTargetOverride(this::getRotationTargetOverride);
 			}
 		}
 		drivetrainS.setDefaultCommand(new DrivetrainC(drivetrainS));
@@ -297,11 +301,11 @@ public class RobotContainer {
 		xButtonTest.whileTrue(
 				new RunTest(SysIdRoutine.Direction.kReverse, false, drivetrainS));
 		//Example Aim To 2024 Amp Pose, Bind to what you need.
-		yButtonDrive
+		/*yButtonDrive
 				.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest)
 						.negate())
 				.whileTrue(new AimToPose(drivetrainS, new Pose2d(1.9, 7.7,
-						new Rotation2d(Units.degreesToRadians(90)))));
+						new Rotation2d(Units.degreesToRadians(90)))));*/
 		//swerve DRIVE tests
 		//When user hits right bumper, go to next test, or wrap back to starting test for SysID.
 		rightBumperTest.onTrue(new InstantCommand(() -> {
