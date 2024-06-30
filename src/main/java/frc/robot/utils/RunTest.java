@@ -21,20 +21,18 @@ public class RunTest extends Command {
 	@Override
 	public void initialize() {
 		switch (Robot.runningTest) {
-		case swerveDrive:
-			if (isQuasiastic) {
-				test = RobotContainer.drivetrainS.sysIdQuasistaticDrive(direction);
-			} else {
-				test = RobotContainer.drivetrainS.sysIdDynamicDrive(direction);
-			}
-			break;
-		case swerveTurn:
-			if (isQuasiastic) {
-				test = RobotContainer.drivetrainS.sysIdQuasistaticTurn(direction);
-			} else {
-				test = RobotContainer.drivetrainS.sysIdDynamicTurn(direction);
-			}
-			break;
+
+			case swerveDrive:
+				if (isQuasiastic){
+					test = RobotContainer.drivetrainS.sysIdQuasistaticDrive(direction);
+				}else{
+					test = RobotContainer.drivetrainS.sysIdDynamicDrive(direction);
+				}
+				break;
+			default:
+				System.err.println("NO GIVEN ROUTINE!");
+				break;
+
 		case elevator:
 			if (isQuasiastic) {
 				test = RobotContainer.elevatorS.sysIdQuasistatic(direction);
@@ -59,6 +57,7 @@ public class RunTest extends Command {
 		default:
 			System.err.println("NO GIVEN ROUTINE!");
 			break;
+
 		}
 		test.schedule();
 	}
