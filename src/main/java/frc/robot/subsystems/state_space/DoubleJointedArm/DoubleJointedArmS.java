@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.DataHandler;
 import frc.robot.subsystems.SubsystemChecker;
-import frc.robot.utils.selfCheck.SelfChecking;
+import frc.robot.utils.selfCheck.drive.SelfChecking;
 import frc.robot.utils.state_space.StateSpaceConstants;
 
 public class DoubleJointedArmS extends SubsystemChecker {
