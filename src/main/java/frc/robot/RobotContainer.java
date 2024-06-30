@@ -50,6 +50,7 @@ import java.util.Optional;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -257,7 +258,7 @@ public class RobotContainer {
 		if (Constants.isCompetition) {
 			PPLibTelemetry.enableCompetitionMode();
 		}
-		PathfindingCommand.warmupCommand()
+		PathfindingCommand.warmupCommand().andThen(PathFinder.goToPose(new Pose2d(1.9, 7.7,new Rotation2d(Units.degreesToRadians(90))),DriveConstants.pathConstraints, drivetrainS, false,0))
 				.finallyDo(() -> RobotContainer.field.getObject("target pose")
 						.setPose(new Pose2d(-50, -50, new Rotation2d())))
 				.schedule();
@@ -301,11 +302,10 @@ public class RobotContainer {
 		xButtonTest.whileTrue(
 				new RunTest(SysIdRoutine.Direction.kReverse, false, drivetrainS));
 		//Example Aim To 2024 Amp Pose, Bind to what you need.
-		/*yButtonDrive
+		yButtonDrive
 				.and(aButtonTest.or(bButtonTest).or(xButtonTest).or(yButtonTest)
 						.negate())
-				.whileTrue(new AimToPose(drivetrainS, new Pose2d(1.9, 7.7,
-						new Rotation2d(Units.degreesToRadians(90)))));*/
+				.whileTrue(PathFinder.goToPose(new Pose2d(1.9, 7.7,new Rotation2d(Units.degreesToRadians(90))),DriveConstants.pathConstraints, drivetrainS, false,0));
 		//swerve DRIVE tests
 		//When user hits right bumper, go to next test, or wrap back to starting test for SysID.
 		rightBumperTest.onTrue(new InstantCommand(() -> {
