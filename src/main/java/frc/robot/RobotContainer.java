@@ -6,6 +6,10 @@ package frc.robot;
 import frc.robot.commands.auto.BranchAuto;
 import frc.robot.commands.auto.SimDefenseBot;
 import frc.robot.commands.drive.DrivetrainC;
+import frc.robot.commands.state_space.DoubleJointedArmC;
+import frc.robot.commands.state_space.ElevatorC;
+import frc.robot.commands.state_space.SingleJointedArmC;
+import frc.robot.commands.state_space.FlywheelC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.FastSwerve.Swerve;
@@ -27,6 +31,25 @@ import frc.robot.subsystems.drive.Tank.TankIOSparkBasePigeon;
 import frc.robot.subsystems.drive.Tank.TankIOTalonFXNavx;
 import frc.robot.subsystems.drive.Tank.TankIOTalonFXPigeon;
 import frc.robot.subsystems.drive.Tank.Tank;
+import frc.robot.subsystems.state_space.DoubleJointedArm.DoubleJointedArmIO;
+import frc.robot.subsystems.state_space.DoubleJointedArm.DoubleJointedArmIOSim;
+import frc.robot.subsystems.state_space.DoubleJointedArm.DoubleJointedArmIOTalon;
+import frc.robot.subsystems.state_space.DoubleJointedArm.DoubleJointedArmS;
+import frc.robot.subsystems.state_space.Elevator.ElevatorIO;
+import frc.robot.subsystems.state_space.Elevator.ElevatorIOSim;
+import frc.robot.subsystems.state_space.Elevator.ElevatorIOSpark;
+import frc.robot.subsystems.state_space.Elevator.ElevatorIOTalon;
+import frc.robot.subsystems.state_space.Elevator.ElevatorS;
+import frc.robot.subsystems.state_space.Flywheel.FlywheelIO;
+import frc.robot.subsystems.state_space.Flywheel.FlywheelIOSim;
+import frc.robot.subsystems.state_space.Flywheel.FlywheelIOSpark;
+import frc.robot.subsystems.state_space.Flywheel.FlywheelIOTalon;
+import frc.robot.subsystems.state_space.Flywheel.FlywheelS;
+import frc.robot.subsystems.state_space.SingleJointedArm.SingleJointedArmIO;
+import frc.robot.subsystems.state_space.SingleJointedArm.SingleJointedArmIOSim;
+import frc.robot.subsystems.state_space.SingleJointedArm.SingleJointedArmIOSpark;
+import frc.robot.subsystems.state_space.SingleJointedArm.SingleJointedArmIOTalon;
+import frc.robot.subsystems.state_space.SingleJointedArm.SingleJointedArmS;
 import frc.robot.utils.RunTest;
 import frc.robot.utils.drive.DriveConstants;
 
@@ -68,7 +91,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
+import frc.robot.utils.state_space.StateSpaceConstants;
 /**
  * THIS CODE REQUIRES WPILIB 2024 AND PATHPLANNER 2024 IT WILL NOT WORK
  * OTHERWISE
@@ -76,6 +99,10 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
+	public static FlywheelS flywheelS;
+	public static SingleJointedArmS armS;
+	public static ElevatorS elevatorS;
+	public static DoubleJointedArmS doubleJointedArmS;
 	private final SendableChooser<Command> autoChooser;
 	static PowerDistribution PDH = new PowerDistribution(
 			Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
@@ -206,6 +233,35 @@ public class RobotContainer {
 				throw new IllegalArgumentException(
 						"Unknown implementation type, please check DriveConstants.java!");
 			}
+			
+			switch (StateSpaceConstants.Flywheel.motorVendor){
+				case CTRE_MOTORS:
+				flywheelS = new FlywheelS(new FlywheelIOTalon());
+
+				break;
+				default:
+				flywheelS = new FlywheelS(new FlywheelIOSpark());
+				break;
+			}
+			switch (StateSpaceConstants.SingleJointedArm.motorVendor){
+				case CTRE_MOTORS:
+				armS = new SingleJointedArmS(new SingleJointedArmIOTalon());
+
+				break;
+				default:
+				armS = new SingleJointedArmS(new SingleJointedArmIOSpark());
+				break;
+			}
+			switch (StateSpaceConstants.Elevator.motorVendor){
+				case CTRE_MOTORS:
+				elevatorS = new ElevatorS(new ElevatorIOTalon());
+
+				break;
+				default:
+				elevatorS = new ElevatorS(new ElevatorIOSpark());
+				break;
+			}
+			doubleJointedArmS = new DoubleJointedArmS(new DoubleJointedArmIOTalon());
 			break;
 		case SIM:
 			switch (DriveConstants.driveType) {
@@ -224,6 +280,11 @@ public class RobotContainer {
 						.setRotationTargetOverride(this::getRotationTargetOverride);
 				break;
 			}
+			
+			flywheelS = new FlywheelS(new FlywheelIOSim());
+			armS = new SingleJointedArmS(new SingleJointedArmIOSim());
+			elevatorS = new ElevatorS(new ElevatorIOSim());
+			doubleJointedArmS = new DoubleJointedArmS(new DoubleJointedArmIOSim());
 			break;
 		default:
 			switch (DriveConstants.driveType) {
@@ -241,6 +302,10 @@ public class RobotContainer {
 				PPHolonomicDriveController
 						.setRotationTargetOverride(this::getRotationTargetOverride);
 			}
+			flywheelS = new FlywheelS(new FlywheelIO(){});
+			armS = new SingleJointedArmS(new SingleJointedArmIO(){});
+			elevatorS = new ElevatorS(new ElevatorIO(){});
+			doubleJointedArmS = new DoubleJointedArmS(new DoubleJointedArmIO(){});
 		}
 		drivetrainS.setDefaultCommand(new DrivetrainC(drivetrainS));
 		List<Pair<String, Command>> autoCommands = Arrays.asList(
@@ -254,7 +319,6 @@ public class RobotContainer {
 				new Pair<String, Command>("SimBot", new SimDefenseBot()));
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		NamedCommands.registerCommands(autoCommands);
-		PathfindingCommand.warmupCommand().schedule();
 		if (Constants.isCompetition) {
 			PPLibTelemetry.enableCompetitionMode();
 		}
@@ -262,6 +326,10 @@ public class RobotContainer {
 				.finallyDo(() -> RobotContainer.field.getObject("target pose")
 						.setPose(new Pose2d(-50, -50, new Rotation2d())))
 				.schedule();
+		flywheelS.setDefaultCommand(new FlywheelC(flywheelS));
+		armS.setDefaultCommand(new SingleJointedArmC(armS));
+		elevatorS.setDefaultCommand(new ElevatorC(elevatorS));
+		doubleJointedArmS.setDefaultCommand(new DoubleJointedArmC(doubleJointedArmS));
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData(field);
 		SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -346,7 +414,10 @@ public class RobotContainer {
 	 * @return Current in amps.
 	 */
 	public static double[] getCurrentDraw() {
-		return new double[] { Math.min(drivetrainS.getCurrent(), 200)
+		return new double[] { Math.min(drivetrainS.getCurrent(), 200),
+      flywheelS.getCurrent(),
+			armS.getCurrent(),
+			elevatorS.getCurrent()
 		};
 	}
 
@@ -360,7 +431,7 @@ public class RobotContainer {
 	 * @return a command with all of them in a sequence.
 	 */
 	public static Command allSystemsCheck() {
-		return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand());
+	return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand(),flywheelS.getSystemCheckCommand(),armS.getSystemCheckCommand(),elevatorS.getSystemCheckCommand(),doubleJointedArmS.getSystemCheckCommand());
 	}
 
 	public static HashMap<String, Double> combineMaps(
@@ -375,7 +446,12 @@ public class RobotContainer {
 
 	public static HashMap<String, Double> getAllTemps() {
 		// List of HashMaps
-		List<HashMap<String, Double>> maps = List.of(drivetrainS.getTemps());
+		List<HashMap<String, Double>> maps = List.of(drivetrainS.getTemps(),
+		flywheelS.getTemps(),
+		armS.getTemps(),
+		elevatorS.getTemps(),
+		doubleJointedArmS.getTemps());
+
 		// Combine all maps
 		HashMap<String, Double> combinedMap = combineMaps(maps);
 		return combinedMap;
@@ -387,19 +463,30 @@ public class RobotContainer {
 	 * @return true if ALL systems were good.
 	 */
 	public static boolean allSystemsOK() {
-		return drivetrainS
-				.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK;
-	}
-
+		return drivetrainS.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& flywheelS.getSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& elevatorS.getSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& armS.getSystemStatus() == SubsystemChecker.SystemStatus.OK
+		&& doubleJointedArmS.getSystemStatus() == SubsystemChecker.SystemStatus.OK;
+	 }
 	public static Collection<ParentDevice> getOrchestraDevices() {
+    
 		Collection<ParentDevice> devices = new ArrayList<>();
 		devices.addAll(drivetrainS.getDriveOrchestraDevices());
-		return devices;
-	}
+		devices.addAll(flywheelS.getOrchestraDevices());
+		devices.addAll(elevatorS.getOrchestraDevices());
+    	devices.addAll(armS.getOrchestraDevices());
+		devices.addAll(doubleJointedArmS.getOrchestraDevices());
 
-	public static Subsystem[] getAllSubsystems() {
-		Subsystem[] subsystems = new Subsystem[1];
+    return devices;
+	}
+	public static Subsystem[] getAllSubsystems(){
+		Subsystem[] subsystems = new Subsystem[5];
 		subsystems[0] = drivetrainS;
+    	subsystems[1] = flywheelS;
+    	subsystems[2] = elevatorS;
+    	subsystems[3] = armS;
+    	subsystems[4] = doubleJointedArmS;
 		return subsystems;
 	}
 }
