@@ -66,9 +66,11 @@ public final class Constants {
 		//Runs when the match is over (after endgame)
 		MATCHOVER
 	}
-	public static enum SysIdRoutines{
-		swerveDrive,flywheel,singleJointedArm,elevator
+
+	public static enum SysIdRoutines {
+		swerveDrive, flywheel, singleJointedArm, elevator
 	}
+
 	public static int PowerDistributionID = 1;
 
 	//put datalog constants IN THE UTIL FOR THAT FILE. 
