@@ -27,7 +27,8 @@ public final class Constants {
 		/** Replaying from a log file. */
 		REPLAY
 	}
-	static{
+
+	static {
 		currentMode = Mode.SIM;
 		//if (Robot.isReal()) currentMode = Mode.REAL;
 		//else if (Robot.isSimulation()) currentMode = Mode.SIM;
@@ -37,6 +38,7 @@ public final class Constants {
 	public static boolean isCompetition = true;
 	public static FRCMatchState currentMatchState = FRCMatchState.DISABLED;
 	public static boolean isTuningPID = true;
+
 	/**
 	 * Allows the robot to utilize switch statements to efficiently figure out
 	 * the match period it's in. The current FRCMatchState is stored in
@@ -65,9 +67,10 @@ public final class Constants {
 		MATCHOVER
 	}
 	public static enum SysIdRoutines{
-		swerveDrive,swerveTurn,flywheel,singleJointedArm,elevator
+		swerveDrive,flywheel,singleJointedArm,elevator
 	}
 	public static int PowerDistributionID = 1;
+
 	//put datalog constants IN THE UTIL FOR THAT FILE. 
 	public static Map<Integer, String> manCanIdsToNames() {
 		HashMap<Integer, String> map = new HashMap<>();
