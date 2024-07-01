@@ -15,7 +15,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.drive.FastSwerve.PhoenixOdometryThread;
 import frc.robot.subsystems.drive.FastSwerve.SparkMaxOdometryThread;
+import frc.robot.utils.selfCheck.drive.SelfCheckingPigeon2;
+import frc.robot.utils.selfCheck.SelfChecking;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 
 /** IO implementation for Pigeon2 */
@@ -55,4 +59,11 @@ public class GyroIOPigeon2 implements GyroIO {
         yawPositionQueue.stream().map(Rotation2d::fromDegrees).toArray(Rotation2d[]::new);
     yawPositionQueue.clear();
   }
+  
+	@Override
+	public List<SelfChecking> getSelfCheckingHardware() {
+		List<SelfChecking> hardware = new ArrayList<SelfChecking>();
+		hardware.add(new SelfCheckingPigeon2("IMU", pigeon));
+		return hardware;
+	}
 }
