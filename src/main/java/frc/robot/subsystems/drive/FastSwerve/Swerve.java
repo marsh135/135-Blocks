@@ -16,6 +16,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -129,6 +130,8 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	private final SwerveSetpointGenerator setpointGenerator;
 	private int debounce = 0;
 	private boolean collisionDetected;
+	boolean[] isSkidding = new boolean[] { false, false, false, false
+	};
 
 	public Swerve(GyroIO gyroIO, ModuleIO fl, ModuleIO fr, ModuleIO bl,
 			ModuleIO br) {
@@ -253,6 +256,55 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	public void addVelocityData(Twist2d robotVelocity) {
 		this.robotVelocity = robotVelocity;
 	}
+		public boolean[] calculateSkidding() {
+		SwerveModuleState[] moduleStates = getModuleStates();
+		ChassisSpeeds currentChassisSpeeds = getChassisSpeeds();
+		// Step 1: Create a measured ChassisSpeeds object with solely the rotation component
+		ChassisSpeeds rotationOnlySpeeds = new ChassisSpeeds(0.0, 0.0,
+				currentChassisSpeeds.omegaRadiansPerSecond + .05);
+		double[] xComponentList = new double[4];
+		double[] yComponentList = new double[4];
+		// Step 2: Convert it into module states with kinematics
+		SwerveModuleState[] rotationalStates = kinematics
+				.toSwerveModuleStates(rotationOnlySpeeds);
+		// Step 3: Subtract the rotational states from the module states to get the translational vectors and calculate the magnitudes.
+		// These should all be the same direction and magnitude if there is no skid. 
+		for (int i = 0; i < moduleStates.length; i++) {
+			double deltaX = moduleStates[i].speedMetersPerSecond
+					* Math.cos(moduleStates[i].angle.getRadians())
+					- rotationalStates[i].speedMetersPerSecond
+							* Math.cos(rotationalStates[i].angle.getRadians());
+			double deltaY = moduleStates[i].speedMetersPerSecond
+					* Math.sin(moduleStates[i].angle.getRadians())
+					- rotationalStates[i].speedMetersPerSecond
+							* Math.sin(rotationalStates[i].angle.getRadians());
+			xComponentList[i] = deltaX;
+			yComponentList[i] = deltaY;
+		}
+		//Step 4: Compare all of the translation vectors. If they aren't the same, skid is present.
+		Arrays.sort(xComponentList);
+		Arrays.sort(yComponentList);
+		SmartDashboard.putNumberArray("Module Skid X", xComponentList);
+		SmartDashboard.putNumberArray("Module Skid Y", yComponentList);
+		double deltaMedianX = (xComponentList[1] + xComponentList[2]) / 2;
+		double deltaMedianY = (yComponentList[1] + yComponentList[2]) / 2;
+		SmartDashboard.putNumber("Skid X Median", deltaMedianX);
+		SmartDashboard.putNumber("Skid Y Median", deltaMedianY);
+		boolean[] areModulesSkidding = new boolean[4];
+		for (int i = 0; i < 4; i++) {
+			double deltaX = xComponentList[i];
+			double deltaY = yComponentList[i];
+			if (Math.abs(deltaX - deltaMedianX) > DriveConstants.SKID_THRESHOLD
+					|| Math.abs(
+							deltaY - deltaMedianY) > DriveConstants.SKID_THRESHOLD) {
+				areModulesSkidding[i] = true;
+			} else {
+				areModulesSkidding[i] = false;
+			}
+		}
+		SmartDashboard.putBooleanArray("Module Skids", areModulesSkidding);
+		return areModulesSkidding;
+	}
 
 	/**
 	 * Reset estimated pose and odometry pose to pose <br>
@@ -277,6 +329,8 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	public Pose2d getEstimatedPose() { return estimatedPose; }
 
 	public void periodic() {
+		//Check if modules are skidding (test this)
+		isSkidding = calculateSkidding();
 		// Update & process inputs
 		odometryLock.lock();
 		// Read timestamps from odometry thread and fake sim timestamps
@@ -428,6 +482,8 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		brakeModeEnabled = enabled;
 	}
 
+	
+
 	/**
 	 * Returns the module states (turn angles and drive velocities) for all of
 	 * the modules.
@@ -484,6 +540,8 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		return orchestra;
 	}
 
+	public boolean[] isSkidding() { return isSkidding; }
+	
 	@Override
 	public double getCurrent() {
 		return modules[0].getCurrent() + modules[1].getCurrent()
