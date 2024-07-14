@@ -37,8 +37,8 @@ public class SingleJointedArmIOSim implements SingleJointedArmIO {
 			StateSpaceConstants.SingleJointedArm.armLength,
 			StateSpaceConstants.SingleJointedArm.startingPosition,
 			StateSpaceConstants.SingleJointedArm.maxPosition, false,
-			StateSpaceConstants.SingleJointedArm.startingPosition, VecBuilder
-					.fill(StateSpaceConstants.SingleJointedArm.m_KalmanEncoder));
+			StateSpaceConstants.SingleJointedArm.startingPosition,
+			VecBuilder.fill(StateSpaceConstants.SingleJointedArm.m_KalmanEncoder));
 
 	public SingleJointedArmIOSim() {}
 

@@ -57,8 +57,7 @@ public class ElevatorIOTalon implements ElevatorIO {
 		inputs.velocityMetersPerSec = Units
 				.rotationsToRadians(elevatorVelocity.getValue()
 						* StateSpaceConstants.Elevator.elevatorGearing);
-		inputs.currentAmps = new double[] {
-				elevatorCurrent.getValue()
+		inputs.currentAmps = new double[] { elevatorCurrent.getValue()
 		};
 	}
 

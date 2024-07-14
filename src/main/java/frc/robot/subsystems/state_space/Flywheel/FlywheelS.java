@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class FlywheelS extends SubsystemChecker{
+public class FlywheelS extends SubsystemChecker {
 	private final FlywheelIO io;
 	private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
 	private final SysIdRoutine sysId;
@@ -48,7 +48,9 @@ public class FlywheelS extends SubsystemChecker{
 	 */
 	public final static LinearSystem<N1, N1, N1> flywheelPlant = LinearSystemId
 			//.createFlywheelSystem(DCMotor.getNEO(1),StateSpaceConstants.Flywheel.MOI,StateSpaceConstants.Flywheel.flywheelGearing);
-			.identifyVelocitySystem(StateSpaceConstants.Flywheel.flywheelValueHolder.getKv(), StateSpaceConstants.Flywheel.flywheelValueHolder.getKa());
+			.identifyVelocitySystem(
+					StateSpaceConstants.Flywheel.flywheelValueHolder.getKv(),
+					StateSpaceConstants.Flywheel.flywheelValueHolder.getKa());
 	/**
 	 * Kalman filters are optional, and help to predict the actual state of the
 	 * system given a noisy encoder (which all encoders are!) Takes two empty
@@ -70,7 +72,8 @@ public class FlywheelS extends SubsystemChecker{
 	 * our RPM, and penalizes HEAVILY for incorrectness.
 	 */
 	private final static LinearQuadraticRegulator<N1, N1, N1> m_controller = new LinearQuadraticRegulator<>(
-			flywheelPlant, VecBuilder.fill(StateSpaceConstants.Flywheel.m_LQRQelms),
+			flywheelPlant,
+			VecBuilder.fill(StateSpaceConstants.Flywheel.m_LQRQelms),
 			VecBuilder.fill(StateSpaceConstants.Flywheel.m_LQRRVolts), .02);
 	/**
 	 * A state-space loop combines a controller, observer, feedforward, and plant
@@ -80,81 +83,83 @@ public class FlywheelS extends SubsystemChecker{
 	 */
 	private final static LinearSystemLoop<N1, N1, N1> m_loop = new LinearSystemLoop<>(
 			flywheelPlant, m_controller, m_observer, 12, .02);
-	 public FlywheelS(FlywheelIO io) {
-    this.io = io;
 
-    sysId =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                rampRate,
-                holdVoltage,
-                timeout,
-                (state) -> Logger.recordOutput("FlywheelS/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism((voltage) -> runVolts(voltage.in(Volts)), null, this));
-						
-	m_loop.setNextR(0); //go to zero
-	m_loop.reset(VecBuilder.fill(0));
-	 registerSelfCheckHardware();
-  }
-  @Override
-  public void periodic() {
-	m_loop.correct(VecBuilder.fill(inputs.velocityRadPerSec));
-	m_loop.predict(.02);
-	double volts = MathUtil.clamp(m_loop.getU(0), -12, 12);
-	io.setVoltage(volts);
-	Logger.recordOutput("FlywheelS/Volts", volts);
-	Logger.recordOutput("FlywheelS/AdjustedRPM",Units.radiansPerSecondToRotationsPerMinute(m_loop.getXHat(0)));
-	io.updateInputs(inputs);
-	Logger.processInputs("FlywheelS", inputs);
+	public FlywheelS(FlywheelIO io) {
+		this.io = io;
+		sysId = new SysIdRoutine(
+				new SysIdRoutine.Config(rampRate, holdVoltage, timeout,
+						(state) -> Logger.recordOutput("FlywheelS/SysIdState",
+								state.toString())),
+				new SysIdRoutine.Mechanism((voltage) -> runVolts(voltage.in(Volts)),
+						null, this));
+		m_loop.setNextR(0); //go to zero
+		m_loop.reset(VecBuilder.fill(0));
+		registerSelfCheckHardware();
+	}
 
-	
-  }
+	@Override
+	public void periodic() {
+		m_loop.correct(VecBuilder.fill(inputs.velocityRadPerSec));
+		m_loop.predict(.02);
+		double volts = MathUtil.clamp(m_loop.getU(0), -12, 12);
+		io.setVoltage(volts);
+		Logger.recordOutput("FlywheelS/Volts", volts);
+		Logger.recordOutput("FlywheelS/AdjustedRPM",
+				Units.radiansPerSecondToRotationsPerMinute(m_loop.getXHat(0)));
+		io.updateInputs(inputs);
+		Logger.processInputs("FlywheelS", inputs);
+	}
 
-  /** Run open loop at the specified voltage. */
-  public void runVolts(double volts) {
-    io.setVoltage(volts);
-  }
+	/** Run open loop at the specified voltage. */
+	public void runVolts(double volts) {
+		io.setVoltage(volts);
+	}
 
-  /** Run closed loop at the specified velocity. */
-  public void setRPM(double velocityRPM) {
-    var velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(velocityRPM);
-	 m_loop.setNextR(VecBuilder.fill(velocityRadPerSec));
+	/** Run closed loop at the specified velocity. */
+	public void setRPM(double velocityRPM) {
+		var velocityRadPerSec = Units
+				.rotationsPerMinuteToRadiansPerSecond(velocityRPM);
+		m_loop.setNextR(VecBuilder.fill(velocityRadPerSec));
+		// Log flywheel setpoint
+		Logger.recordOutput("FlywheelS/SetpointRPM", velocityRPM);
+	}
 
-    // Log flywheel setpoint
-    Logger.recordOutput("FlywheelS/SetpointRPM", velocityRPM);
-  }
-  /** Stops the flywheel. */
-  public void stop() {
-	 m_loop.setNextR(VecBuilder.fill(0));
-    io.stop();
-  }
+	/** Stops the flywheel. */
+	public void stop() {
+		m_loop.setNextR(VecBuilder.fill(0));
+		io.stop();
+	}
 
-  /** Returns a command to run a quasistatic test in the specified direction. */
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return sysId.quasistatic(direction);
-  }
+	/**
+	 * Returns a command to run a quasistatic test in the specified direction.
+	 */
+	public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+		return sysId.quasistatic(direction);
+	}
 
-  /** Returns a command to run a dynamic test in the specified direction. */
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return sysId.dynamic(direction);
-  }
+	/** Returns a command to run a dynamic test in the specified direction. */
+	public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+		return sysId.dynamic(direction);
+	}
 
-  /** Returns the current velocity in RPM. */
-  @AutoLogOutput
-  public double getRPM() {
-    return Units.radiansPerSecondToRotationsPerMinute(m_loop.getXHat(0));
-  }
-  public double getError(){
-	return Math.abs(inputs.velocityRadPerSec - m_loop.getNextR().get(0, 0));
-  }
-  @Override
-  public double getCurrent(){
-	return Math.abs(inputs.currentAmps[0]);
-  }
-  /** Returns the current velocity in radians per second. */
-  public double getCharacterizationVelocity() {
-    return inputs.velocityRadPerSec;
-  }
+	/** Returns the current velocity in RPM. */
+	@AutoLogOutput
+	public double getRPM() {
+		return Units.radiansPerSecondToRotationsPerMinute(m_loop.getXHat(0));
+	}
+
+	public double getError() {
+		return Math.abs(inputs.velocityRadPerSec - m_loop.getNextR().get(0, 0));
+	}
+
+	@Override
+	public double getCurrent() { return Math.abs(inputs.currentAmps[0]); }
+
+	/** Returns the current velocity in radians per second. */
+	public double getCharacterizationVelocity() {
+		return inputs.velocityRadPerSec;
+	}
+
 	private void registerSelfCheckHardware() {
 		super.registerAllHardware(io.getSelfCheckingHardware());
 	}

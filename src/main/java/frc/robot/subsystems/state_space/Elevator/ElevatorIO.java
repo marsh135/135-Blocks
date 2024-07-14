@@ -26,14 +26,10 @@ public interface ElevatorIO {
 	/** Stop in open loop. */
 	public default void stop() {}
 
-	/** Gets the current draw from the implementation type */
-																				/**
-																				 * Get a list of the
-																				 * SelfChecking
-																				 * interface for all
-																				 * hardware in that
-																				 * implementation
-																				 */
+	/**
+	 * Get a list of the SelfChecking interface for all hardware in that
+	 * implementation
+	 */
 	public default List<SelfChecking> getSelfCheckingHardware() {
 		return new ArrayList<SelfChecking>();
 	}

@@ -53,7 +53,7 @@ public class DoubleJointedArmS extends SubsystemChecker {
 		this.io = io;
 		m_updatePositionsNotifier = new Notifier(() -> {
 			DataHandler.logData(new double[] { getArmRads(), getElbowRads()
-			},"DoubleJointedEncoders");
+			}, "DoubleJointedEncoders");
 		});
 		m_updatePositionsNotifier.startPeriodic(.02);
 		registerSelfCheckHardware();
@@ -90,20 +90,29 @@ public class DoubleJointedArmS extends SubsystemChecker {
 	}
 
 	public double getArmError() { return inputs.positionArmRads - armSetRad; }
-	public void setExpectedPositions(List<Double> rads){ io.setExpectedPositions(rads.get(0), rads.get(1));}
+
+	public void setExpectedPositions(List<Double> rads) {
+		io.setExpectedPositions(rads.get(0), rads.get(1));
+	}
+
 	public double getElbowError() {
 		return inputs.positionElbowRads - elbowSetRad;
 	}
-	public void setDoubleJointedArm(double armRad, double elbowRad, double elbowInversed){
+
+	public void setDoubleJointedArm(double armRad, double elbowRad,
+			double elbowInversed) {
 		this.armSetRad = armRad;
 		this.elbowSetRad = elbowRad;
-		DataHandler.logData(new double[]{armRad,elbowRad,elbowInversed},"DoubleJointSetpoint");
+		DataHandler.logData(new double[] { armRad, elbowRad, elbowInversed
+		}, "DoubleJointSetpoint");
 	}
-	public void setDoubleJointedArm(double[] macro){
+
+	public void setDoubleJointedArm(double[] macro) {
 		this.armSetRad = macro[0];
 		this.elbowSetRad = macro[1];
-		DataHandler.logData(macro,"DoubleJointSetpoint");
+		DataHandler.logData(macro, "DoubleJointSetpoint");
 	}
+
 	public HashMap<String, Double> getTemps() {
 		HashMap<String, Double> tempMap = new HashMap<>();
 		tempMap.put("DoubleArmMotorTemp", inputs.armTemp);

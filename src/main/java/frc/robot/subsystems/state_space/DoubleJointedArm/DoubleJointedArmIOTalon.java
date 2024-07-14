@@ -67,15 +67,25 @@ public class DoubleJointedArmIOTalon implements DoubleJointedArmIO {
 				elbowAppliedVolts, elbowCurrent, elbowTemp);
 		arm.setVoltage(armVolts);
 		inputs.appliedArmVolts = armAppliedVolts.getValue();
-		inputs.positionArmRads = Units.rotationsToRadians(BaseStatusSignal.getLatencyCompensatedValue(armPosition, armVelocity) * StateSpaceConstants.DoubleJointedArm.armGearing);
-		inputs.velocityArmRadsPerSec = Units.rotationsToRadians(armVelocity.getValue() * StateSpaceConstants.DoubleJointedArm.armGearing);
+		inputs.positionArmRads = Units.rotationsToRadians(BaseStatusSignal
+				.getLatencyCompensatedValue(armPosition, armVelocity)
+				* StateSpaceConstants.DoubleJointedArm.armGearing);
+		inputs.velocityArmRadsPerSec = Units
+				.rotationsToRadians(armVelocity.getValue()
+						* StateSpaceConstants.DoubleJointedArm.armGearing);
 		inputs.armTemp = armTemp.getValue();
 		elbow.setVoltage(elbowVolts);
 		inputs.appliedElbowVolts = elbowAppliedVolts.getValue();
-		inputs.positionElbowRads = Units.rotationsToRadians(BaseStatusSignal.getLatencyCompensatedValue(elbowPosition, elbowVelocity) * StateSpaceConstants.DoubleJointedArm.elbowGearing);
-		inputs.velocityElbowRadsPerSec = Units.rotationsToRadians(elbowVelocity.getValue() * StateSpaceConstants.DoubleJointedArm.elbowGearing);
+		inputs.positionElbowRads = Units.rotationsToRadians(BaseStatusSignal
+				.getLatencyCompensatedValue(elbowPosition, elbowVelocity)
+				* StateSpaceConstants.DoubleJointedArm.elbowGearing);
+		inputs.velocityElbowRadsPerSec = Units
+				.rotationsToRadians(elbowVelocity.getValue()
+						* StateSpaceConstants.DoubleJointedArm.elbowGearing);
 		inputs.elbowTemp = elbowTemp.getValue();
-		inputs.currentAmps = new double[] {armCurrent.getValue(),elbowCurrent.getValue()};
+		inputs.currentAmps = new double[] { armCurrent.getValue(),
+				elbowCurrent.getValue()
+		};
 	}
 
 	@Override

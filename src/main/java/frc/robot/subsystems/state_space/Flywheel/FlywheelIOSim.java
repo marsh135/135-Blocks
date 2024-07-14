@@ -10,9 +10,12 @@ import frc.robot.utils.state_space.StateSpaceConstants;
 public class FlywheelIOSim implements FlywheelIO {
 	private double appliedVolts = 0.0;
 	// Yes, calling the plant in the IO is bad. I know. but I can't remake it.
-	private FlywheelSim flywheelSim = new FlywheelSim(FlywheelS.flywheelPlant,DCMotor.getNEO(1),StateSpaceConstants.Flywheel.flywheelGearing,VecBuilder.fill(.5));
-	public FlywheelIOSim(){
-	}
+	private FlywheelSim flywheelSim = new FlywheelSim(FlywheelS.flywheelPlant,
+			DCMotor.getNEO(1), StateSpaceConstants.Flywheel.flywheelGearing,
+			VecBuilder.fill(.5));
+
+	public FlywheelIOSim() {}
+
 	@Override
 	public void updateInputs(FlywheelIOInputs inputs) {
 		flywheelSim.setInputVoltage(appliedVolts);
@@ -20,15 +23,19 @@ public class FlywheelIOSim implements FlywheelIO {
 		inputs.appliedVolts = appliedVolts;
 		inputs.positionRad = 0.0; //no pos in flywheel
 		inputs.velocityRadPerSec = flywheelSim.getAngularVelocityRadPerSec();
-		inputs.currentAmps = new double[] {MathUtil.clamp(flywheelSim.getCurrentDrawAmps(),-StateSpaceConstants.Flywheel.currentLimit,StateSpaceConstants.Flywheel.currentLimit)}; //Coconut, it somehow pulls "200" amps at full.. Just NO.
+		inputs.currentAmps = new double[] {
+				MathUtil.clamp(flywheelSim.getCurrentDrawAmps(),
+						-StateSpaceConstants.Flywheel.currentLimit,
+						StateSpaceConstants.Flywheel.currentLimit)
+		}; //Coconut, it somehow pulls "200" amps at full.. Just NO.
 	}
+
 	@Override
-	public void setVoltage(double volts){
-		appliedVolts = volts;
-	}
+	public void setVoltage(double volts) { appliedVolts = volts; }
+
 	@Override
-	/**Stop the flywheel by telling it to go to 0 rpm. */
-	public void stop(){
+	/** Stop the flywheel by telling it to go to 0 rpm. */
+	public void stop() {
 		appliedVolts = 0;
 	}
 }

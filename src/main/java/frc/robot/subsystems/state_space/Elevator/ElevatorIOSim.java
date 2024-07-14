@@ -25,7 +25,7 @@ public class ElevatorIOSim implements ElevatorIO {
 	 *                            current position, velocity, and voltage outputs
 	 *                            for monitoring and control purposes.
 	 */
-	 private ElevatorSim simElevator = new ElevatorSim(ElevatorS.m_elevatorPlant,
+	private ElevatorSim simElevator = new ElevatorSim(ElevatorS.m_elevatorPlant,
 			DCMotor.getNEO(1), StateSpaceConstants.Elevator.startingPosition,
 			StateSpaceConstants.Elevator.maxPosition, false,
 			StateSpaceConstants.Elevator.startingPosition);

@@ -21,41 +21,51 @@ public class FlywheelIOSpark implements FlywheelIO {
 	private CANSparkBase flywheel;
 	private RelativeEncoder encoder;
 
-	public FlywheelIOSpark(){
-		if (StateSpaceConstants.Flywheel.motorVendor == MotorVendor.NEO_SPARK_MAX){
-			flywheel = new CANSparkMax(StateSpaceConstants.Flywheel.kMotorID, MotorType.kBrushless);
-		}else{
-			flywheel = new CANSparkFlex(StateSpaceConstants.Flywheel.kMotorID, MotorType.kBrushless);
+	public FlywheelIOSpark() {
+		if (StateSpaceConstants.Flywheel.motorVendor == MotorVendor.NEO_SPARK_MAX) {
+			flywheel = new CANSparkMax(StateSpaceConstants.Flywheel.kMotorID,
+					MotorType.kBrushless);
+		} else {
+			flywheel = new CANSparkFlex(StateSpaceConstants.Flywheel.kMotorID,
+					MotorType.kBrushless);
 		}
 		flywheel.enableVoltageCompensation(12);
-		flywheel.setIdleMode(StateSpaceConstants.Flywheel.isBrake ? IdleMode.kBrake : IdleMode.kCoast);
+		flywheel
+				.setIdleMode(StateSpaceConstants.Flywheel.isBrake ? IdleMode.kBrake
+						: IdleMode.kCoast);
 		flywheel.setCANTimeout(250);
 		flywheel.setInverted(StateSpaceConstants.Flywheel.inverted);
 		flywheel.setSmartCurrentLimit(StateSpaceConstants.Flywheel.currentLimit);
 		encoder = flywheel.getEncoder();
 		flywheel.burnFlash();
 	}
+
 	@Override
 	public void updateInputs(FlywheelIOInputs inputs) {
 		flywheel.setVoltage(appliedVolts);
 		inputs.appliedVolts = appliedVolts;
-		inputs.positionRad = Units.rotationsToRadians(encoder.getPosition() * StateSpaceConstants.Flywheel.flywheelGearing);
-		inputs.velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity() * StateSpaceConstants.Flywheel.flywheelGearing);
-		inputs.currentAmps = new double[] {flywheel.getOutputCurrent()};
+		inputs.positionRad = Units.rotationsToRadians(encoder.getPosition()
+				* StateSpaceConstants.Flywheel.flywheelGearing);
+		inputs.velocityRadPerSec = Units
+				.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity()
+						* StateSpaceConstants.Flywheel.flywheelGearing);
+		inputs.currentAmps = new double[] { flywheel.getOutputCurrent()
+		};
 		inputs.flywheelTemp = flywheel.getMotorTemperature();
 	}
+
 	@Override
-	public void setVoltage(double volts){
-		appliedVolts = volts;
-	}
+	public void setVoltage(double volts) { appliedVolts = volts; }
+
 	@Override
-	/**Stop the flywheel by telling it to go to 0 rpm. */
-	public void stop(){
+	/** Stop the flywheel by telling it to go to 0 rpm. */
+	public void stop() {
 		appliedVolts = 0;
 		flywheel.stopMotor();
 	}
+
 	@Override
-	public List<SelfChecking> getSelfCheckingHardware(){
+	public List<SelfChecking> getSelfCheckingHardware() {
 		List<SelfChecking> hardware = new ArrayList<SelfChecking>();
 		hardware.add(new SelfCheckingSparkBase("Flywheel", flywheel));
 		return hardware;

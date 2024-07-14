@@ -35,28 +35,29 @@ public class StateSpaceConstants {
 		public static MotorVendor motorVendor = MotorVendor.CTRE_MOTORS;
 		public static boolean inverted = false;
 		public static boolean isBrake = false;
-		public static int kMotorID = 20, maxRPM = 8700,currentLimit = 20;
+		public static int kMotorID = 20, maxRPM = 8700, currentLimit = 20;
 		public static MotorConstantContainer flywheelValueHolder = new MotorConstantContainer(
 				-0.089838, 0.0015425 * .88, 0.0039717 * 1, 0, 0);
-		public static double  m_KalmanModel = 3,
-				m_KalmanEncoder = 0.01, m_LQRQelms = 1, m_LQRRVolts = 12,
-				flywheelGearing = 1.5, MOI = 0.001;
+		public static double m_KalmanModel = 3, m_KalmanEncoder = 0.01,
+				m_LQRQelms = 1, m_LQRRVolts = 12, flywheelGearing = 1.5,
+				MOI = 0.001;
 	}
 
 	public class DoubleJointedArm {
 		public static boolean armInverted = false;
 		public static boolean elbowInverted = false;
-
 		public static boolean isBrake = false;
 		public static int kArmMotorID = 30, kElbowMotorID = 31;
-		public static double[] macroTopLeft = {-1.5,1,0}, macroTopRight = {1.5,1,1}; //0 = false, 1 = true for the last value 
+		public static double[] macroTopLeft = { -1.5, 1, 0
+		}, macroTopRight = { 1.5, 1, 1
+		}; //0 = false, 1 = true for the last value 
 		public static double armCurrentLimit = 60, armGearing = 70,
 				elbowCurrentLimit = 60, elbowGearing = 45,
 				armLength = Units.inchesToMeters(46.25),
 				elbowLength = Units.inchesToMeters(41.8),
-				simSizeWidth = (armLength+elbowLength)*2,simSizeLength = (armLength+elbowLength)*2,
-				physicalX = simSizeWidth/2,
-				physicalY = simSizeLength/2;
+				simSizeWidth = (armLength + elbowLength) * 2,
+				simSizeLength = (armLength + elbowLength) * 2,
+				physicalX = simSizeWidth / 2, physicalY = simSizeLength / 2;
 	}
 
 	public class SingleJointedArm {
@@ -68,8 +69,10 @@ public class StateSpaceConstants {
 				.001, .001, .001, 0, 0); //must have position set in SysId
 		public static double m_KalmanModelPosition = .015,
 				statorCurrentLimit = 150, m_KalmanModelVelocity = .17,
-				m_KalmanEncoder = 0.003, m_LQRQelmsPosition = Units.degreesToRadians(1),
-				m_LQRQelmsVelocity = Units.degreesToRadians(45.0), m_LQRRVolts = 12, armGearing = 200,
+				m_KalmanEncoder = 0.003,
+				m_LQRQelmsPosition = Units.degreesToRadians(1),
+				m_LQRQelmsVelocity = Units.degreesToRadians(45.0), m_LQRRVolts = 12,
+				armGearing = 200,
 				maxSpeed = DCMotor.getKrakenX60Foc(1).freeSpeedRadPerSec,
 				maxAcceleration = DCMotor.getKrakenX60Foc(1).freeSpeedRadPerSec / 2,
 				startingPosition = Units.degreesToRadians(-36),
@@ -80,7 +83,7 @@ public class StateSpaceConstants {
 				physicalY = Units.inchesToMeters(DriveConstants.kChassisWidth / 2),
 				simX = Units.inchesToMeters(11.5), simY = Units.inchesToMeters(0),
 				simZ = Units.inchesToMeters(4.82);
-        public static int currentLimit = 60;
+		public static int currentLimit = 60;
 	}
 
 	public class Elevator {
