@@ -270,7 +270,7 @@ public class RobotContainer {
 				.finallyDo(() -> RobotContainer.field.getObject("target pose")
 						.setPose(new Pose2d(-50, -50, new Rotation2d())))
 				.schedule();
-		leds.setDefaultCommand(new LEDGifC(leds, LEDConstants.imageList, 20,2).ignoringDisable(true));
+		leds.setDefaultCommand(new LEDGifC(leds, LEDConstants.imageList, 1500,2).ignoringDisable(true));
 
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData(field);

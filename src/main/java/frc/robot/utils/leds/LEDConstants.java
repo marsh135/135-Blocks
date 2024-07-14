@@ -7,9 +7,9 @@ import frc.robot.subsystems.leds.LEDs;
 public class LEDConstants {
 	public static int
 	//The physical port where the LED strip is plugged in 
-	ledPort = 9,
+	ledPort = 9, ledCols = 16, ledRows = 32,
 			// amount of LEDs in the light strip
-			ledBufferLength = 4096, totalGifs = 2, ledCols = 64, ledRows = 64;
+			ledBufferLength = ledCols * ledRows, totalGifs = 2;
 	//HSV Colors with values stored in arrays
 	public static int[] noteHSV = new int[] { 12, 255, 100
 	}, redHSV = new int[] { 0, 255, 100
