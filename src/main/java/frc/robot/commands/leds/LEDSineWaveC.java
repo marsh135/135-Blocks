@@ -18,7 +18,7 @@ public class LEDSineWaveC extends Command {
 	 * Sets the LEDs to one color, but changes the brightness to make a "Wave"
 	 * function
 	 */
-	public LEDSineWaveC(int[] color,LEDs ledSubsystem, int sinePeriodLocal,
+	public LEDSineWaveC(int[] color, LEDs ledSubsystem, int sinePeriodLocal,
 			int delayMs) {
 		sinePeriod = sinePeriodLocal;
 		this.color = color;

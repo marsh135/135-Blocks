@@ -126,12 +126,13 @@ public class LEDs extends SubsystemChecker {
 	 */
 	@Override
 	protected Command systemCheckCommand() {
-		return Commands.sequence(new LEDGifC(this, LEDConstants.imageList, 20, 0).withTimeout(5),
+		return Commands.sequence(
+				new LEDGifC(this, LEDConstants.imageList, 20, 0).withTimeout(5),
 				runOnce(() -> {
 					System.out.println("OVER");
 				})).until(() -> !getFaults().isEmpty());
 	}
 
 	@Override
-	public double getCurrent() { return 0;}
+	public double getCurrent() { return 0; }
 }
