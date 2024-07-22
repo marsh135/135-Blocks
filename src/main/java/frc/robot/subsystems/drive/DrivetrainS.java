@@ -151,7 +151,7 @@ public interface DrivetrainS extends Subsystem {
 	}
 
 	default double getCurrent() { return 0; }
-
+	default void setDiscreteChassisSpeeds(ChassisSpeeds speeds) {}
 	default boolean[] isSkidding() {
 		return new boolean[] { false, false, false, false
 		};

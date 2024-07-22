@@ -175,6 +175,8 @@ public class Robot extends LoggedRobot {
 	@Override
 	public void autonomousInit() {
 		Constants.currentMatchState = FRCMatchState.AUTOINIT;
+		RobotContainer.drivetrainS.zeroHeading();
+		RobotContainer.drivetrainS.zeroHeading(); //ENSURE gyro is reset.
 		m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 		// schedule the autonomous command (example)
 		if (m_autonomousCommand != null) {

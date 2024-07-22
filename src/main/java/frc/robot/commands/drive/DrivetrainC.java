@@ -37,8 +37,8 @@ public class DrivetrainC extends Command {
 	@Override
 	public void execute() {
 		// Get desired ChassisSpeeds from controller
-		double xSpeed = RobotContainer.driveController.getLeftY();
-		double ySpeed = RobotContainer.driveController.getLeftX();
+		double xSpeed = -RobotContainer.driveController.getLeftY();
+		double ySpeed = -RobotContainer.driveController.getLeftX();
 		double turningSpeed = RobotContainer.driveController.getRightX();
 		xSpeed = Math.pow(xSpeed, 2) * (xSpeed < 0 ? -1 : 1);
 		ySpeed = Math.pow(ySpeed, 2) * (ySpeed < 0 ? -1 : 1);

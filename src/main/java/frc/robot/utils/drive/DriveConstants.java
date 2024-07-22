@@ -44,9 +44,9 @@ public class DriveConstants {
 	//135-Blocks was tested on a chassis with all CANSparkMaxes, as well as all Kraken-x60s.
 	public static final double kChassisWidth = Units.inchesToMeters(24.25), // Distance between Left and Right wheels
 			kChassisLength = Units.inchesToMeters(24.25), // Distance betwwen Front and Back wheels
-			kDriveBaseRadius = Units.inchesToMeters(Math.sqrt(
+			kDriveBaseRadius = Math.sqrt(
 					kChassisLength * kChassisLength + kChassisWidth * kChassisWidth)
-					/ 2),
+					/ 2,
 			// Distance from center of robot to the farthest module
 			kMaxSpeedMetersPerSecond = Units.feetToMeters(15.1), //15.1
 			kMaxTurningSpeedRadPerSec = 3.914667 * 2 * Math.PI, // 1.33655 *2 *Math.PI
