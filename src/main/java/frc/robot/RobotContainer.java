@@ -57,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -77,8 +76,8 @@ public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
 	private final SendableChooser<Command> autoChooser;
-	static PowerDistribution PDH = new PowerDistribution(
-			Constants.PowerDistributionID, PowerDistribution.ModuleType.kRev);
+	//TODO: readd PDH
+	//static PowerDistribution PDH = Logged
 	public static XboxController driveController = new XboxController(0);
 	public static XboxController manipController = new XboxController(1);
 	public static XboxController testingController = new XboxController(5);
@@ -138,7 +137,7 @@ public class RobotContainer {
 								new ModuleIOSparkBase(2), new ModuleIOSparkBase(3));
 						break;
 					case PIGEON:
-						drivetrainS = new Swerve(new GyroIOPigeon2(false),
+						drivetrainS = new Swerve(new GyroIOPigeon2(true),
 								new ModuleIOSparkBase(0), new ModuleIOSparkBase(1),
 								new ModuleIOSparkBase(2), new ModuleIOSparkBase(3));
 					default:

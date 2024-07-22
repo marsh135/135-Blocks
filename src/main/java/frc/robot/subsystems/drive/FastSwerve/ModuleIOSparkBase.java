@@ -39,6 +39,7 @@ public class ModuleIOSparkBase implements ModuleIO {
 	private final String turnName;
 	private final boolean isTurnMotorInverted;
 	private final boolean isDriveMotorInverted;
+	private final boolean isTurnAbsInverted;
 
 	public ModuleIOSparkBase(int index) {
 		// Init motor & encoder objects
@@ -60,6 +61,7 @@ public class ModuleIOSparkBase implements ModuleIO {
 			turnAbsoluteEncoder = turnSpark.getAnalog(Mode.kAbsolute);
 			absoluteEncoderOffset = new Rotation2d(
 					DriveConstants.kFrontLeftAbsEncoderOffsetRad);
+			isTurnAbsInverted = DriveConstants.kFrontLeftAbsEncoderReversed;
 			isDriveMotorInverted = DriveConstants.kFrontLeftDriveReversed;
 			isTurnMotorInverted = DriveConstants.kFrontLeftTurningReversed;
 			break;
@@ -82,6 +84,7 @@ public class ModuleIOSparkBase implements ModuleIO {
 					DriveConstants.kFrontRightAbsEncoderOffsetRad);
 			isDriveMotorInverted = DriveConstants.kFrontRightDriveReversed;
 			isTurnMotorInverted = DriveConstants.kFrontRightTurningReversed;
+			isTurnAbsInverted = DriveConstants.kFrontRightAbsEncoderReversed;
 			break;
 		case 2:
 			if (DriveConstants.robotMotorController == MotorVendor.NEO_SPARK_MAX) {
@@ -102,6 +105,7 @@ public class ModuleIOSparkBase implements ModuleIO {
 					DriveConstants.kBackLeftAbsEncoderOffsetRad);
 			isDriveMotorInverted = DriveConstants.kBackLeftDriveReversed;
 			isTurnMotorInverted = DriveConstants.kBackLeftTurningReversed;
+			isTurnAbsInverted = DriveConstants.kBackLeftAbsEncoderReversed;
 			break;
 		case 3:
 			if (DriveConstants.robotMotorController == MotorVendor.NEO_SPARK_MAX) {
@@ -122,6 +126,7 @@ public class ModuleIOSparkBase implements ModuleIO {
 					DriveConstants.kBackRightAbsEncoderOffsetRad);
 			isDriveMotorInverted = DriveConstants.kBackRightDriveReversed;
 			isTurnMotorInverted = DriveConstants.kBackRightTurningReversed;
+			isTurnAbsInverted = DriveConstants.kBackRightAbsEncoderReversed;
 			break;
 		default:
 			throw new RuntimeException("Invalid module index");
@@ -156,10 +161,10 @@ public class ModuleIOSparkBase implements ModuleIO {
 		turnSpark.setCANTimeout(0);
 		absoluteEncoderValue = () -> Rotation2d
 				.fromRotations(turnAbsoluteEncoder.getVoltage()
-						/ RobotController.getVoltage5V())
-				.minus(absoluteEncoderOffset);
+						/ RobotController.getVoltage3V3())
+				.minus(absoluteEncoderOffset).times(isTurnAbsInverted ? -1 : 1);
 		drivePositionQueue = SparkMaxOdometryThread.getInstance()
-				.registerSignal(driveEncoder::getPosition);
+				.registerSignal(() -> driveEncoder.getPosition());
 		turnPositionQueue = SparkMaxOdometryThread.getInstance()
 				.registerSignal(() -> absoluteEncoderValue.get().getRadians());
 		// Init Controllers

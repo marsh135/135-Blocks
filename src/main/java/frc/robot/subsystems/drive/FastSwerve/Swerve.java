@@ -54,7 +54,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	private static final LoggableTunedNumber coastWaitTime = new LoggableTunedNumber(
 			"Drive/CoastWaitTimeSeconds", 0.5);
 	private static final LoggableTunedNumber coastMetersPerSecThreshold = new LoggableTunedNumber(
-			"Drive/CoastMetersPerSecThreshold", 0.05);
+			"Drive/CoastMetersPerSecThreshold", 0.25);
 
 	public enum DriveMode {
 		/** Driving with input from driver joysticks. (Default) */
@@ -173,6 +173,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 						modules[i].runCharacterization(0, voltage.in(Volts));
 					}
 				}, null, this));
+		setBrakeMode(true);
 		registerSelfCheckHardware();
 	}
 
@@ -443,6 +444,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 			// Generate feasible next setpoint
 			currentSetpoint = setpointGenerator.generateSetpoint(
 					currentModuleLimits, currentSetpoint, desiredSpeeds, .02);
+			
 			SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
 			SwerveModuleState[] optimizedSetpointTorques = new SwerveModuleState[4];
 			for (int i = 0; i < modules.length; i++) {
