@@ -140,7 +140,7 @@ public class Robot extends LoggedRobot {
 		SmartDashboard.putNumber("MatchTime", DriverStation.getMatchTime());
 		Logger.recordOutput("BatteryVoltage",
 				RobotController.getBatteryVoltage());
-		CANBus.CANBusStatus canBusStatus = CANBus.getStatus("*");
+		CANBus.CANBusStatus canBusStatus = CANBus.getStatus("rio");
 		Logger.recordOutput("CANUtil", canBusStatus.BusUtilization * 100.0);
 		//    List<LidarDetection> robots = RobotContainer.lidar.getCurrentRobotDetections();
 		//    List<Pair<Translation2d, Translation2d>> obs = new ArrayList<>();
