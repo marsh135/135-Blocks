@@ -156,8 +156,8 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		AutoBuilder.configureHolonomic(this::getPose, this::resetPose,
 				this::getChassisSpeeds, this::setChassisSpeeds,
 				new HolonomicPathFollowerConfig(
-					new PIDConstants(0.3, 1, 0.006),
-										new PIDConstants(0.5,1,0.006),
+					new PIDConstants(5, 0, 0.006),
+										new PIDConstants(5,0,0.006),
 						DriveConstants.kMaxSpeedMetersPerSecond,
 						DriveConstants.kDriveBaseRadius,
 						new ReplanningConfig(false, false),.02),
