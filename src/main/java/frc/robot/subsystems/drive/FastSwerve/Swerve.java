@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -21,9 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.Constants.FRCMatchState;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.FastSwerve.Setpoints.SwerveSetpointGenerator;
@@ -132,7 +129,6 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	private Rotation2d lastGyroAngle = new Rotation2d();
 	private Twist2d robotVelocity = new Twist2d();
 	private final SwerveSetpointGenerator setpointGenerator;
-	private int debounce = 0;
 	private boolean collisionDetected;
 	boolean[] isSkidding = new boolean[] { false, false, false, false
 	};
@@ -160,7 +156,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 										new PIDConstants(5,0,0.006),
 						DriveConstants.kMaxSpeedMetersPerSecond,
 						DriveConstants.kDriveBaseRadius,
-						new ReplanningConfig(false, false),.02),
+						new ReplanningConfig(true, true),.02),
 				() -> Robot.isRed, this);
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		PathPlannerLogging.setLogActivePathCallback((activePath) -> {
@@ -353,10 +349,6 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		Logger.processInputs("Drive/OdometryTimestamps", odometryTimestampInputs);
 		// Read inputs from gyro
 		gyroIO.updateInputs(gyroInputs);
-		/*if (debounce == 1 && isConnected()) {
-			resetPose(new Pose2d());
-			debounce = 0;
-		}*/
 		Logger.processInputs("Drive/Gyro", gyroInputs);
 		// Read inputs from modules
 		Arrays.stream(modules).forEach(Module::updateInputs);
@@ -653,13 +645,9 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 						runOnce(() -> setChassisSpeeds(new ChassisSpeeds(0, 0, 0))));
 	}
 
-	/**
-	 * UNTESTED!
-	 */
 	@Override
 	public void zeroHeading() {
 		gyroIO.reset();
-		debounce = 1;
 	}
 
 	@Override
