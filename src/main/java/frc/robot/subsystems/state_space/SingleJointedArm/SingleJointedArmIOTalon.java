@@ -25,9 +25,9 @@ public class SingleJointedArmIOTalon implements SingleJointedArmIO {
 	private final StatusSignal<Double> armAppliedVolts = arm.getMotorVoltage();
 	private final StatusSignal<Double> armCurrent = arm.getSupplyCurrent();
 	private final StatusSignal<Double> armTemp = arm.getDeviceTemp();
-	private static final Executor CurrentExecutor = Executors
+	private static final Executor currentExecutor = Executors
 			.newFixedThreadPool(1);
-			private final TalonFXConfiguration config = new TalonFXConfiguration();
+	private final TalonFXConfiguration config = new TalonFXConfiguration();
 
 	public SingleJointedArmIOTalon() {
 		arm = new TalonFX(StateSpaceConstants.SingleJointedArm.kMotorID);
@@ -63,6 +63,16 @@ public class SingleJointedArmIOTalon implements SingleJointedArmIO {
 
 	@Override
 	public void setVoltage(double volts) { appliedVolts = volts; }
+
+	@Override
+	public void setCurrentLimit(int amps) {
+		currentExecutor.execute(() -> {
+			synchronized (config) {
+				config.CurrentLimits.StatorCurrentLimit = amps;
+				arm.getConfigurator().apply(config, .25);
+			}
+		});
+	}
 
 	@Override
 	/** Stop the arm by telling it to go to its same position with 0 speed. */

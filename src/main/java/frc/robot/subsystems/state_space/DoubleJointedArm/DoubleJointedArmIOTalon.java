@@ -33,10 +33,9 @@ public class DoubleJointedArmIOTalon implements DoubleJointedArmIO {
 			.getMotorVoltage();
 	private final StatusSignal<Double> elbowCurrent = elbow.getSupplyCurrent();
 	private final StatusSignal<Double> elbowTemp = elbow.getDeviceTemp();
-	private static final Executor CurrentExecutor = Executors
+	private static final Executor currentExecutor = Executors
 			.newFixedThreadPool(2);
-			private final TalonFXConfiguration config = new TalonFXConfiguration();
-
+	private final TalonFXConfiguration config = new TalonFXConfiguration();
 
 	public DoubleJointedArmIOTalon() {
 		arm = new TalonFX(StateSpaceConstants.DoubleJointedArm.kArmMotorID);
@@ -98,6 +97,17 @@ public class DoubleJointedArmIOTalon implements DoubleJointedArmIO {
 	public void setVoltage(List<Double> volts) {
 		armVolts = volts.get(0);
 		elbowVolts = volts.get(1);
+	}
+
+	@Override
+	public void setCurrentLimit(int amps) {
+		currentExecutor.execute(() -> {
+			synchronized (config) {
+				config.CurrentLimits.StatorCurrentLimit = amps;
+				arm.getConfigurator().apply(config, .25);
+				elbow.getConfigurator().apply(config, .25);
+			}
+		});
 	}
 
 	@Override

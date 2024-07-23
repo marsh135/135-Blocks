@@ -27,9 +27,9 @@ public class ElevatorIOTalon implements ElevatorIO {
 	private final StatusSignal<Double> elevatorCurrent = elevator
 			.getSupplyCurrent();
 	private final StatusSignal<Double> elevatorTemp = elevator.getDeviceTemp();
-	private static final Executor CurrentExecutor = Executors
+	private static final Executor currentExecutor = Executors
 			.newFixedThreadPool(1);
-			private final TalonFXConfiguration config = new TalonFXConfiguration();
+	private final TalonFXConfiguration config = new TalonFXConfiguration();
 
 	public ElevatorIOTalon() {
 		elevator = new TalonFX(StateSpaceConstants.Elevator.kMotorID);
@@ -67,6 +67,16 @@ public class ElevatorIOTalon implements ElevatorIO {
 
 	@Override
 	public void setVoltage(double volts) { appliedVolts = volts; }
+
+	@Override
+	public void setCurrentLimit(int amps) {
+		currentExecutor.execute(() -> {
+			synchronized (config) {
+				config.CurrentLimits.StatorCurrentLimit = amps;
+				elevator.getConfigurator().apply(config, .25);
+			}
+		});
+	}
 
 	@Override
 	/**

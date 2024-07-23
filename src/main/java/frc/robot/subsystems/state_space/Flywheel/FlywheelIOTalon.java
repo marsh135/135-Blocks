@@ -27,9 +27,9 @@ public class FlywheelIOTalon implements FlywheelIO {
 	private final StatusSignal<Double> flywheelCurrent = flywheel
 			.getSupplyCurrent();
 	private final StatusSignal<Double> flywheelTemp = flywheel.getDeviceTemp();
-	private static final Executor CurrentExecutor = Executors
+	private static final Executor currentExecutor = Executors
 			.newFixedThreadPool(1);
-			private final TalonFXConfiguration config = new TalonFXConfiguration();
+	private final TalonFXConfiguration config = new TalonFXConfiguration();
 
 	public FlywheelIOTalon() {
 		flywheel = new TalonFX(StateSpaceConstants.Flywheel.kMotorID);
@@ -66,15 +66,17 @@ public class FlywheelIOTalon implements FlywheelIO {
 
 	@Override
 	public void setVoltage(double volts) { appliedVolts = volts; }
+
 	@Override
-	public void setCurrentLimit(int amps){
-		CurrentExecutor.execute(() -> {
+	public void setCurrentLimit(int amps) {
+		currentExecutor.execute(() -> {
 			synchronized (config) {
 				config.CurrentLimits.StatorCurrentLimit = amps;
-				flywheel.getConfigurator().apply(config,.25);
+				flywheel.getConfigurator().apply(config, .25);
 			}
 		});
 	}
+
 	@Override
 	/** Stop the flywheel by telling it to go to 0 rpm. */
 	public void stop() {
