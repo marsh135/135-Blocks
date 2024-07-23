@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 
-public class SolenoidS extends SubsystemBase {
+public class SolenoidS extends SubsystemBase { //nothing to check
 	public static Solenoid singleSolenoid;
 	public static DoubleSolenoid doubleSolenoid;
 	public static double oscillationTime = .1;
