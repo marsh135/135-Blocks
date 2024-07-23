@@ -42,8 +42,9 @@ public class ModuleIOSparkBase implements ModuleIO {
 	private final boolean isTurnMotorInverted;
 	private final boolean isDriveMotorInverted;
 	private final boolean isTurnAbsInverted;
-	private static final Executor CurrentExecutor = Executors
+	private static final Executor currentExecutor = Executors
 			.newFixedThreadPool(8);
+
 	public ModuleIOSparkBase(int index) {
 		// Init motor & encoder objects
 		switch (index) {
@@ -265,12 +266,14 @@ public class ModuleIOSparkBase implements ModuleIO {
 		driveSpark.stopMotor();
 		turnSpark.stopMotor();
 	}
+
 	@Override
-	public void setCurrentLimit(int amps){
-		CurrentExecutor.execute(() -> {
+	public void setCurrentLimit(int amps) {
+		currentExecutor.execute(() -> {
 			driveSpark.setSmartCurrentLimit(amps);
 		});
 	}
+
 	@Override
 	public List<SelfChecking> getSelfCheckingHardware() {
 		List<SelfChecking> hardware = new ArrayList<SelfChecking>();
