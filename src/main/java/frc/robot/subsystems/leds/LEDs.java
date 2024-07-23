@@ -14,10 +14,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import javax.imageio.ImageIO;
 import edu.wpi.first.wpilibj2.command.Commands;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import java.util.Collections;
+import java.util.HashMap;
 import java.nio.file.Files;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
@@ -135,4 +138,10 @@ public class LEDs extends SubsystemChecker {
 
 	@Override
 	public double getCurrent() { return 0; }
+
+	@Override
+	public HashMap<String, Double> getTemps() { return new HashMap<String, Double>(Map.of("NULL", 0.0));}
+
+	@Override
+	public void setCurrentLimit(int amps) { return; }
 }
