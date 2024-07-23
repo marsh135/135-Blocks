@@ -18,6 +18,8 @@ import frc.robot.utils.selfCheck.drive.SelfCheckingSparkBase;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 public class ModuleIOSparkBase implements ModuleIO {
@@ -40,7 +42,8 @@ public class ModuleIOSparkBase implements ModuleIO {
 	private final boolean isTurnMotorInverted;
 	private final boolean isDriveMotorInverted;
 	private final boolean isTurnAbsInverted;
-
+	private static final Executor CurrentExecutor = Executors
+			.newFixedThreadPool(8);
 	public ModuleIOSparkBase(int index) {
 		// Init motor & encoder objects
 		switch (index) {
@@ -157,8 +160,8 @@ public class ModuleIOSparkBase implements ModuleIO {
 		}
 		driveSpark.burnFlash();
 		turnSpark.burnFlash();
-		driveSpark.setCANTimeout(0);
-		turnSpark.setCANTimeout(0);
+		//driveSpark.setCANTimeout(0);
+		//turnSpark.setCANTimeout(0);
 		absoluteEncoderValue = () -> Rotation2d
 				.fromRotations(turnAbsoluteEncoder.getVoltage()
 						/ RobotController.getVoltage3V3())
@@ -262,7 +265,12 @@ public class ModuleIOSparkBase implements ModuleIO {
 		driveSpark.stopMotor();
 		turnSpark.stopMotor();
 	}
-
+	@Override
+	public void setCurrentLimit(int amps){
+		CurrentExecutor.execute(() -> {
+			driveSpark.setSmartCurrentLimit(amps);
+		});
+	}
 	@Override
 	public List<SelfChecking> getSelfCheckingHardware() {
 		List<SelfChecking> hardware = new ArrayList<SelfChecking>();

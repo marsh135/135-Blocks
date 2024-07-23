@@ -686,4 +686,9 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	public Command sysIdDynamicDrive(SysIdRoutine.Direction direction) {
 		return sysId.dynamic(direction);
 	}
+	@Override
+	public void setDriveCurrentLimit(int amps) { Arrays.stream(modules).forEach(module -> module.setCurrentLimit(amps)); }
+
+	@Override
+	public void setCurrentLimit(int amps) { setDriveCurrentLimit(amps); }
 }
