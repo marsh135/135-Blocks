@@ -23,6 +23,9 @@ public interface ElevatorIO {
 	/** Dumb control the elevator using volts, no State Space */
 	public default void setVoltage(double volts) {}
 
+	/** Update the motor controllers to a specificed max amperage */
+	public default void setCurrentLimit(int amps) {}
+
 	/** Stop in open loop. */
 	public default void stop() {}
 

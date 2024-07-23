@@ -301,6 +301,7 @@ public class SingleJointedArmS extends SubsystemChecker {
 		return orchestra;
 	}
 
+	@Override
 	public HashMap<String, Double> getTemps() {
 		HashMap<String, Double> tempMap = new HashMap<>();
 		tempMap.put("SingleArmTemp", inputs.armTemp);
@@ -333,4 +334,7 @@ public class SingleJointedArmS extends SubsystemChecker {
 					}
 				})).until(() -> !getFaults().isEmpty());
 	}
+
+	@Override
+	public void setCurrentLimit(int amps) { io.setCurrentLimit(amps); }
 }

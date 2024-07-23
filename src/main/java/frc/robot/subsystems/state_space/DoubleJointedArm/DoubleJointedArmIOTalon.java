@@ -2,6 +2,8 @@ package frc.robot.subsystems.state_space.DoubleJointedArm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -31,13 +33,17 @@ public class DoubleJointedArmIOTalon implements DoubleJointedArmIO {
 			.getMotorVoltage();
 	private final StatusSignal<Double> elbowCurrent = elbow.getSupplyCurrent();
 	private final StatusSignal<Double> elbowTemp = elbow.getDeviceTemp();
+	private static final Executor CurrentExecutor = Executors
+			.newFixedThreadPool(2);
+			private final TalonFXConfiguration config = new TalonFXConfiguration();
+
 
 	public DoubleJointedArmIOTalon() {
 		arm = new TalonFX(StateSpaceConstants.DoubleJointedArm.kArmMotorID);
 		elbow = new TalonFX(StateSpaceConstants.DoubleJointedArm.kElbowMotorID);
 		var config = new TalonFXConfiguration();
-		config.CurrentLimits.SupplyCurrentLimit = StateSpaceConstants.DoubleJointedArm.armCurrentLimit;
-		config.CurrentLimits.SupplyCurrentLimitEnable = true;
+		config.CurrentLimits.StatorCurrentLimit = StateSpaceConstants.DoubleJointedArm.armCurrentLimit;
+		config.CurrentLimits.StatorCurrentLimitEnable = true;
 		config.MotorOutput.NeutralMode = StateSpaceConstants.DoubleJointedArm.isBrake
 				? NeutralModeValue.Brake
 				: NeutralModeValue.Coast;
@@ -45,7 +51,7 @@ public class DoubleJointedArmIOTalon implements DoubleJointedArmIO {
 				? InvertedValue.CounterClockwise_Positive
 				: InvertedValue.Clockwise_Positive;
 		arm.getConfigurator().apply(config);
-		config.CurrentLimits.SupplyCurrentLimit = StateSpaceConstants.DoubleJointedArm.elbowCurrentLimit;
+		config.CurrentLimits.StatorCurrentLimit = StateSpaceConstants.DoubleJointedArm.elbowCurrentLimit;
 		config.MotorOutput.NeutralMode = StateSpaceConstants.DoubleJointedArm.isBrake
 				? NeutralModeValue.Brake
 				: NeutralModeValue.Coast;

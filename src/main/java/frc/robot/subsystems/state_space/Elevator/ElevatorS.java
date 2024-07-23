@@ -286,11 +286,15 @@ public class ElevatorS extends SubsystemChecker {
 		return orchestra;
 	}
 
+	@Override
 	public HashMap<String, Double> getTemps() {
 		HashMap<String, Double> tempMap = new HashMap<>();
 		tempMap.put("ElevatorTemp", inputs.elevatorTemp);
 		return tempMap;
 	}
+
+	@Override
+	public void setCurrentLimit(int amps) { io.setCurrentLimit(amps); }
 
 	@Override
 	public double getCurrent() { return inputs.currentAmps[0]; }

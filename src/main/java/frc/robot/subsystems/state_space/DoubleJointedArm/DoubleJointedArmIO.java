@@ -27,6 +27,9 @@ public interface DoubleJointedArmIO {
 	/** Dumb control the doubleJointedArm using volts, no State Space */
 	public default void setVoltage(List<Double> volts) {}
 
+	/** Update the motor controllers to a specificed max amperage */
+	public default void setCurrentLimit(int amps) {}
+
 	public default void setExpectedPositions(double armRads, double elbowRads) {}
 
 	/** Stop in open loop. */

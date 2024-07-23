@@ -113,12 +113,16 @@ public class DoubleJointedArmS extends SubsystemChecker {
 		DataHandler.logData(macro, "DoubleJointSetpoint");
 	}
 
+	@Override
 	public HashMap<String, Double> getTemps() {
 		HashMap<String, Double> tempMap = new HashMap<>();
 		tempMap.put("DoubleArmMotorTemp", inputs.armTemp);
 		tempMap.put("DoubleElbowMotorTemp", inputs.elbowTemp);
 		return tempMap;
 	}
+
+	@Override
+	public void setCurrentLimit(int amps) { io.setCurrentLimit(amps); }
 
 	public double getArmRads() { return inputs.positionArmRads; }
 

@@ -176,11 +176,15 @@ public class FlywheelS extends SubsystemChecker {
 		return orchestra;
 	}
 
+	@Override
 	public HashMap<String, Double> getTemps() {
 		HashMap<String, Double> tempMap = new HashMap<>();
 		tempMap.put("FlywheelTemp", inputs.flywheelTemp);
 		return tempMap;
 	}
+
+	@Override
+	public void setCurrentLimit(int amps) { io.setCurrentLimit(amps); }
 
 	@Override
 	protected Command systemCheckCommand() {

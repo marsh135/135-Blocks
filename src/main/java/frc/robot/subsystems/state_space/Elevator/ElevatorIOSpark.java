@@ -2,6 +2,8 @@ package frc.robot.subsystems.state_space.Elevator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -20,6 +22,8 @@ public class ElevatorIOSpark implements ElevatorIO {
 	private double appliedVolts = 0.0;
 	private CANSparkBase elevator;
 	private RelativeEncoder encoder;
+	private static final Executor CurrentExecutor = Executors
+			.newFixedThreadPool(1);
 
 	public ElevatorIOSpark() {
 		if (StateSpaceConstants.Elevator.motorVendor == MotorVendor.NEO_SPARK_MAX) {
@@ -56,6 +60,13 @@ public class ElevatorIOSpark implements ElevatorIO {
 
 	@Override
 	public void setVoltage(double volts) { appliedVolts = volts; }
+
+	@Override
+	public void setCurrentLimit(int amps) {
+		CurrentExecutor.execute(() -> {
+			elevator.setSmartCurrentLimit(amps);
+		});
+	}
 
 	@Override
 	/**

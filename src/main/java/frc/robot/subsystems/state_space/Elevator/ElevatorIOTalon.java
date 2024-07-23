@@ -2,6 +2,8 @@ package frc.robot.subsystems.state_space.Elevator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -25,12 +27,14 @@ public class ElevatorIOTalon implements ElevatorIO {
 	private final StatusSignal<Double> elevatorCurrent = elevator
 			.getSupplyCurrent();
 	private final StatusSignal<Double> elevatorTemp = elevator.getDeviceTemp();
+	private static final Executor CurrentExecutor = Executors
+			.newFixedThreadPool(1);
+			private final TalonFXConfiguration config = new TalonFXConfiguration();
 
 	public ElevatorIOTalon() {
 		elevator = new TalonFX(StateSpaceConstants.Elevator.kMotorID);
-		var config = new TalonFXConfiguration();
-		config.CurrentLimits.SupplyCurrentLimit = StateSpaceConstants.Elevator.currentLimit;
-		config.CurrentLimits.SupplyCurrentLimitEnable = true;
+		config.CurrentLimits.StatorCurrentLimit = StateSpaceConstants.Elevator.currentLimit;
+		config.CurrentLimits.StatorCurrentLimitEnable = true;
 		config.MotorOutput.NeutralMode = StateSpaceConstants.Elevator.isBrake
 				? NeutralModeValue.Brake
 				: NeutralModeValue.Coast;

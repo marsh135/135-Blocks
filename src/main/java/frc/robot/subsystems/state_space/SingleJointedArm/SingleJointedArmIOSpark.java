@@ -2,6 +2,8 @@ package frc.robot.subsystems.state_space.SingleJointedArm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -20,6 +22,8 @@ public class SingleJointedArmIOSpark implements SingleJointedArmIO {
 	private double appliedVolts = 0.0;
 	private CANSparkBase arm;
 	private RelativeEncoder encoder;
+	private static final Executor CurrentExecutor = Executors
+			.newFixedThreadPool(1);
 
 	public SingleJointedArmIOSpark() {
 		if (StateSpaceConstants.SingleJointedArm.motorVendor == MotorVendor.NEO_SPARK_MAX) {
@@ -57,6 +61,13 @@ public class SingleJointedArmIOSpark implements SingleJointedArmIO {
 
 	@Override
 	public void setVoltage(double volts) { arm.setVoltage(volts); }
+
+	@Override
+	public void setCurrentLimit(int amps) {
+		CurrentExecutor.execute(() -> {
+			arm.setSmartCurrentLimit(amps);
+		});
+	}
 
 	@Override
 	/** Stop the arm by telling it to go to its same position with 0 speed. */

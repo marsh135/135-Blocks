@@ -2,6 +2,8 @@ package frc.robot.subsystems.state_space.Flywheel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkFlex;
@@ -20,6 +22,8 @@ public class FlywheelIOSpark implements FlywheelIO {
 	private double appliedVolts = 0.0;
 	private CANSparkBase flywheel;
 	private RelativeEncoder encoder;
+	private static final Executor CurrentExecutor = Executors
+			.newFixedThreadPool(1);
 
 	public FlywheelIOSpark() {
 		if (StateSpaceConstants.Flywheel.motorVendor == MotorVendor.NEO_SPARK_MAX) {
@@ -56,6 +60,13 @@ public class FlywheelIOSpark implements FlywheelIO {
 
 	@Override
 	public void setVoltage(double volts) { appliedVolts = volts; }
+
+	@Override
+	public void setCurrentLimit(int amps) {
+		CurrentExecutor.execute(() -> {
+			flywheel.setSmartCurrentLimit(amps);
+		});
+	}
 
 	@Override
 	/** Stop the flywheel by telling it to go to 0 rpm. */
