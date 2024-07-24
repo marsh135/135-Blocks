@@ -101,16 +101,34 @@ public class DoubleJointedArmS extends SubsystemChecker {
 
 	public void setDoubleJointedArm(double armRad, double elbowRad,
 			double elbowInversed) {
-		this.armSetRad = armRad;
-		this.elbowSetRad = elbowRad;
+		this.armSetRad = limitArmRad(armRad);
+		this.elbowSetRad = limitElbowRad(elbowRad);
 		DataHandler.logData(new double[] { armRad, elbowRad, elbowInversed
 		}, "DoubleJointSetpoint");
 	}
 
 	public void setDoubleJointedArm(double[] macro) {
-		this.armSetRad = macro[0];
-		this.elbowSetRad = macro[1];
+		this.armSetRad = limitArmRad(macro[0]);
+		this.elbowSetRad = limitElbowRad(macro[1]);
 		DataHandler.logData(macro, "DoubleJointSetpoint");
+	}
+
+	public double limitArmRad(double armRad) {
+		if (armRad < StateSpaceConstants.DoubleJointedArm.armMinRad) {
+			return StateSpaceConstants.DoubleJointedArm.armMinRad;
+		} else if (armRad > StateSpaceConstants.DoubleJointedArm.armMaxRad) {
+			return StateSpaceConstants.DoubleJointedArm.armMaxRad;
+		}
+		return armRad;
+	}
+
+	public double limitElbowRad(double elbowRad) {
+		if (elbowRad < StateSpaceConstants.DoubleJointedArm.elbowMinRad) {
+			return StateSpaceConstants.DoubleJointedArm.elbowMinRad;
+		} else if (elbowRad > StateSpaceConstants.DoubleJointedArm.elbowMaxRad) {
+			return StateSpaceConstants.DoubleJointedArm.elbowMaxRad;
+		}
+		return elbowRad;
 	}
 
 	@Override

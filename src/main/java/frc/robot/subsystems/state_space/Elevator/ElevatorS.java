@@ -210,7 +210,7 @@ public class ElevatorS extends SubsystemChecker {
 
 	/** Run closed loop to the specified state. */
 	public void setState(TrapezoidProfile.State state) {
-		goal = state;
+		goal = limitState(state);
 		// Log arm setpoint
 		Logger.recordOutput("ElevatorS/SetStatePosition", state.position);
 		Logger.recordOutput("ElevatorS/SetStateVelocity", state.velocity);
@@ -242,6 +242,15 @@ public class ElevatorS extends SubsystemChecker {
 
 	public Command sysIdDynamic(SysIdRoutine.Direction direction) {
 		return sysId.dynamic(direction).onlyWhile(withinLimits(direction));
+	}
+
+	public TrapezoidProfile.State limitState(TrapezoidProfile.State state) {
+		if (state.position < startingState().position) {
+			return startingState();
+		} else if (state.position > maxState().position) {
+			return maxState();
+		}
+		return state;
 	}
 
 	/**

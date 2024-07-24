@@ -52,8 +52,11 @@ public class StateSpaceConstants {
 		}, macroTopRight = { 1.5, 1, 1
 		}; //0 = false, 1 = true for the last value 
 		public static double armCurrentLimit = 60, armGearing = 70,
-				elbowCurrentLimit = 60, elbowGearing = 45,
-				armLength = Units.inchesToMeters(46.25),
+				armMinRad = Double.NEGATIVE_INFINITY,
+				armMaxRad = Double.POSITIVE_INFINITY,
+				elbowMinRad = Double.NEGATIVE_INFINITY,
+				elbowMaxRad = Double.POSITIVE_INFINITY, elbowCurrentLimit = 60,
+				elbowGearing = 45, armLength = Units.inchesToMeters(46.25),
 				elbowLength = Units.inchesToMeters(41.8),
 				simSizeWidth = (armLength + elbowLength) * 2,
 				simSizeLength = (armLength + elbowLength) * 2,

@@ -225,7 +225,7 @@ public class SingleJointedArmS extends SubsystemChecker {
 
 	/** Run closed loop to the specified state. */
 	public void setState(TrapezoidProfile.State state) {
-		goal = state;
+		goal = limitState(state);
 		// Log arm setpoint
 		Logger.recordOutput("SingleJointedArmS/SetStatePosition", state.position);
 		Logger.recordOutput("SingleJointedArmS/SetStateVelocity", state.velocity);
@@ -236,6 +236,15 @@ public class SingleJointedArmS extends SubsystemChecker {
 	 */
 	public double getError() {
 		return Math.abs(inputs.positionRad - m_loop.getNextR().get(0, 0));
+	}
+
+	public TrapezoidProfile.State limitState(TrapezoidProfile.State state) {
+		if (state.position < startingState().position) {
+			return startingState();
+		} else if (state.position > maxState().position) {
+			return maxState();
+		}
+		return state;
 	}
 
 	/** Stops the arm. */
