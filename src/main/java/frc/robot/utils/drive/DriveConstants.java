@@ -13,9 +13,9 @@ import frc.robot.subsystems.drive.FastSwerve.Swerve.ModuleLimits;
 import frc.robot.utils.MotorConstantContainer;
 
 public class DriveConstants {
-	public static MotorVendor robotMotorController = MotorVendor.NEO_SPARK_MAX;
+	public static MotorVendor robotMotorController = MotorVendor.CTRE_MOTORS;
 	public static DriveTrainType driveType = DriveTrainType.SWERVE;
-	public static GyroType gyroType = GyroType.NAVX;
+	public static GyroType gyroType = GyroType.PIGEON;
 
 	/**
 	 * What motors and motorContollers are we using
@@ -55,10 +55,17 @@ public class DriveConstants {
 			// To find these set them to zero, then turn the robot on and manually set the
 			// wheels straight.
 			// The encoder values being read are then your new Offset values
-			kFrontLeftAbsEncoderOffsetRad = 0.562867,
+			//For REV
+			/*kFrontLeftAbsEncoderOffsetRad = 0.562867,
 			kFrontRightAbsEncoderOffsetRad = 0.548137,
 			kBackLeftAbsEncoderOffsetRad = 2 * Math.PI - 2.891372,
-			kBackRightAbsEncoderOffsetRad = 2 * Math.PI - 0.116861,
+			kBackRightAbsEncoderOffsetRad = 2 * Math.PI - 0.116861,*/
+			//For CTRE
+			kFrontLeftAbsEncoderOffsetRad = -1.176212,
+			kFrontRightAbsEncoderOffsetRad = 1.580000,
+			kBackLeftAbsEncoderOffsetRad = -2.86547,
+			kBackRightAbsEncoderOffsetRad = -.031415,
+
 			SKID_THRESHOLD = .5, //Meters per second
 			MAX_G = .5;
 	public static PathConstraints pathConstraints = new PathConstraints(
@@ -72,18 +79,20 @@ public class DriveConstants {
 			new Translation2d(-kChassisLength / 2, kChassisWidth / 2),
 			new Translation2d(-kChassisLength / 2, -kChassisWidth / 2)
 	};
-	public static int kFrontLeftDrivePort = 16, // 10
-			kFrontLeftTurningPort = 17, // 20
-			kFrontLeftAbsEncoderPort = 20, // 2
-			kFrontRightDrivePort = 10, // 11
-			kFrontRightTurningPort = 11, // 21
-			kFrontRightAbsEncoderPort = 21, // 0
-			kBackLeftDrivePort = 14, // 13
-			kBackLeftTurningPort = 15, // 23
-			kBackLeftAbsEncoderPort = 23, // 3
-			kBackRightDrivePort = 12, // 14
-			kBackRightTurningPort = 13, // 24
-			kBackRightAbsEncoderPort = 24, // 1
+
+	public static int 
+			kFrontLeftDrivePort = 16, 
+			kFrontLeftTurningPort = 17, 
+			kFrontLeftAbsEncoderPort = 20, 
+			kFrontRightDrivePort = 10, 
+			kFrontRightTurningPort = 11, 
+			kFrontRightAbsEncoderPort = 21, 
+			kBackLeftDrivePort = 14, 
+			kBackLeftTurningPort = 15, 
+			kBackLeftAbsEncoderPort = 23, 
+			kBackRightDrivePort = 12, 
+			kBackRightTurningPort = 13, 
+			kBackRightAbsEncoderPort = 24, 
 			kMaxDriveCurrent = 40, kMaxTurnCurrent = 30;
 	public static boolean kFrontLeftDriveReversed = true,
 			kFrontLeftTurningReversed = true, kFrontLeftAbsEncoderReversed = false,
