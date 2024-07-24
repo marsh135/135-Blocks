@@ -73,6 +73,7 @@ public class Module {
 	public void runSetpoint(SwerveModuleState setpoint,
 			SwerveModuleState torqueFF) {
 		setpointState = setpoint;
+		Logger.recordOutput("Drive/SwerveSetpoint", setpointState.speedMetersPerSecond);
 		double wheelTorqueNm = torqueFF.speedMetersPerSecond; // Using SwerveModuleState for torque for easy logging
 		io.runDriveVelocitySetpoint(
 				setpoint.speedMetersPerSecond

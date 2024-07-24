@@ -92,7 +92,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	private boolean modulesOrienting = false;
 	private final Timer lastMovementTimer = new Timer();
 	@AutoLogOutput(key = "Drive/BrakeModeEnabled")
-	private boolean brakeModeEnabled = true;
+	private boolean brakeModeEnabled = false;
 	@AutoLogOutput(key = "Drive/CoastRequest")
 	private CoastRequest coastRequest = CoastRequest.AUTOMATIC;
 	private boolean lastEnabled = false;
@@ -426,7 +426,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		case AUTOMATIC -> {
 			if (DriverStation.isEnabled()) {
 				setBrakeMode(true);
-			} else if (lastMovementTimer.hasElapsed(coastWaitTime.get())) {
+			} else {
 				setBrakeMode(false);
 			}
 		}
@@ -481,9 +481,11 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	 * set.
 	 */
 	private void setBrakeMode(boolean enabled) {
-		if (brakeModeEnabled != enabled) {
-			Arrays.stream(modules).forEach(module -> module.setBrakeMode(enabled));
+		if (brakeModeEnabled != enabled){
+			System.out.println("modul");
+						Arrays.stream(modules).forEach(module -> module.setBrakeMode(enabled));
 		}
+		
 		brakeModeEnabled = enabled;
 	}
 
@@ -522,7 +524,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	}
 
 	private void registerSelfCheckHardware() {
-		super.registerAllHardware(gyroIO.getSelfCheckingHardware());
+		//super.registerAllHardware(gyroIO.getSelfCheckingHardware());
 		super.registerAllHardware(modules[0].getSelfCheckingHardware());
 		super.registerAllHardware(modules[1].getSelfCheckingHardware());
 		super.registerAllHardware(modules[2].getSelfCheckingHardware());

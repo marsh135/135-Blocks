@@ -55,17 +55,14 @@ public class DriveConstants {
 			// To find these set them to zero, then turn the robot on and manually set the
 			// wheels straight.
 			// The encoder values being read are then your new Offset values
-			//For REV
+			//REV Offsets 
 			/*kFrontLeftAbsEncoderOffsetRad = 0.562867,
 			kFrontRightAbsEncoderOffsetRad = 0.548137,
 			kBackLeftAbsEncoderOffsetRad = 2 * Math.PI - 2.891372,
 			kBackRightAbsEncoderOffsetRad = 2 * Math.PI - 0.116861,*/
-			//For CTRE
-			kFrontLeftAbsEncoderOffsetRad = -1.176212,
-			kFrontRightAbsEncoderOffsetRad = 1.580000,
-			kBackLeftAbsEncoderOffsetRad = -2.86547,
-			kBackRightAbsEncoderOffsetRad = -.031415,
-
+			//Ctre Offsets
+			kFrontLeftAbsEncoderOffsetRad = 0, kFrontRightAbsEncoderOffsetRad = 0,
+			kBackLeftAbsEncoderOffsetRad = 0, kBackRightAbsEncoderOffsetRad = 0,
 			SKID_THRESHOLD = .5, //Meters per second
 			MAX_G = .5;
 	public static PathConstraints pathConstraints = new PathConstraints(
@@ -79,21 +76,19 @@ public class DriveConstants {
 			new Translation2d(-kChassisLength / 2, kChassisWidth / 2),
 			new Translation2d(-kChassisLength / 2, -kChassisWidth / 2)
 	};
-
-	public static int 
-			kFrontLeftDrivePort = 16, 
-			kFrontLeftTurningPort = 17, 
-			kFrontLeftAbsEncoderPort = 20, 
-			kFrontRightDrivePort = 10, 
-			kFrontRightTurningPort = 11, 
-			kFrontRightAbsEncoderPort = 21, 
-			kBackLeftDrivePort = 14, 
-			kBackLeftTurningPort = 15, 
-			kBackLeftAbsEncoderPort = 23, 
-			kBackRightDrivePort = 12, 
-			kBackRightTurningPort = 13, 
-			kBackRightAbsEncoderPort = 24, 
-			kMaxDriveCurrent = 40, kMaxTurnCurrent = 30;
+	public static int kFrontLeftDrivePort = 16, // REV 16 CTRE 16
+			kFrontLeftTurningPort = 17, // REV 16 CTRE 17
+			kFrontLeftAbsEncoderPort = 20, // REV 2 CTRE 20
+			kFrontRightDrivePort = 10, // REV 10 CTRE 10
+			kFrontRightTurningPort = 11, // REV 11 CTRE 11
+			kFrontRightAbsEncoderPort = 21, // REV 0 CTRE 21
+			kBackLeftDrivePort = 14, // REV 14 CTRE 14
+			kBackLeftTurningPort = 15, // REV 15 CTRE 15
+			kBackLeftAbsEncoderPort = 23, // REV 3 CTRE 23
+			kBackRightDrivePort = 12, // REV 12 CTRE 12
+			kBackRightTurningPort = 13, // REV 13 CTRE 13
+			kBackRightAbsEncoderPort = 24, // REV 1 CTRE 24
+			kMaxDriveCurrent = 80, kMaxTurnCurrent = 80;
 	public static boolean kFrontLeftDriveReversed = true,
 			kFrontLeftTurningReversed = true, kFrontLeftAbsEncoderReversed = false,
 			kFrontRightDriveReversed = false, kFrontRightTurningReversed = true,
@@ -122,10 +117,15 @@ public class DriveConstants {
 				kDriveEncoderRPM2MeterPerSec = kDriveEncoderRot2Meter / 60,
 				kTurningEncoderRot2Rad = kTurningMotorGearRatio * 2 * Math.PI,
 				kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad / 60,
-				kT = 1.0 / DCMotor.getNEO(1).KtNMPerAmp, kDeadband = 0.05,
-				weight = Units.lbsToKilograms(110);
-		public static final MotorConstantContainer overallTurningMotorConstantContainer = new MotorConstantContainer(
-				0.001, 0.001, 0.001, 5, 0.001), //Average the turning motors for these vals.
+				kT = 1.0 / DCMotor.getKrakenX60Foc(1).KtNMPerAmp, kDeadband = 0.05,
+				weight = Units.lbsToKilograms(40);
+		public static final MotorConstantContainer
+		//rev 
+		/*overallTurningMotorConstantContainer = new MotorConstantContainer(0.001,
+				0.001, 0.001, 5, 0.001), //Average the turning motors for these vals.*/
+				//ctre
+				overallTurningMotorConstantContainer = new MotorConstantContainer(
+						0.001, 0.001, 0.001, 50, .1), //Average the turning motors for these vals.	
 				overallDriveMotorConstantContainer = new MotorConstantContainer(.1,
 						.13, 0.001, 0.05, 0.000);
 	}
