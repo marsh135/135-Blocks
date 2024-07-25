@@ -233,6 +233,7 @@ For more details on State Space, refer to the [WPILib State Space Documentation]
 
 All blocks need two wrappers to be used in order to function:
 - `MotorConstantContainer`: A wrapper that holds characterization values (ks, kv, ka, kp, kd) of a particular motor. Throws an error if an incorrect value is input. Used for state-space models and drivetrain simulation.
+- `IO`: A wrapper that allows for efficient communication with component. Needs to be written independently for each component. Check the `utils` folders for example implementations.
 
 ## MatchState 
 
