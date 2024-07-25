@@ -92,7 +92,7 @@ public class Module {
 	 */
 	public void runCharacterization(double turnSetpointRads, double input) {
 		io.runTurnPositionSetpoint(turnSetpointRads);
-		io.runCharacterization(input);
+		io.runDriveVolts(input);
 	}
 
 	/** Sets brake mode to {@code enabled}. */

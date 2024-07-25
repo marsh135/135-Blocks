@@ -53,15 +53,15 @@ public class ModuleIOKrakenFOC implements ModuleIO {
 			.newFixedThreadPool(8);
 	// Control
 	private final VoltageOut voltageControl = new VoltageOut(0)
-			.withUpdateFreqHz(0);
+			;
 	private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0)
-			.withUpdateFreqHz(0);
+			;
 	private final VelocityTorqueCurrentFOC velocityTorqueCurrentFOC = new VelocityTorqueCurrentFOC(
-			0).withUpdateFreqHz(0);
+			0);
 	private final PositionTorqueCurrentFOC positionControl = new PositionTorqueCurrentFOC(
-			0).withUpdateFreqHz(0);
+			0);
 	private final NeutralOut neutralControl = new NeutralOut()
-			.withUpdateFreqHz(0);
+			;
 	private final boolean isTurnMotorInverted;
 	private final boolean isDriveMotorInverted;
 	/**
@@ -127,7 +127,7 @@ public class ModuleIOKrakenFOC implements ModuleIO {
 		driveTalonConfig.TorqueCurrent.PeakForwardTorqueCurrent = DriveConstants.kMaxDriveCurrent;
 		driveTalonConfig.TorqueCurrent.PeakReverseTorqueCurrent = -DriveConstants.kMaxDriveCurrent;
 		driveTalonConfig.ClosedLoopRamps.TorqueClosedLoopRampPeriod = 0.02;
-		driveTalonConfig.TorqueCurrent.TorqueNeutralDeadband = .25;
+		driveTalonConfig.TorqueCurrent.TorqueNeutralDeadband = .3;
 		driveTalonConfig.MotorOutput.Inverted = isDriveMotorInverted
 				? InvertedValue.Clockwise_Positive
 				: InvertedValue.CounterClockwise_Positive;
