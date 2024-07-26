@@ -54,7 +54,7 @@ public interface ModuleIO {
 	default void setDrivePID(double kP, double kI, double kD) {}
 
 	/** Configure turn PID */
-	default void setTurnPID(double kP, double kI, double kD) {}
+	default void setTurnPID(double kP, double kI, double kD, double kS) {}
 
 	/** Enable or disable brake mode on the drive motor. */
 	default void setDriveBrakeMode(boolean enable) {}

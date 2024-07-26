@@ -2,6 +2,7 @@ package frc.robot.subsystems.drive.FastSwerve;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -24,7 +25,10 @@ public class ModuleIOSim implements ModuleIO {
 	private final Rotation2d turnAbsoluteInitPosition;
 	private boolean driveCoast = false;
 	private SlewRateLimiter driveVoltsLimiter = new SlewRateLimiter(2.5);
-
+	private SimpleMotorFeedforward ff = new SimpleMotorFeedforward(
+			DriveConstants.TrainConstants.overallTurningMotorConstantContainer
+					.getKs(),
+			0);
 	public ModuleIOSim(int index) {
 		switch (index) {
 		case 0:
@@ -99,7 +103,7 @@ public class ModuleIOSim implements ModuleIO {
 	@Override
 	public void runTurnPositionSetpoint(double angleRads) {
 		runTurnVolts(
-				turnFeedback.calculate(turnSim.getAngularPositionRad(), angleRads));
+				turnFeedback.calculate(turnSim.getAngularPositionRad(), angleRads)+ ff.calculate(angleRads));
 	}
 
 	@Override
@@ -108,8 +112,9 @@ public class ModuleIOSim implements ModuleIO {
 	}
 
 	@Override
-	public void setTurnPID(double kP, double kI, double kD) {
+	public void setTurnPID(double kP, double kI, double kD, double kS) {
 		turnFeedback.setPID(kP, kI, kD);
+		ff = new SimpleMotorFeedforward(kS, 0);
 	}
 
 	@Override
