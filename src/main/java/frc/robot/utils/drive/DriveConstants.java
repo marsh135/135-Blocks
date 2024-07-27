@@ -10,6 +10,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.drive.FastSwerve.Swerve.ModuleLimits;
+import frc.robot.utils.LoggableTunedNumber;
 import frc.robot.utils.MotorConstantContainer;
 
 public class DriveConstants {
@@ -40,6 +41,10 @@ public class DriveConstants {
 		NAVX, PIGEON
 	}
 
+	public static final LoggableTunedNumber maxTranslationalAcceleration = new LoggableTunedNumber(
+			"Drive/MaxTranslationalAcceleration", Units.feetToMeters(30));
+	public static final LoggableTunedNumber maxRotationalAcceleration = new LoggableTunedNumber(
+			"Drive/MaxRotationalAcceleration", 2 * Math.PI * 50);
 	public static boolean fieldOriented = true;
 	//135-Blocks was tested on a chassis with all CANSparkMaxes, as well as all Kraken-x60s.
 	public static final double kChassisWidth = Units.inchesToMeters(24.25), // Distance between Left and Right wheels
@@ -50,8 +55,6 @@ public class DriveConstants {
 			// Distance from center of robot to the farthest module
 			kMaxSpeedMetersPerSecond = Units.feetToMeters(15.1), //15.1
 			kMaxTurningSpeedRadPerSec = 3.914667 * 2 * Math.PI, // 1.33655 *2 *Math.PI
-			kTeleDriveMaxAcceleration = Units.feetToMeters(50), // guess
-			kTeleTurningMaxAcceleration = 2 * Math.PI * 50, // guess
 			// To find these set them to zero, then turn the robot on and manually set the
 			// wheels straight.
 			// The encoder values being read are then your new Offset values
@@ -66,8 +69,8 @@ public class DriveConstants {
 			SKID_THRESHOLD = .5, //Meters per second
 			MAX_G = .5;
 	public static PathConstraints pathConstraints = new PathConstraints(
-			kMaxSpeedMetersPerSecond, kTeleDriveMaxAcceleration,
-			kMaxTurningSpeedRadPerSec, kTeleTurningMaxAcceleration);
+			kMaxSpeedMetersPerSecond, maxTranslationalAcceleration.get(),
+			kMaxTurningSpeedRadPerSec, maxRotationalAcceleration.get());
 	// kP = 0.1, kI = 0, kD = 0, kDistanceMultipler = .2; //for autoLock
 	// Declare the position of each module
 	public static final Translation2d[] kModuleTranslations = {
@@ -96,10 +99,9 @@ public class DriveConstants {
 			kBackLeftTurningReversed = true, kBackLeftAbsEncoderReversed = false,
 			kBackRightDriveReversed = false, kBackRightTurningReversed = true,
 			kBackRightAbsEncoderReversed = false, kGyroReversed = true;
-	public static final ModuleLimits moduleLimitsFree = new ModuleLimits(
+	public static ModuleLimits moduleLimitsFree = new ModuleLimits(
 			DriveConstants.kMaxSpeedMetersPerSecond,
-			DriveConstants.kTeleDriveMaxAcceleration,
-			Units.degreesToRadians(1080.0));
+			maxTranslationalAcceleration.get(), maxRotationalAcceleration.get());
 
 	public static class TrainConstants {
 		/**
@@ -113,20 +115,19 @@ public class DriveConstants {
 				VecBuilder.fill(0.003, 0.003, 0.0002));
 		public static double kWheelDiameter = Units.inchesToMeters(3.873),
 				kDriveMotorGearRatio = 6.75, kTurningMotorGearRatio = 150 / 7,
-				kDriveEncoderRot2Meter = kDriveMotorGearRatio * Math.PI, //Test if wheelDiameter should be here..?
-				kDriveEncoderRPM2MeterPerSec = kDriveEncoderRot2Meter / 60,
-				kTurningEncoderRot2Rad = kTurningMotorGearRatio * 2 * Math.PI,
-				kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad / 60,
 				kT = 1.0 / DCMotor.getKrakenX60Foc(1).KtNMPerAmp, kDeadband = 0.05,
 				weight = Units.lbsToKilograms(40);
-		public static final MotorConstantContainer
-		//rev 
-		/*overallTurningMotorConstantContainer = new MotorConstantContainer(0.001,
-				0.001, 0.001, 5, 0.001), //Average the turning motors for these vals.*/
-		//ctre
-		overallTurningMotorConstantContainer = new MotorConstantContainer(0.001,
-				0.001, 0.001, 50,0, .1), //Average the turning motors for these vals.	
+		public static final MotorConstantContainer pathplannerTranslationConstantContainer = new MotorConstantContainer(
+				0.001, 0.001, 0.001, 5, 2.4, 0.006),
+				pathplannerRotationConstantContainer = new MotorConstantContainer(
+						0.001, 0.001, 0.001, 5, 0, 0.006),
+				//rev 
+				overallTurningMotorConstantContainer = new MotorConstantContainer(0.001,
+						0.001, 0.001, 5, 0,0.001), //Average the turning motors for these vals.
+				//ctre
+				/*overallTurningMotorConstantContainer = new MotorConstantContainer(
+						0.001, 0.001, 0.001, 50, 0, .1), //Average the turning motors for these vals.	*/
 				overallDriveMotorConstantContainer = new MotorConstantContainer(.1,
-						.13, 0.001, 0.05,0, 0.000);
+						.13, 0.001, 0.05, 0, 0.000);
 	}
 }
