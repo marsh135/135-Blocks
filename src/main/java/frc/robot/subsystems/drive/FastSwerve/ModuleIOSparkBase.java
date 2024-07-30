@@ -172,10 +172,8 @@ public class ModuleIOSparkBase implements ModuleIO {
 				.fromRotations(turnAbsoluteEncoder.getVoltage()
 						/ RobotController.getVoltage3V3())
 				.minus(absoluteEncoderOffset).times(isTurnAbsInverted ? -1 : 1);
-		drivePositionQueue = SparkMaxOdometryThread.getInstance()
-				.registerSignal(() -> driveEncoder.getPosition());
-		turnPositionQueue = SparkMaxOdometryThread.getInstance()
-				.registerSignal(() -> absoluteEncoderValue.get().getRadians());
+		drivePositionQueue = OdometryThread.registerInput(driveEncoder::getPosition);
+		turnPositionQueue = OdometryThread.registerInput(() -> absoluteEncoderValue.get().getRadians());
 		// Init Controllers
 		driveController = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
 				.getPidController();

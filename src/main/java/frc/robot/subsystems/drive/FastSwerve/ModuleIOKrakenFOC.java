@@ -159,10 +159,8 @@ public class ModuleIOKrakenFOC implements ModuleIO {
 		turnPosition = turnTalon.getPosition();
 		BaseStatusSignal.setUpdateFrequencyForAll(250, drivePosition,
 				turnPosition);
-		drivePositionQueue = PhoenixOdometryThread.getInstance()
-				.registerSignal(driveTalon, drivePosition);
-		turnPositionQueue = PhoenixOdometryThread.getInstance()
-				.registerSignal(turnTalon, turnPosition);
+		drivePositionQueue = OdometryThread.registerSignalInput(driveTalon.getPosition());
+		turnPositionQueue = OdometryThread.registerSignalInput(turnAbsoluteEncoder.getPosition());
 		// Get signals and set update rate
 		// 100hz signals
 		driveVelocity = driveTalon.getVelocity();

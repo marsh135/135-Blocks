@@ -6,7 +6,9 @@ package frc.robot;
 import org.littletonrobotics.urcl.URCL;
 
 import com.ctre.phoenix6.CANBus;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -201,10 +203,18 @@ public class Robot extends LoggedRobot {
 	public void autonomousInit() {
 		Constants.currentMatchState = FRCMatchState.AUTOINIT;
 		RobotContainer.drivetrainS.zeroHeading();
+
 		RobotContainer.drivetrainS.zeroHeading(); //ENSURE gyro is reset.
 		m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 		// schedule the autonomous command (example)
 		if (m_autonomousCommand != null) {
+			if (Constants.currentMode == frc.robot.Constants.Mode.SIM){
+				if (RobotContainer.currentAuto != null){
+					RobotContainer.fieldSimulation.resetFieldForAuto();
+					RobotContainer.fieldSimulation.getSwerveDriveSimulation().setSimulationWorldPose(PathPlannerAuto.getStaringPoseFromAutoFile(RobotContainer.currentAuto.getName()));
+					RobotContainer.fieldSimulation.getSwerveDriveSimulation().resetOdometryToActualRobotPose();
+				}
+			}
 			m_autonomousCommand.schedule();
 		}
 	}
@@ -301,6 +311,7 @@ public class Robot extends LoggedRobot {
 	/** This function is called periodically whilst in simulation. */
 	@Override
 	public void simulationPeriodic() {
+      RobotContainer.updateSimulationWorld();
 		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(
 				RobotContainer.getCurrentDraw()));
 		SmartDashboard.putNumber("Robot Voltage",
