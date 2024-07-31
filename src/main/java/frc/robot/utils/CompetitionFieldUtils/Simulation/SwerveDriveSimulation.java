@@ -104,7 +104,6 @@ public class SwerveDriveSimulation extends HolonomicChassisSimulation {
 		final GyroIOSim.GyroPhysicsSimulationResults results = gyroIOSim.gyroPhysicsSimulationResults;
 		results.robotAngularVelocityRadPerSec = angularVelocityRadPerSec;
 		results.gForce = gForce;
-		Logger.recordOutput("GForce", gForce);
 		results.odometryYawPositions[iterationNum] = currentFacing;
 		results.hasReading = true;
 	}
