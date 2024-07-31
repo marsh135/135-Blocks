@@ -94,11 +94,7 @@ public class SwerveDriveSimulation extends HolonomicChassisSimulation {
 						profile.frictionForce),
 				getLinearVelocity().getDirection() + Math.toRadians(90)));
 		//calculate gForce
-				double linearSpeed = getLinearVelocity().getMagnitude();
-		double angularSpeed = getAngularVelocity();
-		double radius = linearSpeed / angularSpeed;
-		gForce = Math.pow(linearSpeed, 2) / radius;
-
+		gForce = Math.sqrt(Math.pow(getLinearVelocity().x, 2) + Math.pow(getLinearVelocity().y, 2)) / DriveConstants.RobotPhysicsSimulationConfigs.FLOOR_FRICTION_ACCELERATION_METERS_PER_SEC_SQ;
 		previousDesiredLinearMotionPercent.set(desiredLinearMotionPercent);
 	}
 

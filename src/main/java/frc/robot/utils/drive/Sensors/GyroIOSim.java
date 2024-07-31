@@ -14,6 +14,7 @@ public class GyroIOSim implements GyroIO {
 	public final GyroPhysicsSimulationResults gyroPhysicsSimulationResults = new GyroPhysicsSimulationResults();
 	public double previousAngularVelocityRadPerSec = gyroPhysicsSimulationResults.robotAngularVelocityRadPerSec;
 	public Rotation2d currentGyroDriftAmount = new Rotation2d();
+    private double lastGForce;
 
 	@Override
 	public void updateInputs(GyroIOInputs inputs) {
@@ -42,11 +43,14 @@ public class GyroIOSim implements GyroIO {
 		inputs.yawPosition = inputs.odometryYawPositions[inputs.odometryYawPositions.length
 				- 1];
 		inputs.yawVelocityRadPerSec = gyroPhysicsSimulationResults.robotAngularVelocityRadPerSec;
-		if (gyroPhysicsSimulationResults.gForce > DriveConstants.MAX_G) {
+		double currentGForce = gyroPhysicsSimulationResults.gForce;
+		Logger.recordOutput("diff", currentGForce - lastGForce);
+		if (Math.abs(currentGForce - lastGForce) > DriveConstants.RobotPhysicsSimulationConfigs.MAX_FAKE_G) {
 			inputs.collisionDetected = true;
 		} else {
 			inputs.collisionDetected = false;
 		}
+		lastGForce = currentGForce;
 		Logger.recordOutput("Drive/Gyro/robot true yaw (deg)",
 				gyroPhysicsSimulationResults.odometryYawPositions[gyroPhysicsSimulationResults.odometryYawPositions.length
 						- 1].getDegrees());
