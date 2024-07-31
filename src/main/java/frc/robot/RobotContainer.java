@@ -4,7 +4,6 @@
 package frc.robot;
 
 import frc.robot.commands.auto.BranchAuto;
-import frc.robot.commands.auto.SimDefenseBot;
 import frc.robot.commands.drive.DrivetrainC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
@@ -268,13 +267,12 @@ public class RobotContainer {
 		drivetrainS.setDefaultCommand(new DrivetrainC(drivetrainS));
 		List<Pair<String, Command>> autoCommands = Arrays.asList(
 				//new Pair<String, Command>("AimAtAmp",new AimToPose(drivetrainS, new Pose2d(1.9,7.7, new Rotation2d(Units.degreesToRadians(0))))),
-				new Pair<String, Command>("BranchGrabbingGamePiece",
-						new BranchAuto("Shoot",
-								new Pose2d(7.4, 5.8, new Rotation2d()), 4)),
-				//new Pair<String, Command>("BotAborter", new BotAborter(drivetrainS)), //NEEDS A WAY TO KNOW WHEN TO ABORT FOR THE EXAMPLE AUTO!!!
-				//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
-				//new Pair<String, Command>("PlayMiiSong", new OrchestraC("mii")),
-				new Pair<String, Command>("SimBot", new SimDefenseBot()));
+				new Pair<String, Command>("BranchGrabbingGamePiece", new BranchAuto(
+						"Shoot", new Pose2d(7.4, 5.8, new Rotation2d()), 4))
+		//new Pair<String, Command>("BotAborter", new BotAborter(drivetrainS)), //NEEDS A WAY TO KNOW WHEN TO ABORT FOR THE EXAMPLE AUTO!!!
+		//new Pair<String, Command>("DriveToAmp",new DriveToPose(drivetrainS, false,new Pose2d(1.9,7.7,new Rotation2d(Units.degreesToRadians(90))))),
+		//new Pair<String, Command>("PlayMiiSong", new OrchestraC("mii")),
+		);
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		NamedCommands.registerCommands(autoCommands);
 		PathfindingCommand.warmupCommand().schedule();
@@ -337,8 +335,7 @@ public class RobotContainer {
 						new Pose2d(1.9, 7.7,
 								new Rotation2d(Units.degreesToRadians(90))),
 						() -> DriveConstants.pathConstraints, drivetrainS, false, 0));
-		
-						testOpponentRobot.getAutoCyleCommand().schedule();
+		testOpponentRobot.getAutoCyleCommand().schedule();
 		//swerve DRIVE tests
 		bButtonDrive.whileTrue(testOpponentRobot.getAutoCyleCommand());
 		//When user hits right bumper, go to next test, or wrap back to starting test for SysID.
