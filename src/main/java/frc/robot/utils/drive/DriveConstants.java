@@ -70,7 +70,7 @@ public class DriveConstants {
 			kFrontLeftAbsEncoderOffsetRad = 0, kFrontRightAbsEncoderOffsetRad = 0,
 			kBackLeftAbsEncoderOffsetRad = 0, kBackRightAbsEncoderOffsetRad = 0,
 			SKID_THRESHOLD = .5, //Meters per second
-			MAX_G = .5;
+			MAX_G = 0.5;
 	public static PathConstraints pathConstraints = new PathConstraints(
 			kMaxSpeedMetersPerSecond, maxTranslationalAcceleration.get(),
 			kMaxTurningSpeedRadPerSec, maxRotationalAcceleration.get());
