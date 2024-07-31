@@ -245,7 +245,8 @@ public class RobotContainer {
 			}
 			
 			switch (StateSpaceConstants.Flywheel.motorVendor){
-				case CTRE_MOTORS:
+				case CTRE_ON_RIO:
+				case CTRE_ON_CANIVORE:
 				flywheelS = new FlywheelS(new FlywheelIOTalon());
 
 				break;
@@ -254,7 +255,8 @@ public class RobotContainer {
 				break;
 			}
 			switch (StateSpaceConstants.SingleJointedArm.motorVendor){
-				case CTRE_MOTORS:
+				case CTRE_ON_RIO:
+				case CTRE_ON_CANIVORE:
 				armS = new SingleJointedArmS(new SingleJointedArmIOTalon());
 
 				break;
@@ -263,7 +265,8 @@ public class RobotContainer {
 				break;
 			}
 			switch (StateSpaceConstants.Elevator.motorVendor){
-				case CTRE_MOTORS:
+				case CTRE_ON_RIO:
+				case CTRE_ON_CANIVORE:
 				elevatorS = new ElevatorS(new ElevatorIOTalon());
 
 				break;
