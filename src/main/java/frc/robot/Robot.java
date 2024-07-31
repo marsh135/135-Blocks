@@ -8,7 +8,6 @@ import org.littletonrobotics.urcl.URCL;
 import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -22,7 +21,6 @@ import frc.robot.Constants.FRCMatchState;
 import frc.robot.Constants.SysIdRoutines;
 import frc.robot.subsystems.drive.FastSwerve.Swerve.ModuleLimits;
 import frc.robot.utils.LoggableTunedNumber;
-import frc.robot.utils.SimGamePiece;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.PathFinder;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -51,7 +49,7 @@ public class Robot extends LoggedRobot {
 	private Command m_autonomousCommand;
 	private RobotContainer m_robotContainer;
 	public static boolean isRed;
-	private boolean hasBeenEnabled, isPracticeDSMode = false;
+	private boolean isPracticeDSMode = false;
 	private double lastMatchTime = 0;
 	public static SysIdRoutines runningTest = Constants.SysIdRoutines
 			.values()[0];
@@ -316,15 +314,6 @@ public class Robot extends LoggedRobot {
 				RobotContainer.getCurrentDraw()));
 		SmartDashboard.putNumber("Robot Voltage",
 				RobotController.getBatteryVoltage());
-		SimGamePiece.updateStates(); //update position of gamePieces
-		if (Constants.currentMatchState == Constants.FRCMatchState.AUTO
-				&& !hasBeenEnabled) {
-			SimGamePiece.resetPieces();
-			hasBeenEnabled = true;
-		} else if (Constants.currentMatchState == Constants.FRCMatchState.DISABLED) {
-			hasBeenEnabled = false;
-		}
-		//DataHandler.updateHandlerState();
 	}
 
 	public static void addPeriodic(Runnable callback, double period) {

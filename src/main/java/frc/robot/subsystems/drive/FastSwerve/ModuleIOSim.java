@@ -2,7 +2,6 @@ package frc.robot.subsystems.drive.FastSwerve;
 
 import java.util.Arrays;
 
-import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -31,7 +30,6 @@ public class ModuleIOSim implements ModuleIO {
 	private double turnAppliedVolts = 0.0;
 	private final Rotation2d turnAbsoluteInitPosition;
 	private boolean driveCoast = false;
-	private int index = 0;
 	private SlewRateLimiter driveVoltsLimiter = new SlewRateLimiter(2.5);
 	private SimpleMotorFeedforward ff = new SimpleMotorFeedforward(
 			DriveConstants.TrainConstants.overallTurningMotorConstantContainer
@@ -39,7 +37,6 @@ public class ModuleIOSim implements ModuleIO {
 			0);
 
 	public ModuleIOSim(int index) {
-		this.index = index;
 		switch (index) {
 		case 0:
 			turnAbsoluteInitPosition = new Rotation2d(0);
@@ -67,10 +64,9 @@ public class ModuleIOSim implements ModuleIO {
 		} else {
 			driveVoltsLimiter.reset(driveAppliedVolts);
 		}
+		inputs.negateFF = physicsSimulationResults.negateFF;
 		inputs.drivePositionRads = physicsSimulationResults.driveWheelFinalRevolutions
 				* 2 * Math.PI * 4;
-		Logger.recordOutput("DriveWheelFinalVelocity" + index,
-				physicsSimulationResults.driveWheelFinalVelocityRevolutionsPerSec);
 		inputs.driveVelocityRadsPerSec = physicsSimulationResults.driveWheelFinalVelocityRevolutionsPerSec
 				* 2 * Math.PI * 4;
 		inputs.driveAppliedVolts = driveAppliedVolts;
@@ -161,6 +157,7 @@ public class ModuleIOSim implements ModuleIO {
 	public static class SwerveModulePhysicsSimulationResults {
 		public double driveWheelFinalRevolutions = 0,
 				driveWheelFinalVelocityRevolutionsPerSec = 0;
+		public boolean negateFF = false;
 		public final double[] odometryDriveWheelRevolutions = new double[SIM_ITERATIONS_PER_ROBOT_PERIOD];
 		public final Rotation2d[] odometrySteerPositions = new Rotation2d[SIM_ITERATIONS_PER_ROBOT_PERIOD];
 

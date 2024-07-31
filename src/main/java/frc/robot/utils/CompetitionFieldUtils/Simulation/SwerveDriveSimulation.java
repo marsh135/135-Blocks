@@ -73,7 +73,7 @@ public class SwerveDriveSimulation extends HolonomicChassisSimulation {
 		for (int moduleIndex = 0; moduleIndex < modules.length; moduleIndex++)
 			updateModuleSimulationResults(modules[moduleIndex],
 					actualModuleFloorSpeeds[moduleIndex], profile.robotMaxVelocity,
-					iterationNum, subPeriodSeconds);
+					iterationNum, subPeriodSeconds,instantVelocityRobotRelative);
 	}
 
 	private final Vector2 previousDesiredLinearMotionPercent = new Vector2();
@@ -107,7 +107,7 @@ public class SwerveDriveSimulation extends HolonomicChassisSimulation {
 
 	private static void updateModuleSimulationResults(ModuleIOSim module,
 			SwerveModuleState actualModuleFloorSpeed, double robotMaxVelocity,
-			int simulationIteration, double periodSeconds) {
+			int simulationIteration, double periodSeconds, ChassisSpeeds instantSpeed) {
 		final SwerveModuleState moduleFreeSwerveSpeed = module
 				.getFreeSwerveSpeed(robotMaxVelocity);
 		final ModuleIOSim.SwerveModulePhysicsSimulationResults results = module.physicsSimulationResults;
@@ -117,6 +117,11 @@ public class SwerveDriveSimulation extends HolonomicChassisSimulation {
 				projectedModuleFloorSpeedMetersPerSecond,
 				moduleFreeSwerveSpeed.speedMetersPerSecond);
 		results.odometrySteerPositions[simulationIteration] = moduleFreeSwerveSpeed.angle;
+		if ((Math.sqrt(Math.pow(instantSpeed.vxMetersPerSecond,2) +Math.pow(instantSpeed.vyMetersPerSecond,2)) > 0.1) || (Math.sqrt(Math.pow(instantSpeed.omegaRadiansPerSecond,2)) > 0.05)) {
+			results.negateFF = false;
+		}else{
+			results.negateFF = true;
+		}
 		results.driveWheelFinalRevolutions += results.driveWheelFinalVelocityRevolutionsPerSec
 				* periodSeconds;
 		results.odometryDriveWheelRevolutions[simulationIteration] = results.driveWheelFinalRevolutions;

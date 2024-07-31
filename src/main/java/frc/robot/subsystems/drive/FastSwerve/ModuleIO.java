@@ -14,6 +14,7 @@ public interface ModuleIO {
 		public boolean driveMotorConnected = true;
 		public boolean turnMotorConnected = true;
 		public boolean hasCurrentControl = false;
+		public boolean negateFF = false;
 		public double drivePositionRads = 0.0;
 		public double driveVelocityRadsPerSec = 0.0;
 		public double driveAppliedVolts = 0.0;

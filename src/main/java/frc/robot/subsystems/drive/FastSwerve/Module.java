@@ -91,7 +91,7 @@ public class Module {
 		double wheelTorqueNm = torqueFF.speedMetersPerSecond; // Using SwerveModuleState for torque for easy logging
 		io.runDriveVelocitySetpoint(
 				setpoint.speedMetersPerSecond
-						/ (DriveConstants.TrainConstants.kWheelDiameter / 2),
+						/ (DriveConstants.TrainConstants.kWheelDiameter / 2),(inputs.negateFF ? 0 : 1)*
 				ff.calculate(setpoint.speedMetersPerSecond
 						/ (DriveConstants.TrainConstants.kWheelDiameter / 2))
 						+ ((wheelTorqueNm
