@@ -89,6 +89,7 @@ public class RobotContainer {
 	public static double angularSpeed = 0;
 	static JoystickButton xButtonDrive = new JoystickButton(driveController, 3),
 			yButtonDrive = new JoystickButton(driveController, 4), //used for Aim/Drive to pose
+			bButtonDrive = new JoystickButton(driveController, 2),
 			aButtonTest = new JoystickButton(testingController, 1),
 			bButtonTest = new JoystickButton(testingController, 2),
 			xButtonTest = new JoystickButton(testingController, 3),
@@ -103,7 +104,7 @@ public class RobotContainer {
 	// Simulation
 	public static Crescendo2024FieldSimulation fieldSimulation = null;
 	private OpponentRobotSimulation testOpponentRobot = new OpponentRobotSimulation(
-			2);
+			0);
 	public static Command currentAuto;
 
 	// POVButton manipPOVZero = new POVButton(manipController, 0);
@@ -336,7 +337,10 @@ public class RobotContainer {
 						new Pose2d(1.9, 7.7,
 								new Rotation2d(Units.degreesToRadians(90))),
 						() -> DriveConstants.pathConstraints, drivetrainS, false, 0));
+		
+						testOpponentRobot.getAutoCyleCommand().schedule();
 		//swerve DRIVE tests
+		bButtonDrive.whileTrue(testOpponentRobot.getAutoCyleCommand());
 		//When user hits right bumper, go to next test, or wrap back to starting test for SysID.
 		rightBumperTest.onTrue(new InstantCommand(() -> {
 			if (currentTest == Constants.SysIdRoutines.values().length - 1) {
