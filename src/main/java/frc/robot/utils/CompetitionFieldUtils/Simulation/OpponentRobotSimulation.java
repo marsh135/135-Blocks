@@ -87,9 +87,7 @@ public class OpponentRobotSimulation extends HolonomicChassisSimulation
 	public Command getAutoCyleCommand() {
 		final PathPlannerPath cyclePathRaw = PathPlannerPath
 				.fromPathFile("opponent cycle path " + id),
-				cyclePath = Robot.isRed
-						? cyclePathRaw.flipPath()
-						: cyclePathRaw,
+				cyclePath = Robot.isRed ? cyclePathRaw.flipPath() : cyclePathRaw,
 				cyclePathReversed = FollowPathOpponent.reversePath(cyclePath,
 						new GoalEndState(0, cyclePath
 								.getPreviewStartingHolonomicPose().getRotation()));
@@ -98,55 +96,77 @@ public class OpponentRobotSimulation extends HolonomicChassisSimulation
 				.runOnce(() -> setSimulationWorldPose(
 						cyclePathReversed.getPreviewStartingHolonomicPose())),
 				cycleForward = new FollowPathOpponent(cyclePath, () -> false, this),
-				cycleBackWards = new FollowPathOpponent(cyclePathReversed, () -> false,
-						this);
+				cycleBackWards = new FollowPathOpponent(cyclePathReversed,
+						() -> false, this);
 		return new SequentialCommandGroup(teleportToStartingPose,
 				new SequentialCommandGroup(cycleBackWards, cycleForward)
-						.repeatedly()).finallyDo(() -> setChassisSpeeds(
-								new ChassisSpeeds()));
+						.repeatedly())
+								.finallyDo(() -> setChassisSpeeds(new ChassisSpeeds()));
 	}
 
 	@Override
 	public ChassisSpeeds getChassisSpeeds() {
-	throw new UnsupportedOperationException("Unimplemented method 'getChassisSpeeds'"); }
+		throw new UnsupportedOperationException(
+				"Unimplemented method 'getChassisSpeeds'");
+	}
 
 	@Override
 	public void stopModules() {
-	throw new UnsupportedOperationException("Unimplemented method 'stopModules'"); }
+		throw new UnsupportedOperationException(
+				"Unimplemented method 'stopModules'");
+	}
 
 	@Override
-	public Rotation2d getRotation2d() { 
-	throw new UnsupportedOperationException("Unimplemented method 'getRotation2d'"); }
+	public Rotation2d getRotation2d() {
+		throw new UnsupportedOperationException(
+				"Unimplemented method 'getRotation2d'");
+	}
 
 	@Override
-	public Twist2d getFieldVelocity() { 
-	throw new UnsupportedOperationException("Unimplemented method 'getFieldVelocity'"); }
+	public Twist2d getFieldVelocity() {
+		throw new UnsupportedOperationException(
+				"Unimplemented method 'getFieldVelocity'");
+	}
 
 	@Override
-	public Command sysIdDynamicDrive(Direction kforward) { 
-	throw new UnsupportedOperationException("Unimplemented method 'sysIdDynamicDrive'"); }
+	public Command sysIdDynamicDrive(Direction kforward) {
+		throw new UnsupportedOperationException(
+				"Unimplemented method 'sysIdDynamicDrive'");
+	}
 
 	@Override
-	public Command sysIdQuasistaticDrive(Direction kreverse) { 
-	throw new UnsupportedOperationException("Unimplemented method 'sysIdQuasistaticDrive'"); }
+	public Command sysIdQuasistaticDrive(Direction kreverse) {
+		throw new UnsupportedOperationException(
+				"Unimplemented method 'sysIdQuasistaticDrive'");
+	}
 
 	@Override
 	public void zeroHeading() {
-	throw new UnsupportedOperationException("Unimplemented method 'zeroHeading'"); }
+		throw new UnsupportedOperationException(
+				"Unimplemented method 'zeroHeading'");
+	}
 
 	@Override
 	public boolean isConnected() {
-	throw new UnsupportedOperationException("Unimplemented method 'isConnected'"); }
+		throw new UnsupportedOperationException(
+				"Unimplemented method 'isConnected'");
+	}
 
 	@Override
 	public boolean isCollisionDetected() {
-	throw new UnsupportedOperationException("Unimplemented method 'isCollisionDetected'"); }
+		throw new UnsupportedOperationException(
+				"Unimplemented method 'isCollisionDetected'");
+	}
 
 	@Override
-	public void setDriveCurrentLimit(int amps) { 
-	throw new UnsupportedOperationException("Unimplemented method 'setDriveCurrentLimit'"); }
+	public void setDriveCurrentLimit(int amps) {
+		throw new UnsupportedOperationException(
+				"Unimplemented method 'setDriveCurrentLimit'");
+	}
 
 	@Override
-	public HashMap<String, Double> getTemps() { 
-	throw new UnsupportedOperationException("Unimplemented method 'getTemps'"); }
+	public HashMap<String, Double> getTemps() {
+		throw new UnsupportedOperationException(
+				"Unimplemented method 'getTemps'");
+	}
 }

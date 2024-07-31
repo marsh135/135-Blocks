@@ -230,7 +230,7 @@ public class RobotContainer {
 						new SwerveDriveSimulation(DriveConstants.mainRobotProfile,
 								gyroIOSim, frontLeft, frontRight, backLeft, backRight,
 								drivetrainS.getKinematics(),
-								new Pose2d(3, 3, new Rotation2d()),
+								new Pose2d(-5, -5, new Rotation2d()),
 								drivetrainS::resetPose));
 				fieldSimulation.placeGamePiecesOnField();
 				fieldSimulation.addRobot(testOpponentRobot);

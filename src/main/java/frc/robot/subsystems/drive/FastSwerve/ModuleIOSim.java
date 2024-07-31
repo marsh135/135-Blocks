@@ -2,6 +2,8 @@ package frc.robot.subsystems.drive.FastSwerve;
 
 import java.util.Arrays;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -29,6 +31,7 @@ public class ModuleIOSim implements ModuleIO {
 	private double turnAppliedVolts = 0.0;
 	private final Rotation2d turnAbsoluteInitPosition;
 	private boolean driveCoast = false;
+	private int index = 0;
 	private SlewRateLimiter driveVoltsLimiter = new SlewRateLimiter(2.5);
 	private SimpleMotorFeedforward ff = new SimpleMotorFeedforward(
 			DriveConstants.TrainConstants.overallTurningMotorConstantContainer
@@ -36,6 +39,7 @@ public class ModuleIOSim implements ModuleIO {
 			0);
 
 	public ModuleIOSim(int index) {
+		this.index = index;
 		switch (index) {
 		case 0:
 			turnAbsoluteInitPosition = new Rotation2d(0);
@@ -64,9 +68,11 @@ public class ModuleIOSim implements ModuleIO {
 			driveVoltsLimiter.reset(driveAppliedVolts);
 		}
 		inputs.drivePositionRads = physicsSimulationResults.driveWheelFinalRevolutions
-				* 2 * Math.PI * DriveConstants.kMaxSpeedMetersPerSecond;
+				* 2 * Math.PI * 4;
+		Logger.recordOutput("DriveWheelFinalVelocity" + index,
+				physicsSimulationResults.driveWheelFinalVelocityRevolutionsPerSec);
 		inputs.driveVelocityRadsPerSec = physicsSimulationResults.driveWheelFinalVelocityRevolutionsPerSec
-				* 2 * Math.PI * DriveConstants.kMaxSpeedMetersPerSecond;
+				* 2 * Math.PI * 4;
 		inputs.driveAppliedVolts = driveAppliedVolts;
 		inputs.driveSupplyCurrentAmps = Math.abs(driveSim.getCurrentDrawAmps());
 		inputs.turnAbsolutePosition = new Rotation2d(
@@ -78,7 +84,9 @@ public class ModuleIOSim implements ModuleIO {
 		inputs.turnSupplyCurrentAmps = Math.abs(turnSim.getCurrentDrawAmps());
 		double[] odometryDrivePositionsMeters = new double[SIM_ITERATIONS_PER_ROBOT_PERIOD];
 		for (int i = 0; i < SIM_ITERATIONS_PER_ROBOT_PERIOD; i++) {
-			odometryDrivePositionsMeters[i] = Units.rotationsToRadians(physicsSimulationResults.odometryDriveWheelRevolutions[i])*DriveConstants.TrainConstants.kWheelDiameter/2 * DriveConstants.kMaxSpeedMetersPerSecond;
+			odometryDrivePositionsMeters[i] = Units.rotationsToRadians(
+					physicsSimulationResults.odometryDriveWheelRevolutions[i])
+					* DriveConstants.TrainConstants.kWheelDiameter / 2 * 4;
 		}
 		inputs.odometryDrivePositionsMeters = Arrays.copyOf(
 				odometryDrivePositionsMeters, SIM_ITERATIONS_PER_ROBOT_PERIOD);

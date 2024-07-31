@@ -23,7 +23,7 @@ public class DriveConstants {
 	 * What motors and motorContollers are we using
 	 */
 	public enum MotorVendor {
-		NEO_SPARK_MAX, VORTEX_SPARK_FLEX, CTRE_ON_RIO,CTRE_ON_CANIVORE
+		NEO_SPARK_MAX, VORTEX_SPARK_FLEX, CTRE_ON_RIO, CTRE_ON_CANIVORE
 	}
 
 	/**
@@ -125,41 +125,45 @@ public class DriveConstants {
 				pathplannerRotationConstantContainer = new MotorConstantContainer(
 						0.001, 0.001, 0.001, 5, 0, 0.006),
 				//rev 
-				overallTurningMotorConstantContainer = new MotorConstantContainer(0.001,
-						0.001, 0.001, 5, 0,0.001), //Average the turning motors for these vals.
+				overallTurningMotorConstantContainer = new MotorConstantContainer(
+						0.001, 0.001, 0.001, 5, 0, 0.001), //Average the turning motors for these vals.
 				//ctre
 				/*overallTurningMotorConstantContainer = new MotorConstantContainer(
 						0.001, 0.001, 0.001, 50, 0, .1), //Average the turning motors for these vals.	*/
 				overallDriveMotorConstantContainer = new MotorConstantContainer(.1,
 						.13, 0.001, 0.05, 0, 0.000);
 	}
-	public static RobotProfile mainRobotProfile = new RobotProfile(kMaxSpeedMetersPerSecond,maxTranslationalAcceleration.get(),kMaxTurningSpeedRadPerSec,TrainConstants.weight,kBumperToBumperWidth,kBumperToBumperLength);
+
+	public static RobotProfile mainRobotProfile = new RobotProfile(
+			kMaxSpeedMetersPerSecond, maxTranslationalAcceleration.get(),
+			kMaxTurningSpeedRadPerSec, TrainConstants.weight, kBumperToBumperWidth,
+			kBumperToBumperLength);
+
 	public static final class RobotPhysicsSimulationConfigs {
 		public static final int SIM_ITERATIONS_PER_ROBOT_PERIOD = 5;
-
 		/* Swerve Module Simulation */
-		public static final double DRIVE_MOTOR_FREE_FINAL_SPEED_RPM = 985.78;
-		public static final DCMotor
-				  DRIVE_MOTOR = DCMotor.getKrakenX60Foc(1),
-				  STEER_MOTOR = DCMotor.getKrakenX60Foc(1);
-		public static final double DRIVE_WHEEL_ROTTER_INERTIA = 0.012;
+		public static final double DRIVE_MOTOR_FREE_FINAL_SPEED_RPM = 859;
+		public static final DCMotor DRIVE_MOTOR = DCMotor.getKrakenX60Foc(1),
+				STEER_MOTOR = DCMotor.getKrakenX60Foc(1);
+		public static final double DRIVE_WHEEL_ROTTER_INERTIA = 0.05;
 		public static final double STEER_INERTIA = 0.015;
-
 		public static final double FLOOR_FRICTION_ACCELERATION_METERS_PER_SEC_SQ = 10;
-		public static final double MAX_ANGULAR_ACCELERATION_RAD_PER_SEC_SQ = Math.toRadians(1200);
+		public static final double MAX_ANGULAR_ACCELERATION_RAD_PER_SEC_SQ = Math
+				.toRadians(1200);
 		public static final double TIME_CHASSIS_STOPS_ROTATING_NO_POWER_SEC = 0.3;
 		public static final double DEFAULT_ROBOT_MASS = 110;
-		public static final double DEFAULT_BUMPER_WIDTH_METERS = Units.inchesToMeters(34.5);
-		public static final double DEFAULT_BUMPER_LENGTH_METERS = Units.inchesToMeters(36);
-
+		public static final double DEFAULT_BUMPER_WIDTH_METERS = Units
+				.inchesToMeters(35.5);
+		public static final double DEFAULT_BUMPER_LENGTH_METERS = Units
+				.inchesToMeters(35.5);
 		/* https://en.wikipedia.org/wiki/Friction#Coefficient_of_friction */
 		public static final double ROBOT_BUMPER_COEFFICIENT_OF_FRICTION = 0.85;
 		/* https://en.wikipedia.org/wiki/Coefficient_of_restitution */
 		public static final double ROBOT_BUMPER_COEFFICIENT_OF_RESTITUTION = 0.05;
-
 		/* Gyro Sim */
 		public static final double GYRO_ANGULAR_ACCELERATION_THRESHOLD_SKIDDING_RAD_PER_SEC_SQ = 100;
-		public static final double SKIDDING_AMOUNT_AT_THRESHOLD_RAD = Math.toRadians(1.2);
+		public static final double SKIDDING_AMOUNT_AT_THRESHOLD_RAD = Math
+				.toRadians(1.2);
 		/*
 		* https://store.ctr-electronics.com/pigeon-2/
 		* for a well-installed one with vibration reduction, only 0.4 degree
@@ -167,7 +171,9 @@ public class DriveConstants {
 		* so at least 1.2 degrees of drifting in 1 minutes for an average angular velocity of 60 degrees/second
 		* which is the average velocity during normal swerve-circular-offense
 		* */
-		public static final double NORMAL_GYRO_DRIFT_IN_1_MIN_Std_Dev_RAD = Math.toRadians(1.2);
-		public static final double AVERAGE_VELOCITY_RAD_PER_SEC_DURING_TEST = Math.toRadians(60);
-  }
+		public static final double NORMAL_GYRO_DRIFT_IN_1_MIN_Std_Dev_RAD = Math
+				.toRadians(1.2);
+		public static final double AVERAGE_VELOCITY_RAD_PER_SEC_DURING_TEST = Math
+				.toRadians(60);
+	}
 }
