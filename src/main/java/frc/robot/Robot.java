@@ -22,13 +22,11 @@ import frc.robot.Constants.SysIdRoutines;
 import frc.robot.subsystems.drive.FastSwerve.Swerve.ModuleLimits;
 import frc.robot.utils.LoggableTunedNumber;
 import frc.robot.utils.drive.DriveConstants;
-import frc.robot.utils.drive.PathFinder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
@@ -76,7 +74,6 @@ public class Robot extends LoggedRobot {
 		Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
 		Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
 		Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
-
 		switch (BuildConstants.DIRTY) {
 		case 0:
 			Logger.recordMetadata("GitDirty", "All changes committed");
