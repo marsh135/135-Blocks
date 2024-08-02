@@ -27,7 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-
+//TODO: handle when no USB / no images are found
 public class LEDs extends SubsystemChecker {
 	public static AddressableLED leds;
 	public static AddressableLEDBuffer ledBuffer;
