@@ -81,8 +81,6 @@ public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
 	private final SendableChooser<Command> autoChooser;
-	//TODO: read PDH
-	//static PowerDistribution PDH = Logged
 	public static XboxController driveController = new XboxController(0);
 	public static XboxController manipController = new XboxController(1);
 	public static XboxController testingController = new XboxController(5);

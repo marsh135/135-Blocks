@@ -157,14 +157,6 @@ public class Robot extends LoggedRobot {
 				RobotController.getBatteryVoltage());
 		CANBus.CANBusStatus canBusStatus = CANBus.getStatus("rio");
 		Logger.recordOutput("CANUtil", canBusStatus.BusUtilization * 100.0);
-		//    List<LidarDetection> robots = RobotContainer.lidar.getCurrentRobotDetections();
-		//    List<Pair<Translation2d, Translation2d>> obs = new ArrayList<>();
-		//    for (LidarDetection robotDet : robots) {
-		//      Translation2d robot = robotDet.boundingBoxCenter().toTranslation2d();
-		//      obs.add(Pair.of(robot.plus(new Translation2d(1, 1)), robot.minus(new Translation2d(1,
-		// 1))));
-		//    }
-		//    Pathfinding.setDynamicObstacles(obs, RobotContainer.swerve.getPose2d().getTranslation());
 		double runtimeMS = (Logger.getRealTimestamp() - startTime) / 1000.0;
 		Logger.recordOutput("RobotPeriodicMS", runtimeMS);
 	}
