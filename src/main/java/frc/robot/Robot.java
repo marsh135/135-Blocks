@@ -6,6 +6,7 @@ package frc.robot;
 import org.littletonrobotics.urcl.URCL;
 
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathConstraints;
 
@@ -65,6 +66,7 @@ public class Robot extends LoggedRobot {
 		}
 		// Instantiate our RobotContainer.  This will perform all our button bindings, and put our
 		// autonomous chooser on the dashboard
+		//TODO: CONFIRM AKIT logs and SignalLogger logs are going to the USB stick
 		Logger.recordMetadata("ProjectName", "The Chef"); // Set a metadata value
 		Logger.recordMetadata("TuningMode",
 				Boolean.toString(Constants.isTuningPID));
@@ -90,6 +92,7 @@ public class Robot extends LoggedRobot {
 			// Running on a real robot, log to a USB stick ("/U/logs")
 			Logger.addDataReceiver(new WPILOGWriter());
 			Logger.addDataReceiver(new NT4Publisher());
+			SignalLogger.setPath("/media/sda1/");
 			break;
 		case SIM:
 			// Running a physics simulator, log to NT
