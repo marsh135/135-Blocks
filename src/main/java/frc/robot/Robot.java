@@ -139,13 +139,6 @@ public class Robot extends LoggedRobot {
 		}, DriveConstants.maxTranslationalAcceleration,
 				DriveConstants.maxRotationalAcceleration);
 		DataHandler.updateHandlerState();
-				RobotContainer.yButtonDrive
-				.and(RobotContainer.aButtonTest.or(RobotContainer.bButtonTest).or(RobotContainer.xButtonTest).or(RobotContainer.yButtonTest)
-						.negate())
-				.whileTrue(PathFinder.goToPose(
-						new Pose2d(1.9, 7.7,
-								new Rotation2d(Units.degreesToRadians(90))),
-						() -> DriveConstants.pathConstraints, RobotContainer.drivetrainS, false, 0));
 		SmartDashboard.putString("Match State",
 				Constants.currentMatchState.name());
 		isRed = DriverStation.getAlliance().isPresent()
