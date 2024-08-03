@@ -298,14 +298,14 @@ public class RobotContainer {
 						.setPose(new Pose2d(-50, -50, new Rotation2d())))
 				.schedule();
 		if (!leds.imageFound(ImageStates.debug)) {
-			Logger.recordOutput("LEDS/Main", "No images found for " + ImageStates.debug.name());
-			leds.setDefaultCommand(
-					new LEDBreathingC(LEDConstants.redHSV, leds, 2).ignoringDisable(true));
-		}else{
+			Logger.recordOutput("LEDS/Main",
+					"No images found for " + ImageStates.debug.name());
+			leds.setDefaultCommand(new LEDBreathingC(LEDConstants.redHSV, leds, 2)
+					.ignoringDisable(true));
+		} else {
 			leds.setDefaultCommand(new LEDGifC(leds, 1500, ImageStates.debug)
-			.ignoringDisable(true));
+					.ignoringDisable(true));
 		}
-
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData(field);
 		SmartDashboard.putData("Auto Chooser", autoChooser);
