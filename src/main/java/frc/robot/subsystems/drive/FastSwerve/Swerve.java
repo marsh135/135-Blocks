@@ -71,7 +71,6 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	public enum CoastRequest {
 		AUTOMATIC, ALWAYS_BRAKE, ALWAYS_COAST
 	}
-
 	@AutoLog
 	public static class OdometryTimestampInputs {
 		public double[] timestamps = new double[] {};
@@ -332,9 +331,13 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		return new Twist2d(linearFieldVelocity.getX(), linearFieldVelocity.getY(),
 				robotVelocity.dtheta);
 	}
-
+	/**
+	 * Get the current pose of the robot with front being whatever front has been set to
+	 * @return a VISUAL ONLY output of the robot pose
+	 * @see {@link #getPose() getPose} for the geometrically accurate pose
+	 */
 	@AutoLogOutput(key = "RobotState/EstimatedPose")
-	public Pose2d getEstimatedPose() { return estimatedPose; }
+	public Pose2d getEstimatedPose() { return estimatedPose.plus(new Transform2d(new Translation2d(), DriveConstants.TrainConstants.robotOffsetAngleDirection)); }
 
 	public void periodic() {
 		//Check if modules are skidding (test this)
@@ -353,6 +356,11 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		Logger.processInputs("Drive/OdometryTimestamps", odometryTimestampInputs);
 		// Read inputs from gyro
 		gyroIO.updateInputs(gyroInputs);
+		gyroInputs.yawPosition = gyroInputs.yawPosition
+				.plus(DriveConstants.TrainConstants.robotOffsetAngleDirection);
+		for (Rotation2d value : gyroInputs.odometryYawPositions) {
+			value.plus(DriveConstants.TrainConstants.robotOffsetAngleDirection);
+		}
 		Logger.processInputs("Drive/Gyro", gyroInputs);
 		// Read inputs from modules
 		Arrays.stream(modules).forEach(Module::updateInputs);
@@ -756,7 +764,11 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 			Matrix<N3, N1> estStdDevs) {
 		addVisionObservation(new VisionObservation(pose, timestamp, estStdDevs));
 	}
-
+	/**
+	 * Get the current pose of the robot with front being the GEOMETRY front
+	 * @return an INTERNAL ONLY output of the robot pose (use this for any driving/turning calculations)
+	 * @see {@link #getEstimatedPose() getEstimatedPose} for the visually accurate pose
+	 */
 	@Override
 	public Pose2d getPose() { return estimatedPose; }
 
