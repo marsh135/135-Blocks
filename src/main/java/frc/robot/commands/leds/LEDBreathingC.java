@@ -11,18 +11,29 @@ public class LEDBreathingC extends Command {
 	private double breathingLoopValue;
 	private final double breathingPeriod;
 	private int[] breathingLEDStates;
+	private final double timePerStep = 0.02; // Time per step in seconds
+	private final int breathingLoopPeriodSteps; // Number of steps in the breathing cycle
 
 	/**
 	 * Changes the brightness of all the LEDs to make them look like they are
 	 * breathing (kind of like the Razer effect)
+	 * 
+	 * @param color                      The color of the LEDs
+	 * @param subsystem                  The LEDs subsystem
+	 * @param breathingTimeToFullSeconds The time it takes for the LEDs to go
+	 *                                      from off to full brightness (and same
+	 *                                      for full to off)
 	 */
-	public LEDBreathingC(int[] color, LEDs subsystem, int breathingLoopPeriod) {
+	public LEDBreathingC(int[] color, LEDs subsystem,
+			double breathingTimeToFullSeconds) {
 		this.runsWhenDisabled();
 		ledSubsystem = subsystem;
 		addRequirements(ledSubsystem);
 		this.color = color;
-		this.breathingPeriod = breathingLoopPeriod;
-		breathingLEDStates = new int[breathingLoopPeriod];
+		this.breathingPeriod = breathingTimeToFullSeconds;
+		this.breathingLoopPeriodSteps = (int) Math
+				.round(breathingPeriod / timePerStep);
+		breathingLEDStates = new int[breathingLoopPeriodSteps];
 	}
 
 	@Override
@@ -30,17 +41,17 @@ public class LEDBreathingC extends Command {
 		isFinished = false;
 		breathingLoopValue = 0;
 		isFinished = false;
-		//This seems complicated, but all it's doing is just taking the sine of the equation, rounding down, and saving it to an array
-		for (var i = 0; i < breathingPeriod; i++) {
-			breathingLEDStates[i] = (int) Math.floor(
-					Math.abs(Math.sin((i * Math.PI / breathingPeriod))) * 255);
+		// Adjust the argument to the sine function to complete a full cycle over a period of π
+		for (var i = 0; i < breathingLoopPeriodSteps; i++) {
+			breathingLEDStates[i] = (int) Math.floor(Math.abs(
+					Math.sin((i * 2.0 * Math.PI / breathingLoopPeriodSteps))) * 255);
 		}
 	}
 
 	@Override
 	public void execute() {
 		breathingLoopValue += .25;
-		breathingLoopValue %= breathingPeriod;
+		breathingLoopValue %= breathingLoopPeriodSteps;
 		final int value = breathingLEDStates[(int) Math
 				.floor(breathingLoopValue)];
 		for (var i = 0; i < (LEDs.ledBuffer.getLength()); i++) {

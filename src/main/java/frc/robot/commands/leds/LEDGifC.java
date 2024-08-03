@@ -1,9 +1,12 @@
 package frc.robot.commands.leds;
 
-import java.util.List;
+
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.utils.leds.LEDConstants;
+import frc.robot.utils.leds.LEDConstants.ImageStates;
 
 public class LEDGifC extends Command {
 	// Declaring Variables
@@ -11,16 +14,16 @@ public class LEDGifC extends Command {
 	private boolean isFinished;
 	private final int delayMs;
 	private long lastUpdateTime;
-	private int currentImageIndex = 0, gifID;
-
+	private int currentImageIndex = 0;
+	private final ImageStates imageState;
 	/**
 	 * Sets the LEDs to display images and swaps images at each delay interval.
 	 */
-	public LEDGifC(LEDs ledSubsystem, List<String> imagePaths, int delayMs,
-			int gifID) {
+	public LEDGifC(LEDs ledSubsystem, int delayMs,
+			ImageStates imageState) {
 		this.ledS = ledSubsystem;
 		this.delayMs = delayMs;
-		this.gifID = gifID;
+		this.imageState = imageState;
 		addRequirements(ledS);
 	}
 
@@ -28,15 +31,21 @@ public class LEDGifC extends Command {
 	public void initialize() {
 		isFinished = false;
 		currentImageIndex = 0;
+		if (LEDConstants.imageLedStates.get(imageState.ordinal()).isEmpty()) {
+			Logger.recordOutput("LEDS/LEDGifC", "No images found for ID " + imageState.ordinal());
+			isFinished = true;
+		}
 		lastUpdateTime = System.currentTimeMillis();
 	}
 
 	@Override
 	public void execute() {
+		if (isFinished)
+			return; // For aborting when no images are found
 		long currentTime = System.currentTimeMillis();
 		if (currentTime - lastUpdateTime >= delayMs) {
 			// Update LEDs with the current image
-			byte[][] currentLedStates = LEDConstants.imageLedStates.get(gifID)
+			byte[][] currentLedStates = LEDConstants.imageLedStates.get(imageState.ordinal())
 					.get(currentImageIndex);
 			//System.err.println(currentLedStates.length);
 			for (var i = 0; i < LEDs.ledBuffer.getLength(); i++) {
@@ -47,7 +56,7 @@ public class LEDGifC extends Command {
 			// Swap to the next image
 			//currentImageIndex = 1;
 			currentImageIndex = (currentImageIndex + 1)
-					% LEDConstants.imageLedStates.get(gifID).size();
+					% LEDConstants.imageLedStates.get(imageState.ordinal()).size();
 			// Set data to buffer
 			LEDs.leds.setData(LEDs.ledBuffer);
 			lastUpdateTime = currentTime;

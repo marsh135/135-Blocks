@@ -2,8 +2,6 @@ package frc.robot.utils.leds;
 
 import java.util.List;
 
-import frc.robot.subsystems.leds.LEDs;
-
 public class LEDConstants {
 	public static int
 	//The physical port where the LED strip is plugged in 
@@ -19,7 +17,13 @@ public class LEDConstants {
 	}, goldHSV = new int[] { 23, 255, 100
 	}, disabledHSV = new int[] { 0, 0, 0
 	};
-	public static List<String> imageList = List.of("gif1", "gif2", "debug");
-	public static List<List<byte[][]>> imageLedStates = LEDs
-			.preprocessImages(imageList);
+
+	public enum ImageStates {
+		debug, gif1, gif2
+	}
+
+	public static List<String> imageList = List.of(ImageStates.debug.name(),
+			ImageStates.gif1.name(), ImageStates.gif2.name());
+	//MUST MATCH ORDER IN IMAGESTATES ENUM
+	public static List<List<byte[][]>> imageLedStates; //preprocessed on boot
 }

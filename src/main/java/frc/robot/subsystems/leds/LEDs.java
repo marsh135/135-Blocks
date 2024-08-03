@@ -9,6 +9,8 @@ import frc.robot.Constants.Mode;
 import frc.robot.commands.leds.LEDGifC;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.leds.LEDConstants;
+import frc.robot.utils.leds.LEDConstants.ImageStates;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +29,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-//TODO: handle when no USB / no images are found
 public class LEDs extends SubsystemChecker {
 	public static AddressableLED leds;
 	public static AddressableLEDBuffer ledBuffer;
@@ -50,7 +51,7 @@ public class LEDs extends SubsystemChecker {
 		//sets length of the LED strip to buffer length
 		leds.setLength(ledBuffer.getLength());
 		//starts LED strips
-		leds.start(); //FOR THE LOVE OF GOD PLEASE REMEMBER THIS IF YOU'RE GONNA CODE YOUR OWN SUBSYSTEM I SPENT LIKE 6 HOURS TROUBLESHOOTING AND IT DIDNT WORK BECAUSE OF THIS
+		leds.start(); //FOR THE LOVE OF GOD PLEASE REMEMBER THIS IF YOU'RE GONNA CODE YOUR OWN SUBSYSTEM I SPENT LIKE 6 HOURS TROUBLESHOOTING AND IT DIDNT WORK BECAUSE OF THIS -N
 		//if the robot is a simulation, create a simulation for the addressableLEDs
 		LEDConstants.imageLedStates = preprocessImages(LEDConstants.imageList);
 	}
@@ -84,7 +85,7 @@ public class LEDs extends SubsystemChecker {
 			for (String path : filePaths) {
 				try {
 					BufferedImage image = ImageIO.read(new File(path));
-					gifImages.add(processImageToLedStates(image, i));
+					gifImages.add(processImageToLedStates(image));
 				}
 				catch (IOException e) {
 					e.printStackTrace();
@@ -94,9 +95,10 @@ public class LEDs extends SubsystemChecker {
 		}
 		return imageList;
 	}
-
-	private static byte[][] processImageToLedStates(BufferedImage image,
-			int gifIndex) {
+	public boolean imageFound(ImageStates imageState) {
+		return !LEDConstants.imageLedStates.get(imageState.ordinal()).isEmpty();
+	}
+	private static byte[][] processImageToLedStates(BufferedImage image) {
 		int ledCount = LEDConstants.ledRows * LEDConstants.ledCols;
 		// Resize image to fit the number of LEDs
 		BufferedImage resizedImage = new BufferedImage(LEDConstants.ledCols,
@@ -130,7 +132,7 @@ public class LEDs extends SubsystemChecker {
 	@Override
 	protected Command systemCheckCommand() {
 		return Commands.sequence(
-				new LEDGifC(this, LEDConstants.imageList, 20, 0).withTimeout(5),
+				new LEDGifC(this, 20, ImageStates.debug).withTimeout(5),
 				runOnce(() -> {
 					System.out.println("OVER");
 				})).until(() -> !getFaults().isEmpty());
