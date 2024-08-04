@@ -31,15 +31,15 @@ public final class Statistics {
         return standardizedScores;
     }
 
-    public static double getCorrelationCoefficient(double[] dataSet1, double[] dataSet2) {
-        if (dataSet1.length != dataSet2.length)
+    public static double getCorrelationCoefficient(double[] xSet, double[] ySet) {
+        if (xSet.length != ySet.length)
             throw new IllegalArgumentException("data set length unmatched");
-        final double[] standardizedScores1 = getStandardizedScores(dataSet1),
-                standardizedScores2 = getStandardizedScores(dataSet2);
+        final double[] standardizedScores1 = getStandardizedScores(xSet),
+                standardizedScores2 = getStandardizedScores(ySet);
         double productSum = 0;
-        for (int i = 0; i < dataSet2.length; i++)
+        for (int i = 0; i < ySet.length; i++)
             productSum += standardizedScores1[i] * standardizedScores2[i];
-        return productSum / (dataSet1.length - 1);
+        return productSum / (xSet.length - 1);
     }
 
     public static double getBestFitLineSlope(double[] dataSetX, double[] dataSetY) {
