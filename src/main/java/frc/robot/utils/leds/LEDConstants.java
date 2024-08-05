@@ -8,16 +8,20 @@ public class LEDConstants {
 	ledPort = 9, ledCols = 16, ledRows = 32,
 			// amount of LEDs in the light strip
 			ledBufferLength = ledCols * ledRows, totalGifs = 2;
-	//HSV Colors with values stored in arrays
-	public static int[] noteHSV = new int[] { 12, 255, 100
-	}, redHSV = new int[] { 0, 255, 100
-	}, blueHSV = new int[] { 120, 255, 100
-	}, greenHSV = new int[] { 50, 255, 100
-	}, pinkHSV = new int[] { 147, 255, 255
-	}, goldHSV = new int[] { 23, 255, 100
-	}, disabledHSV = new int[] { 0, 0, 0
+	public static int[] noteRGB = new int[] { 255, 55, 10
+	}, redRGB= new int[] { 255, 0, 0
+	}, blueRGB = new int[] { 0,0,255
+	}, greenRGB = new int[] { 0,255,0
+	}, pinkRGB = new int[] { 255, 192, 203
+	}, goldRGB = new int[] { 255,215,0
+	}, disabledRGB = new int[] { 0, 0, 0
 	};
-
+	public enum LEDStates{
+		OFF,SOLID_COLOR,RAINBOW,SINE_WAVE,WAVE2,BREATHING,GIF
+	}
+	//Wave constnats
+	public static double waveExponent = 0.4,
+	 xDiffPerLed = (2.0 * Math.PI) / ledBufferLength;
 	public enum ImageStates {
 		debug, gif1, gif2
 	}

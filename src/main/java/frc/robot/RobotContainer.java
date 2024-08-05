@@ -41,11 +41,8 @@ import frc.robot.utils.drive.Sensors.GyroIONavX;
 import frc.robot.utils.drive.Sensors.GyroIOPigeon2;
 import frc.robot.utils.drive.Sensors.GyroIOSim;
 
-import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.hardware.ParentDevice;
 
-import frc.robot.commands.leds.LEDBreathingC;
-import frc.robot.commands.leds.LEDGifC;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathfindingCommand;
@@ -71,7 +68,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
 import frc.robot.subsystems.leds.LEDs;
-import frc.robot.utils.leds.LEDConstants;
 import frc.robot.utils.leds.LEDConstants.ImageStates;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -297,14 +293,9 @@ public class RobotContainer {
 				.finallyDo(() -> RobotContainer.field.getObject("target pose")
 						.setPose(new Pose2d(-50, -50, new Rotation2d())))
 				.schedule();
-		if (!leds.imageFound(ImageStates.debug)) {
+		if (!leds.gifFound(ImageStates.debug)) {
 			Logger.recordOutput("LEDS/Main",
 					"No images found for " + ImageStates.debug.name());
-			leds.setDefaultCommand(new LEDBreathingC(LEDConstants.redHSV, leds, 2)
-					.ignoringDisable(true));
-		} else {
-			leds.setDefaultCommand(new LEDGifC(leds, 1500, ImageStates.debug)
-					.ignoringDisable(true));
 		}
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData(field);
@@ -374,8 +365,6 @@ public class RobotContainer {
 			}
 		}));
 		//When using CTRE, be sure to hit Start so that the motors are logged via CTRE (For SysId)
-		selectButtonTest.onTrue(Commands.runOnce(SignalLogger::stop));
-		startButtonTest.onTrue(Commands.runOnce(SignalLogger::start));
 		if (Constants.currentMode == Mode.SIM) {
 			bButtonDrive.whileTrue(testOpponentRobot.getAutoCyleCommand());
 		}
