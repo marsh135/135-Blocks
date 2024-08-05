@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Constants;
+import frc.robot.Constants.FRCMatchState;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.leds.LEDConstants;
@@ -80,6 +81,7 @@ public class LEDs extends SubsystemChecker {
 	public void periodic() {
 		// called every 20ms
 		currentTimeMs = TimeUtil.getLogTimeSeconds() * 1000.0;
+		runHandler();
 		switch (currentLEDState) {
 		case OFF:
 			ledBuffer.forEach((i, r, g, b) -> ledBuffer.setRGB(i, 0, 0, 0));
@@ -335,11 +337,12 @@ public class LEDs extends SubsystemChecker {
 	 * @param state
 	 */
 	public void updateState(LEDStates state) {
-		if (state == LEDStates.GIF) {
+		
+		if (currentLEDState != LEDStates.GIF) {
 			currentImageIndex = 0;
 			resetTimeSpecificVariables();
 		}
-		if (state == LEDStates.FIRE) {
+		if (currentLEDState != LEDStates.FIRE) {
 			resetTimeSpecificVariables();
 		}
 		currentLEDState = state;
@@ -494,4 +497,17 @@ public class LEDs extends SubsystemChecker {
 
 	@Override
 	public void setCurrentLimit(int amps) { return; }
+
+    public void runHandler() { 
+		//Handle the LED logic here
+		if (Constants.currentMatchState == FRCMatchState.DISABLED) {
+			updateLEDState(LEDStates.SOLID_COLOR, LEDConstants.disabledRGB);
+		} else if (Constants.currentMatchState == FRCMatchState.AUTO) {
+			updateLEDState(LEDStates.RAINBOW, 1000);
+		} else if (Constants.currentMatchState == FRCMatchState.TELEOP) {
+			updateLEDState(LEDStates.FIRE, 20);
+		} else if (Constants.currentMatchState == FRCMatchState.TEST) {
+			updateLEDState(LEDStates.GIF, 40, ImageStates.gif1);
+		}
+	 }
 }
