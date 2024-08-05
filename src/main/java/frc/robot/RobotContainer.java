@@ -365,6 +365,8 @@ public class RobotContainer {
 			}
 		}));
 		//When using CTRE, be sure to hit Start so that the motors are logged via CTRE (For SysId)
+		selectButtonTest.onTrue(Commands.runOnce(SignalLogger::stop));
+		startButtonTest.onTrue(Commands.runOnce(SignalLogger::start));
 		if (Constants.currentMode == Mode.SIM) {
 			bButtonDrive.whileTrue(testOpponentRobot.getAutoCyleCommand());
 		}
