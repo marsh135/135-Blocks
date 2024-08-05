@@ -17,7 +17,7 @@ public class LEDConstants {
 	}, disabledRGB = new int[] { 0, 0, 0
 	};
 	public enum LEDStates{
-		OFF,SOLID_COLOR,RAINBOW,SINE_WAVE,WAVE2,BREATHING,GIF
+		OFF,SOLID_COLOR,RAINBOW,SINE_WAVE,WAVE2,BREATHING,GIF, FIRE
 	}
 	//Wave constnats
 	public static double waveExponent = 0.4,

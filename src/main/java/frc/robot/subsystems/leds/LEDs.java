@@ -4,12 +4,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.leds.LEDConstants;
 import frc.robot.utils.leds.LEDConstants.ImageStates;
 import frc.robot.utils.leds.LEDConstants.LEDStates;
+import frc.robot.utils.maths.CommonMath;
 import frc.robot.utils.maths.TimeUtil;
 
 import java.awt.image.BufferedImage;
@@ -36,9 +38,10 @@ public class LEDs extends SubsystemChecker {
 	public static AddressableLEDBuffer ledBuffer;
 	public static AddressableLEDSim ledSim;
 	public static String gifStorage;
-	public static LEDStates currentLEDState = LEDStates.SINE_WAVE;
+	public static LEDStates currentLEDState = LEDStates.FIRE;
 	private int[] color = LEDConstants.blueRGB;
-	private int flashRateMs = 5000;
+	private int flashRateMs = 20;
+	private int brightness = 255;
 	private double currentTimeMs = TimeUtil.getLogTimeSeconds() * 1000.0;
 	private int[] altColor = LEDConstants.redRGB;
 	//Gif variables
@@ -46,6 +49,11 @@ public class LEDs extends SubsystemChecker {
 	private static int currentImageIndex = 0;
 	private static double lastUpdateTimeMs = TimeUtil.getLogTimeSeconds()
 			* 1000.0;
+	//Fire variables
+	private static final int[] heat = new int[LEDConstants.ledBufferLength];
+	private static int COOLING = 55;
+	private static int SPARKING = 120;
+	private static boolean reverseDirection = true;
 
 	public LEDs() {
 		switch (Constants.currentMode) {
@@ -94,6 +102,9 @@ public class LEDs extends SubsystemChecker {
 		case GIF:
 			setGif();
 			break;
+		case FIRE:
+			setFire();
+			break;
 		}
 		leds.setData(ledBuffer);
 	}
@@ -113,7 +124,8 @@ public class LEDs extends SubsystemChecker {
 	 */
 	private void setSolidColor() {
 		for (var i = 0; i < ledBuffer.getLength(); i++) {
-			ledBuffer.setRGB(i, color[0], color[1], color[2]);
+			ledBuffer.setRGB(i, (int) (color[0] * brightness),
+					(int) (color[1] * brightness), (int) (color[2] * brightness));
 		}
 	}
 
@@ -149,7 +161,8 @@ public class LEDs extends SubsystemChecker {
 			int red = (int) (color[0] * ratio);
 			int green = (int) (color[1] * ratio);
 			int blue = (int) (color[2] * ratio);
-			ledBuffer.setRGB(i, red, green, blue);
+			ledBuffer.setRGB(i, (int) (red * brightness),
+					(int) (green * brightness), (int) (blue * brightness));
 		}
 	}
 
@@ -169,10 +182,14 @@ public class LEDs extends SubsystemChecker {
 			if (Double.isNaN(ratio)) {
 				ratio = 0.5;
 			}
-			int red = (int) ((color[0] * (1 - ratio)) + (altColor[0] * ratio));
-			int green = (int) ((color[1] * (1 - ratio)) + (altColor[1] * ratio));
-			int blue = (int) ((color[2] * (1 - ratio)) + (altColor[2] * ratio));
-			ledBuffer.setRGB(i, red, green, blue);
+			int red = (int) (((color[0] * (1 - ratio)) + (altColor[0] * ratio))
+					* brightness);
+			int green = (int) (((color[1] * (1 - ratio)) + (altColor[1] * ratio))
+					* brightness);
+			int blue = (int) (((color[2] * (1 - ratio)) + (altColor[2] * ratio))
+					* brightness);
+			ledBuffer.setRGB(i, (int) (red * brightness),
+					(int) (green * brightness), (int) (blue * brightness));
 		}
 	}
 
@@ -188,7 +205,8 @@ public class LEDs extends SubsystemChecker {
 			int red = (int) (color[0] * intensity);
 			int green = (int) (color[1] * intensity);
 			int blue = (int) (color[2] * intensity);
-			ledBuffer.setRGB(i, red, green, blue);
+			ledBuffer.setRGB(i, (int) (red * brightness),
+					(int) (green * brightness), (int) (blue * brightness));
 		}
 	}
 
@@ -206,14 +224,68 @@ public class LEDs extends SubsystemChecker {
 			byte[][] currentLedStates = LEDConstants.imageLedStates
 					.get(currentImageState.ordinal()).get(currentImageIndex);
 			for (var i = 0; i < ledBuffer.getLength(); i++) {
-				ledBuffer.setRGB(i, Byte.toUnsignedInt(currentLedStates[i][0]),
-						Byte.toUnsignedInt(currentLedStates[i][1]),
-						Byte.toUnsignedInt(currentLedStates[i][2]));
+				ledBuffer.setRGB(i,
+						(int) (Byte.toUnsignedInt(currentLedStates[i][0])
+								* brightness),
+						(int) (Byte.toUnsignedInt(currentLedStates[i][1])
+								* brightness),
+						(int) (Byte.toUnsignedInt(currentLedStates[i][2])
+								* brightness));
 			}
 			currentImageIndex = (currentImageIndex + 1)
 					% LEDConstants.imageLedStates.get(currentImageState.ordinal())
 							.size();
 			lastUpdateTimeMs = currentTimeMs;
+		}
+	}
+
+	private void setFire() {
+		if (currentTimeMs - lastUpdateTimeMs >= flashRateMs) {
+		// Step 1. Cool down every cell a little
+		for (int i = 0; i < LEDConstants.ledBufferLength; i++) {
+			heat[i] = Math
+					.max(0,
+							heat[i] - (int) (CommonMath.random.nextDouble()
+									* ((COOLING * 10) / LEDConstants.ledBufferLength)
+									+ 2));
+		}
+		// Step 2. Heat from each cell drifts 'up' and diffuses a little
+		for (int k = LEDConstants.ledBufferLength - 1; k >= 5; k--) {
+			heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 3] + heat[k-4] + heat[k-5]) / 5;
+		}
+		// Step 3. Randomly ignite new 'sparks' of heat near the bottom
+		if (CommonMath.random.nextDouble() * 256 < SPARKING) {
+			int y = (int) (CommonMath.random.nextDouble() * 7);
+			heat[y] = Math.min(255, heat[y] + (int) (CommonMath.random.nextDouble() * 96 + 160));
+		}
+		// Step 4. Map from heat cells to LED colors
+		for (int j = 0; j < LEDConstants.ledBufferLength; j++) {
+			Color color = heatColor(heat[j]);
+			int pixelNumber;
+			if (reverseDirection) {
+				pixelNumber = (LEDConstants.ledBufferLength - 1) - j;
+			} else {
+				pixelNumber = j;
+			}
+			ledBuffer.setRGB(pixelNumber, (int) (color.red * brightness),
+					(int) (color.green * brightness),
+					(int) (color.blue * brightness));
+		}
+		lastUpdateTimeMs = currentTimeMs;
+		}
+	}
+
+	private Color heatColor(int temperature) {
+		// Approximate black-body radiation colors for LEDs
+		int t192 = (temperature * 192) / 255; // Scale 'heat' down from 0-255 to 0-191
+		int heatRamp = t192 & 0x3F; // 0..63
+		heatRamp <<= 2; // scale up to 0..252
+		if (t192 > 0x80) { // hottest
+			return new Color(255, 255, heatRamp);
+		} else if (t192 > 0x40) { // middle
+			return new Color(255, heatRamp, 0);
+		} else { // coolest
+			return new Color(heatRamp, 0, 0);
 		}
 	}
 
@@ -232,6 +304,15 @@ public class LEDs extends SubsystemChecker {
 	public void updateFlashRate(int flashRateMilliSeconds) {
 		this.flashRateMs = flashRateMilliSeconds;
 		resetTimeSpecificVariables();
+	}
+
+	/**
+	 * Updates all functions to a new brightness
+	 * 
+	 * @param brightness (0-255)
+	 */
+	public void updateBrightness(int brightness) {
+		this.brightness = brightness;
 	}
 
 	/**
@@ -256,6 +337,10 @@ public class LEDs extends SubsystemChecker {
 	public void updateState(LEDStates state) {
 		if (state == LEDStates.GIF) {
 			currentImageIndex = 0;
+			resetTimeSpecificVariables();
+		}
+		if (state == LEDStates.FIRE) {
+			resetTimeSpecificVariables();
 		}
 		currentLEDState = state;
 	}
@@ -283,7 +368,15 @@ public class LEDs extends SubsystemChecker {
 	 *                 {@link edu.wpi.first.wpilibj.util.Color} for default
 	 *                 colors (For WPILib.color, mulitiply by 255 for RGB
 	 *                 vals)</li>
-	 *                 <li>A double representing the flash rate in seconds.</li>
+	 *                 <li>An int array representing the alternate color. The
+	 *                 array should contain three elements representing the RGB
+	 *                 values. Each value should be between 0 and 255. Check
+	 *                 {@link LEDConstants} or
+	 *                 {@link edu.wpi.first.wpilibj.util.Color} for default
+	 *                 colors (For WPILib.color, mulitiply by 255 for RGB
+	 *                 vals)</li>
+	 *                 <li>An integer representing the flash rate in
+	 *                 milliseconds.</li>
 	 *                 <li>An ImageState object representing the image
 	 *                 state.</li>
 	 *                 </ul>
