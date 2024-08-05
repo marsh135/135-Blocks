@@ -38,10 +38,10 @@ public class LEDs extends SubsystemChecker {
 	public static AddressableLEDBuffer ledBuffer;
 	public static AddressableLEDSim ledSim;
 	public static String gifStorage;
-	public static LEDStates currentLEDState = LEDStates.FIRE;
+	public static LEDStates currentLEDState = LEDStates.SINE_WAVE;
 	private int[] color = LEDConstants.blueRGB;
-	private int flashRateMs = 20;
-	private int brightness = 255;
+	private int flashRateMs = 1000;
+	private double brightness = 1; //1 is max
 	private double currentTimeMs = TimeUtil.getLogTimeSeconds() * 1000.0;
 	private int[] altColor = LEDConstants.redRGB;
 	//Gif variables
@@ -147,7 +147,7 @@ public class LEDs extends SubsystemChecker {
 	 */
 	private void setWave() {
 		for (int i = 0; i < ledBuffer.getLength(); i++) {
-			double x = (currentTimeMs / (flashRateMs / 1000) + i)
+			double x = (currentTimeMs / (flashRateMs / 1000.0) + i)
 					* LEDConstants.xDiffPerLed;
 			double ratio = (Math.pow(Math.sin(x), LEDConstants.waveExponent) + 1.0)
 					/ 2.0;
@@ -171,7 +171,7 @@ public class LEDs extends SubsystemChecker {
 	 */
 	private void setWave2() {
 		for (int i = 0; i < ledBuffer.getLength(); i++) {
-			double x = (currentTimeMs / (flashRateMs / 1000) + i)
+			double x = (currentTimeMs / (flashRateMs / 1000.0) + i)
 					* LEDConstants.xDiffPerLed;
 			double ratio = (Math.pow(Math.sin(x), LEDConstants.waveExponent) + 1.0)
 					/ 2.0;
@@ -267,9 +267,9 @@ public class LEDs extends SubsystemChecker {
 			} else {
 				pixelNumber = j;
 			}
-			ledBuffer.setRGB(pixelNumber, (int) (color.red * brightness),
-					(int) (color.green * brightness),
-					(int) (color.blue * brightness));
+			ledBuffer.setRGB(pixelNumber, (int) (color.red * 255 * brightness),
+					(int) (color.green * 255 * brightness),
+					(int) (color.blue * 255 * brightness));
 		}
 		lastUpdateTimeMs = currentTimeMs;
 		}
@@ -309,7 +309,7 @@ public class LEDs extends SubsystemChecker {
 	/**
 	 * Updates all functions to a new brightness
 	 * 
-	 * @param brightness (0-255)
+	 * @param brightness (0-1)
 	 */
 	public void updateBrightness(int brightness) {
 		this.brightness = brightness;
