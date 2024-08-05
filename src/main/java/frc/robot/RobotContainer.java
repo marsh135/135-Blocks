@@ -41,6 +41,7 @@ import frc.robot.utils.drive.Sensors.GyroIONavX;
 import frc.robot.utils.drive.Sensors.GyroIOPigeon2;
 import frc.robot.utils.drive.Sensors.GyroIOSim;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.hardware.ParentDevice;
 
 import com.pathplanner.lib.auto.AutoBuilder;
