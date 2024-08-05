@@ -102,7 +102,7 @@ public class DriveConstants {
 			kFrontRightAbsEncoderReversed = false, kBackLeftDriveReversed = false,
 			kBackLeftTurningReversed = true, kBackLeftAbsEncoderReversed = false,
 			kBackRightDriveReversed = false, kBackRightTurningReversed = true,
-			kBackRightAbsEncoderReversed = false, kGyroReversed = true;
+			kBackRightAbsEncoderReversed = false;
 	public static ModuleLimits moduleLimitsFree = new ModuleLimits(
 			DriveConstants.kMaxSpeedMetersPerSecond,
 			maxTranslationalAcceleration.get(), maxRotationalAcceleration.get());
