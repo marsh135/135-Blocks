@@ -21,5 +21,14 @@ public interface ColorSensorIO {
 	public default List<SelfChecking> getSelfCheckingHardware() {
 		return new ArrayList<SelfChecking>();
 	}
+	/**
+	 * Sets the SIM ONLY color of the sensor
+	 */
+	public default void setSimColor(Color color) {throw new UnsupportedOperationException("This sensor does not support setting the color");}
+	/**
+	 * Sets the SIM ONLY IR and Proximity of the sensor
+	 */
+	public default void setIR(double IR, double proximity) {throw new UnsupportedOperationException("This sensor does not support setting the IR and Proximity");}
+	
 }
 

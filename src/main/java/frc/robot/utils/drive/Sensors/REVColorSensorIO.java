@@ -3,6 +3,7 @@ package frc.robot.utils.drive.Sensors;
 import java.util.ArrayList;
 import java.util.List;
 import com.revrobotics.ColorSensorV3;
+
 import edu.wpi.first.wpilibj.I2C.Port;
 import frc.robot.utils.selfCheck.SelfChecking;
 import frc.robot.utils.selfCheck.SelfCheckingREVColorSensor;
@@ -27,8 +28,9 @@ public class REVColorSensorIO implements ColorSensorIO {
 		//This converts it into an int from 1 to 2048
 		double output = REVColorSensor.getProximity() + 1;
 		//Converts this into the sensors max range of 10cm by turning the output into a fraction of its max range and then multiplying by the max distance
-		output /= 24;
+		output /= 2048;
 		output *= 10;
+		output = 10 - output;
 		inputs.proximityCentimeters = output;
 	}
 
