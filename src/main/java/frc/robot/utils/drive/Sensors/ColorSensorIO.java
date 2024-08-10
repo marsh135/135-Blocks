@@ -12,7 +12,7 @@ public interface ColorSensorIO {
 		@AutoLog
 	
 	public static class ColorSensorIOInputs{
-		public Color colorOutput;
+		public String colorOutput;
 		public double proximityCentimeters;
 	}
 

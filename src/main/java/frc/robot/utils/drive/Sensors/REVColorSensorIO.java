@@ -23,7 +23,7 @@ public class REVColorSensorIO implements ColorSensorIO {
 
 	@Override
 	public void updateInputs(ColorSensorIOInputs inputs) {
-		inputs.colorOutput = REVColorSensor.getColor();
+		inputs.colorOutput = REVColorSensor.getColor().toHexString();
 		//Code below is so we get a usable value instead of just 0 to 24
 		//This converts it into an int from 1 to 2048
 		double output = REVColorSensor.getProximity() + 1;
