@@ -139,7 +139,7 @@ This block contains:
 - `CTREElevator`: Moves the elevator up to 2 ft, waits 2 seconds, and confirms it arrived at the position. Then go back to zero, and repeat. Ends after 0 ft is confirmed. Error 4 in
 - `CTREFlywheel`: Sets to 4000 RPM, waits 1.5 seconds, and confirms it arrived at the speed. Then go up to 6000, and repeat. Ends after 6000 is confirmed, setting to zero after. Error 50 RPM.
 - `CTRESingleJointedArm`: Moves the arm to 45 degrees, waits two seconds, and confirms it arrived at the position. Error 5 degrees.
-- - `REVElevator`: Moves the elevator up to 2 ft, waits 2 seconds, and confirms it arrived at the position. Then go back to zero, and repeat. Ends after 0 ft is confirmed. Error 4 in
+- `REVElevator`: Moves the elevator up to 2 ft, waits 2 seconds, and confirms it arrived at the position. Then go back to zero, and repeat. Ends after 0 ft is confirmed. Error 4 in
 - `REVFlywheel`: Sets to 4000 RPM, waits 1.5 seconds, and confirms it arrived at the speed. Then go up to 6000, and repeat. Ends after 6000 is confirmed, setting to zero after. Error 50 RPM.
 - `REVSingleJointedArm`: Moves the arm to 45 degrees, waits two seconds, and confirms it arrived at the position. Error 5 degrees.
 
