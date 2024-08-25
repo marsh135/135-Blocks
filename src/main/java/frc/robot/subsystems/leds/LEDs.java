@@ -45,11 +45,16 @@ public class LEDs extends SubsystemChecker {
 	private double brightness = 1; //1 is max
 	private double currentTimeMs = TimeUtil.getLogTimeSeconds() * 1000.0;
 	private int[] altColor = LEDConstants.redRGB;
+	//Rainbow variables
+	private double m_firstHue = 0; //Holds the current hue of the rainbow
+	//Wave variables
+	private double wavePhaseOffset = 0; //Holds the current phase of the wave
+	//Breathing variables
+	private double breathingPhaseOffset = 0; //Holds the current phase of the breathing
 	//Gif variables
-	private static ImageStates currentImageState = ImageStates.debug;
-	private static int currentImageIndex = 0;
-	private static double lastUpdateTimeMs = TimeUtil.getLogTimeSeconds()
-			* 1000.0;
+	private static ImageStates currentImageState = ImageStates.debug; //Holds the current image state
+	private static int currentImageIndex = 0; //Holds the current image index WITHIN the image state
+	private static double lastUpdateTimeMs = Double.NEGATIVE_INFINITY; //Holds the last time the gif (or fire) was updated
 	//Fire variables
 	private static final int[] heat = new int[LEDConstants.ledBufferLength];
 	private static int COOLING = 55;
@@ -134,7 +139,6 @@ public class LEDs extends SubsystemChecker {
 	/**
 	 * Sets the LEDs to a rainbow INTERNAL ONLY
 	 */
-	double m_firstHue = 0;
 
 	private void setRainbow() {
 		int currentHue;
@@ -151,8 +155,9 @@ public class LEDs extends SubsystemChecker {
 	 * Sets the LEDs to a sine wave of 1 color INTERNAL ONLY
 	 */
 	private void setWave() {
+		double phaseInc = 10.25/(flashRateMs / 1000.0); // 10.25 was found to be this functions period
 		for (int i = 0; i < ledBuffer.getLength(); i++) {
-			double x = (currentTimeMs / (flashRateMs / 1000.0) + i)
+			double x = (wavePhaseOffset + i)
 					* LEDConstants.xDiffPerLed;
 			double ratio = (Math.pow(Math.sin(x), LEDConstants.waveExponent) + 1.0)
 					/ 2.0;
@@ -169,14 +174,17 @@ public class LEDs extends SubsystemChecker {
 			ledBuffer.setRGB(i, (int) (red * brightness),
 					(int) (green * brightness), (int) (blue * brightness));
 		}
+		wavePhaseOffset += phaseInc;
+		wavePhaseOffset %= LEDConstants.ledBufferLength;
 	}
 
 	/**
 	 * Sets the LEDs to a sine wave of 2 colors INTERNAL ONLY
 	 */
 	private void setWave2() {
+		double phaseInc = 10.25/(flashRateMs / 1000.0); // 10.25 was found to be this functions period
 		for (int i = 0; i < ledBuffer.getLength(); i++) {
-			double x = (currentTimeMs / (flashRateMs / 1000.0) + i)
+			double x = (wavePhaseOffset + i)
 					* LEDConstants.xDiffPerLed;
 			double ratio = (Math.pow(Math.sin(x), LEDConstants.waveExponent) + 1.0)
 					/ 2.0;
@@ -196,15 +204,16 @@ public class LEDs extends SubsystemChecker {
 			ledBuffer.setRGB(i, (int) (red * brightness),
 					(int) (green * brightness), (int) (blue * brightness));
 		}
+		wavePhaseOffset += phaseInc;
+		wavePhaseOffset %= LEDConstants.ledBufferLength;
 	}
-
-	/**
+		/**
 	 * Sets the LEDs to a breathing effect INTERNAL ONLY
 	 */
 	private void setBreathing() {
-		// Calculate the breathing intensity based on the current time and flash rate
-		double intensity = (Math
-				.sin(currentTimeMs / (double) flashRateMs * 2 * Math.PI) + 1) / 2;
+		breathingPhaseOffset += (2 * Math.PI * .02) / (flashRateMs / 1000.0);
+		breathingPhaseOffset %= 2 * Math.PI;
+		double intensity = (Math.sin(breathingPhaseOffset) + 1) / 2;
 		// Set each LED to the current color with the calculated intensity
 		for (int i = 0; i < ledBuffer.getLength(); i++) {
 			int red = (int) (color[0] * intensity);
@@ -225,7 +234,7 @@ public class LEDs extends SubsystemChecker {
 			updateState(LEDStates.OFF);
 			return;
 		}
-		if (currentTimeMs - lastUpdateTimeMs >= flashRateMs) {
+		if (currentTimeMs - lastUpdateTimeMs >= flashRateMs) { //20 +99999999 >= 5000
 			byte[][] currentLedStates = LEDConstants.imageLedStates
 					.get(currentImageState.ordinal()).get(currentImageIndex);
 			for (var i = 0; i < ledBuffer.getLength(); i++) {
@@ -299,7 +308,7 @@ public class LEDs extends SubsystemChecker {
 	/**
 	 * Resets all time specific variables
 	 */
-	private void resetTimeSpecificVariables() { lastUpdateTimeMs = 0; }
+	private void resetTimeSpecificVariables() { lastUpdateTimeMs = Double.NEGATIVE_INFINITY; }
 
 	/**
 	 * Updates all functions to the new flash rate "FlashRate" is defined as the
@@ -342,10 +351,10 @@ public class LEDs extends SubsystemChecker {
 	 * @param state
 	 */
 	public void updateState(LEDStates state) {
-		if (currentLEDState != LEDStates.GIF) {
+		if (state == LEDStates.GIF) {
 			currentImageIndex = 0;
 			resetTimeSpecificVariables();
-		} else if (currentLEDState != LEDStates.FIRE) {
+		} else if (state == LEDStates.FIRE) {
 			resetTimeSpecificVariables();
 		}
 		currentLEDState = state;
