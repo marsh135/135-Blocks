@@ -39,7 +39,7 @@ public class LEDs extends SubsystemChecker {
 	public static AddressableLEDBuffer ledBuffer;
 	public static AddressableLEDSim ledSim;
 	public static String gifStorage;
-	public static LEDStates currentLEDState = LEDStates.SINE_WAVE;
+	public static LEDStates currentLEDState = LEDStates.RAINBOW;
 	private int[] color = LEDConstants.blueRGB;
 	private int flashRateMs = 1000;
 	private double brightness = 1; //1 is max
@@ -134,14 +134,17 @@ public class LEDs extends SubsystemChecker {
 	/**
 	 * Sets the LEDs to a rainbow INTERNAL ONLY
 	 */
+	double m_firstHue = 0;
+
 	private void setRainbow() {
-		for (int i = 0; i < LEDs.ledBuffer.getLength(); i++) {
-			// Calculate the hue based on the current time, flash rate, and position of the LED
-			final var hue = (int) ((currentTimeMs / (double) flashRateMs * 180
-					+ i * 180 / LEDConstants.ledBufferLength) % 180);
-			// Set the value
-			LEDs.ledBuffer.setHSV(i, hue, 255, 128);
+		int currentHue;
+		for (int index = 0; index < ledBuffer.getLength(); index++) {
+			currentHue = (int) (m_firstHue + (index * 180 / ledBuffer.getLength()))
+					% 180;
+			ledBuffer.setHSV(index, currentHue, 255, 128);
 		}
+		m_firstHue = Math
+				.round((m_firstHue + (3.6 / (flashRateMs / 1000.0))) % 180);
 	}
 
 	/**
@@ -243,37 +246,39 @@ public class LEDs extends SubsystemChecker {
 
 	private void setFire() {
 		if (currentTimeMs - lastUpdateTimeMs >= flashRateMs) {
-		// Step 1. Cool down every cell a little
-		for (int i = 0; i < LEDConstants.ledBufferLength; i++) {
-			heat[i] = Math
-					.max(0,
-							heat[i] - (int) (CommonMath.random.nextDouble()
-									* ((COOLING * 10) / LEDConstants.ledBufferLength)
-									+ 2));
-		}
-		// Step 2. Heat from each cell drifts 'up' and diffuses a little
-		for (int k = LEDConstants.ledBufferLength - 1; k >= 5; k--) {
-			heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 3] + heat[k-4] + heat[k-5]) / 5;
-		}
-		// Step 3. Randomly ignite new 'sparks' of heat near the bottom
-		if (CommonMath.random.nextDouble() * 256 < SPARKING) {
-			int y = (int) (CommonMath.random.nextDouble() * 7);
-			heat[y] = Math.min(255, heat[y] + (int) (CommonMath.random.nextDouble() * 96 + 160));
-		}
-		// Step 4. Map from heat cells to LED colors
-		for (int j = 0; j < LEDConstants.ledBufferLength; j++) {
-			Color color = heatColor(heat[j]);
-			int pixelNumber;
-			if (reverseDirection) {
-				pixelNumber = (LEDConstants.ledBufferLength - 1) - j;
-			} else {
-				pixelNumber = j;
+			// Step 1. Cool down every cell a little
+			for (int i = 0; i < LEDConstants.ledBufferLength; i++) {
+				heat[i] = Math
+						.max(0,
+								heat[i] - (int) (CommonMath.random.nextDouble()
+										* ((COOLING * 10) / LEDConstants.ledBufferLength)
+										+ 2));
 			}
-			ledBuffer.setRGB(pixelNumber, (int) (color.red * 255 * brightness),
-					(int) (color.green * 255 * brightness),
-					(int) (color.blue * 255 * brightness));
-		}
-		lastUpdateTimeMs = currentTimeMs;
+			// Step 2. Heat from each cell drifts 'up' and diffuses a little
+			for (int k = LEDConstants.ledBufferLength - 1; k >= 5; k--) {
+				heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 3] + heat[k - 4]
+						+ heat[k - 5]) / 5;
+			}
+			// Step 3. Randomly ignite new 'sparks' of heat near the bottom
+			if (CommonMath.random.nextDouble() * 256 < SPARKING) {
+				int y = (int) (CommonMath.random.nextDouble() * 7);
+				heat[y] = Math.min(255,
+						heat[y] + (int) (CommonMath.random.nextDouble() * 96 + 160));
+			}
+			// Step 4. Map from heat cells to LED colors
+			for (int j = 0; j < LEDConstants.ledBufferLength; j++) {
+				Color color = heatColor(heat[j]);
+				int pixelNumber;
+				if (reverseDirection) {
+					pixelNumber = (LEDConstants.ledBufferLength - 1) - j;
+				} else {
+					pixelNumber = j;
+				}
+				ledBuffer.setRGB(pixelNumber, (int) (color.red * 255 * brightness),
+						(int) (color.green * 255 * brightness),
+						(int) (color.blue * 255 * brightness));
+			}
+			lastUpdateTimeMs = currentTimeMs;
 		}
 	}
 
@@ -305,7 +310,7 @@ public class LEDs extends SubsystemChecker {
 	 */
 	public void updateFlashRate(int flashRateMilliSeconds) {
 		this.flashRateMs = flashRateMilliSeconds;
-		resetTimeSpecificVariables();
+		//resetTimeSpecificVariables();
 	}
 
 	/**
@@ -337,12 +342,10 @@ public class LEDs extends SubsystemChecker {
 	 * @param state
 	 */
 	public void updateState(LEDStates state) {
-		
 		if (currentLEDState != LEDStates.GIF) {
 			currentImageIndex = 0;
 			resetTimeSpecificVariables();
-		}
-		if (currentLEDState != LEDStates.FIRE) {
+		} else if (currentLEDState != LEDStates.FIRE) {
 			resetTimeSpecificVariables();
 		}
 		currentLEDState = state;
@@ -386,7 +389,8 @@ public class LEDs extends SubsystemChecker {
 	 *                 The order of these arguments does not matter.
 	 */
 	public void updateLEDState(LEDStates state, Object... args) {
-		updateState(state);
+		if (state != currentLEDState)
+			updateState(state);
 		boolean hasColor = false;
 		for (Object arg : args) {
 			if (arg instanceof int[]) {
