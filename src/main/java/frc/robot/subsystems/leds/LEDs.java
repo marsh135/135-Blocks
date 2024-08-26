@@ -259,7 +259,7 @@ public class LEDs extends SubsystemChecker {
 		double endVal = getEndVal(panelIndex);
 		double length = getLength(panelIndex);
 		double constantMultiplier = 10.25
-				* (length / LEDConstants.ledBufferLength);
+				* (length / 512);
 		double phaseInc = constantMultiplier / (flashRateMs[panelIndex] / 1000.0); // 10.25 was found to be this functions period FOR 512 PIXELS!
 		for (int i = (int) startVal; i < endVal; i++) {
 			double x = (wavePhaseOffset[panelIndex] + i) * (2.0 * Math.PI)
