@@ -7,7 +7,6 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.utils.drive.DriveConstants;
 
@@ -16,13 +15,13 @@ public class MecanumIOSim implements MecanumIO {
 			.getP();
 	private static final double KD = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
 			.getD();
-	private DCMotorSim frontLeft = new DCMotorSim(DCMotor.getNEO(1),
+	private DCMotorSim frontLeft = new DCMotorSim(DriveConstants.getDriveTrainMotors(1),
 			DriveConstants.TrainConstants.kDriveMotorGearRatio, .01);
-	private DCMotorSim frontRight = new DCMotorSim(DCMotor.getNEO(1),
+	private DCMotorSim frontRight = new DCMotorSim(DriveConstants.getDriveTrainMotors(1),
 			DriveConstants.TrainConstants.kDriveMotorGearRatio, .01);
-	private DCMotorSim backLeft = new DCMotorSim(DCMotor.getNEO(1),
+	private DCMotorSim backLeft = new DCMotorSim(DriveConstants.getDriveTrainMotors(1),
 			DriveConstants.TrainConstants.kDriveMotorGearRatio, .01);
-	private DCMotorSim backRight = new DCMotorSim(DCMotor.getNEO(1),
+	private DCMotorSim backRight = new DCMotorSim(DriveConstants.getDriveTrainMotors(1),
 			DriveConstants.TrainConstants.kDriveMotorGearRatio, .01);
 	private double frontLeftAppliedVolts = 0.0;
 	private double frontRightAppliedVolts = 0.0;

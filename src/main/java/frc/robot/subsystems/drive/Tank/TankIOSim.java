@@ -5,7 +5,6 @@ package frc.robot.subsystems.drive.Tank;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import frc.robot.utils.drive.DriveConstants;
 
@@ -15,7 +14,7 @@ public class TankIOSim implements TankIO {
 	private static final double KD = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
 			.getD();
 	private DifferentialDrivetrainSim sim = new DifferentialDrivetrainSim(
-			DCMotor.getNEO(2), DriveConstants.TrainConstants.kDriveMotorGearRatio,
+		DriveConstants.getDriveTrainMotors(2), DriveConstants.TrainConstants.kDriveMotorGearRatio,
 			.85, DriveConstants.TrainConstants.weight,
 			DriveConstants.TrainConstants.kWheelDiameter / 2,
 			DriveConstants.kChassisWidth, null);
