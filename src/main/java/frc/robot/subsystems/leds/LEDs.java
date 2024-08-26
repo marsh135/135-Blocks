@@ -15,6 +15,8 @@ import frc.robot.utils.leds.LEDConstants.LEDStates;
 import frc.robot.utils.maths.CommonMath;
 import frc.robot.utils.maths.TimeUtil;
 
+import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -75,6 +77,13 @@ public class LEDs extends SubsystemChecker {
 	private static int COOLING = 55;
 	private static int SPARKING = 120;
 	private static boolean reverseDirection = true;
+	//Text variables
+	private static String[] fontString = new String[] { "Monospaced", "Monospaced"
+	};
+	private static String[] text = new String[] { "ROBOT!", "135"
+	};
+	private double[] offsetX = new double[] { 0, 0
+	};
 
 	public LEDs() {
 		switch (Constants.currentMode) {
@@ -132,6 +141,9 @@ public class LEDs extends SubsystemChecker {
 			case FIRE:
 				setFire(i);
 				break;
+			case TEXT:
+				setText(i);
+				break;
 			}
 		}
 		leds.setData(ledBuffer);
@@ -142,19 +154,45 @@ public class LEDs extends SubsystemChecker {
 		return Collections.emptyList();
 	}
 
+	private double getStartVal(int panelIndex) {
+		switch (panelIndex) {
+		case 0:
+			return 0;
+		case 1:
+			return LEDConstants.ledBufferCutoff;
+		default:
+			return 0;
+		}
+	}
+
+	private double getEndVal(int panelIndex) {
+		switch (panelIndex) {
+		case 0:
+			return LEDConstants.ledBufferCutoff;
+		case 1:
+			return LEDConstants.ledBufferLength;
+		default:
+			return 1;
+		}
+	}
+
+	private double getLength(int panelIndex) {
+		switch (panelIndex) {
+		case 0:
+			return LEDConstants.ledBufferCutoff;
+		case 1:
+			return LEDConstants.ledBufferLength - LEDConstants.ledBufferCutoff;
+		default:
+			return 1;
+		}
+	}
+
 	/**
 	 * Sets the LEDs to a solid color INTERNAL ONLY
 	 */
 	private void setSolidColor(int panelIndex) {
-		double startVal = 0;
-		double endVal = 1;
-		if (panelIndex == 0) {
-			startVal = 0;
-			endVal = LEDConstants.ledBufferCutoff;
-		} else if (panelIndex == 1) {
-			startVal = LEDConstants.ledBufferCutoff + 1;
-			endVal = LEDConstants.ledBufferLength;
-		}
+		double startVal = getStartVal(panelIndex);
+		double endVal = getEndVal(panelIndex);
 		for (var i = (int) startVal; i < endVal; i++) {
 			ledBuffer.setRGB(i,
 					(int) (color[panelIndex][0] * brightness[panelIndex]),
@@ -168,18 +206,9 @@ public class LEDs extends SubsystemChecker {
 	 */
 	private void setRainbow(int panelIndex) {
 		int currentHue;
-		double startVal = 0;
-		double endVal = 1;
-		double length = 1;
-		if (panelIndex == 0) {
-			startVal = 0;
-			endVal = LEDConstants.ledBufferCutoff;
-			length = LEDConstants.ledBufferCutoff;
-		} else if (panelIndex == 1) {
-			startVal = LEDConstants.ledBufferCutoff + 1;
-			endVal = LEDConstants.ledBufferLength;
-			length = LEDConstants.ledBufferLength - LEDConstants.ledBufferCutoff;
-		}
+		double startVal = getStartVal(panelIndex);
+		double endVal = getEndVal(panelIndex);
+		double length = getLength(panelIndex);
 		for (int index = (int) startVal; index < endVal; index++) {
 			currentHue = (int) (m_firstHue[panelIndex] + (index * 180 / length))
 					% 180;
@@ -194,18 +223,9 @@ public class LEDs extends SubsystemChecker {
 	 * Sets the LEDs to a sine wave of 1 color INTERNAL ONLY
 	 */
 	private void setWave(int panelIndex) {
-		double startVal = 0;
-		double endVal = 1;
-		double length = 1;
-		if (panelIndex == 0) {
-			startVal = 0;
-			endVal = LEDConstants.ledBufferCutoff;
-			length = LEDConstants.ledBufferCutoff;
-		} else if (panelIndex == 1) {
-			startVal = LEDConstants.ledBufferCutoff + 1;
-			endVal = LEDConstants.ledBufferLength;
-			length = LEDConstants.ledBufferLength - LEDConstants.ledBufferCutoff;
-		}
+		double startVal = getStartVal(panelIndex);
+		double endVal = getEndVal(panelIndex);
+		double length = getLength(panelIndex);
 		double phaseInc = (10.25 * (length / 512))
 				/ (flashRateMs[panelIndex] / 1000.0); // 10.25 was found to be this functions period FOR 512 PIXELS!
 		for (int i = (int) startVal; i < endVal; i++) {
@@ -235,18 +255,9 @@ public class LEDs extends SubsystemChecker {
 	 * Sets the LEDs to a sine wave of 2 colors INTERNAL ONLY
 	 */
 	private void setWave2(int panelIndex) {
-		double startVal = 0;
-		double endVal = 1;
-		double length = 1;
-		if (panelIndex == 0) {
-			startVal = 0;
-			endVal = LEDConstants.ledBufferCutoff;
-			length = LEDConstants.ledBufferCutoff;
-		} else if (panelIndex == 1) {
-			startVal = LEDConstants.ledBufferCutoff + 1;
-			endVal = LEDConstants.ledBufferLength;
-			length = LEDConstants.ledBufferLength - LEDConstants.ledBufferCutoff;
-		}
+		double startVal = getStartVal(panelIndex);
+		double endVal = getEndVal(panelIndex);
+		double length = getLength(panelIndex);
 		double constantMultiplier = 10.25
 				* (length / LEDConstants.ledBufferLength);
 		double phaseInc = constantMultiplier / (flashRateMs[panelIndex] / 1000.0); // 10.25 was found to be this functions period FOR 512 PIXELS!
@@ -285,15 +296,8 @@ public class LEDs extends SubsystemChecker {
 		breathingPhaseOffset[panelIndex] %= 2 * Math.PI;
 		double intensity = (Math.sin(breathingPhaseOffset[panelIndex]) + 1) / 2;
 		// Set each LED to the current color with the calculated intensity
-		double startVal = 0;
-		double endVal = 1;
-		if (panelIndex == 0) {
-			startVal = 0;
-			endVal = LEDConstants.ledBufferCutoff;
-		} else if (panelIndex == 1) {
-			startVal = LEDConstants.ledBufferCutoff + 1;
-			endVal = LEDConstants.ledBufferLength;
-		}
+		double startVal = getStartVal(panelIndex);
+		double endVal = getEndVal(panelIndex);
 		for (int i = (int) startVal; i < endVal; i++) {
 			int red = (int) (color[panelIndex][0] * intensity);
 			int green = (int) (color[panelIndex][1] * intensity);
@@ -319,15 +323,8 @@ public class LEDs extends SubsystemChecker {
 			byte[][] currentLedStates = LEDConstants.imageLedStates
 					.get(currentImageState[panelIndex].ordinal())
 					.get(currentImageIndex[panelIndex]);
-			double startVal = 0;
-			double endVal = 1;
-			if (panelIndex == 0) {
-				startVal = 0;
-				endVal = LEDConstants.ledBufferCutoff;
-			} else if (panelIndex == 1) {
-				startVal = LEDConstants.ledBufferCutoff + 1;
-				endVal = LEDConstants.ledBufferLength;
-			}
+			double startVal = getStartVal(panelIndex);
+			double endVal = getEndVal(panelIndex);
 			for (int i = (int) startVal; i < endVal; i++) {
 				ledBuffer.setRGB(i,
 						(int) (Byte.toUnsignedInt(currentLedStates[i
@@ -351,19 +348,9 @@ public class LEDs extends SubsystemChecker {
 		if (currentTimeMs
 				- lastUpdateTimeMs[panelIndex] >= flashRateMs[panelIndex]) {
 			// Step 1. Cool down every cell a little
-			double startVal = 0;
-			double endVal = 1;
-			double length = 1;
-			if (panelIndex == 0) {
-				startVal = 0;
-				endVal = LEDConstants.ledBufferCutoff;
-				length = LEDConstants.ledBufferCutoff;
-			} else if (panelIndex == 1) {
-				startVal = LEDConstants.ledBufferCutoff + 1;
-				endVal = LEDConstants.ledBufferLength;
-				length = LEDConstants.ledBufferLength
-						- LEDConstants.ledBufferCutoff;
-			}
+			double startVal = getStartVal(panelIndex);
+			double endVal = getEndVal(panelIndex);
+			double length = getLength(panelIndex);
 			for (int i = (int) startVal; i < endVal; i++) {
 				heat[i] = Math.max(0,
 						heat[i] - (int) (CommonMath.random.nextDouble()
@@ -410,6 +397,56 @@ public class LEDs extends SubsystemChecker {
 		} else { // coolest
 			return new Color(heatRamp, 0, 0);
 		}
+	}
+
+	/**
+	 * @param panelIndex
+	 */
+
+	private void setText(int panelIndex) {
+		String textToDisplay = text[panelIndex];
+		BufferedImage textImage = renderTextToImage(textToDisplay,
+				(int) LEDConstants.ledCols, (int) LEDConstants.ledRows, panelIndex,
+				offsetX[panelIndex]);
+		double startVal = getStartVal(panelIndex);
+		double endVal = getEndVal(panelIndex);
+		double numUpdatesInFlashRate = flashRateMs[panelIndex] / 20;
+		double increment = textLengthInPixels / numUpdatesInFlashRate;
+		// Increment the offsetX
+		offsetX[panelIndex] += increment;
+		offsetX[panelIndex] %= textLengthInPixels;
+		for (int y = 0; y < (int) LEDConstants.ledRows; y++) {
+			for (int x = 0; x < (int) LEDConstants.ledCols; x++) {
+				int ledIndex = getLedIndex(x, y);
+				if (ledIndex >= startVal && ledIndex < endVal) {
+					int pixelColor = textImage.getRGB(x, y);
+					int red = (pixelColor >> 16) & 0xFF;
+					int green = (pixelColor >> 8) & 0xFF;
+					int blue = pixelColor & 0xFF;
+					ledBuffer.setRGB(ledIndex, red, green, blue);
+				}
+			}
+		}
+	}
+
+	private int getLedIndex(int x, int y) {
+		return y * (int) LEDConstants.ledCols + x; // Adjust based on how your matrix is wired
+	}
+	double textLengthInPixels = 16;
+	private BufferedImage renderTextToImage(String text, int width, int height,
+			int panelIndex, double offsetX) {
+		BufferedImage image = new BufferedImage(width, height,
+				BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = image.createGraphics();
+		Font font = new Font(fontString[panelIndex], Font.PLAIN, height);
+		g.setFont(font);
+		g.setColor(new java.awt.Color(color[panelIndex][0], color[panelIndex][1],
+				color[panelIndex][2]));
+		// Draw the text to the image
+		g.drawString(text, (int)-offsetX, height-2);
+		textLengthInPixels = g.getFontMetrics().stringWidth(text);
+		g.dispose();
+		return image;
 	}
 
 	/**
@@ -524,7 +561,7 @@ public class LEDs extends SubsystemChecker {
 	public void updateLEDState(LEDState state, Object... args) {
 		if (state.state != currentLEDState[state.panelIndex])
 			updateState(state);
-		boolean hasColor = false;
+		boolean hasColor = false, hasText = false;
 		for (Object arg : args) {
 			if (arg instanceof int[]) {
 				if (!hasColor) {
@@ -537,7 +574,15 @@ public class LEDs extends SubsystemChecker {
 				updateFlashRate((int) arg, state.panelIndex);
 			} else if (arg instanceof ImageStates) {
 				updateImageState((ImageStates) arg, state.panelIndex);
-			} else {
+			}else if (arg instanceof String) {
+				if (!hasText) {
+					text[state.panelIndex] = (String) arg;
+					hasText = true;
+				} else {
+					fontString[state.panelIndex] = (String) arg;
+				}
+			} 
+			else {
 				throw new IllegalArgumentException("Unexpected argument type: "
 						+ arg.getClass().getSimpleName());
 			}

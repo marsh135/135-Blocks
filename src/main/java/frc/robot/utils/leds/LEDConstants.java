@@ -23,7 +23,7 @@ public class LEDConstants {
 	};
 
 	public enum LEDStates {
-		OFF, SOLID_COLOR, RAINBOW, SINE_WAVE, WAVE2, BREATHING, GIF, FIRE
+		OFF, SOLID_COLOR, RAINBOW, SINE_WAVE, WAVE2, BREATHING, GIF, FIRE, TEXT
 	}
 
 	//Wave constnats
