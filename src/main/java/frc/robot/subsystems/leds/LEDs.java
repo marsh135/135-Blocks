@@ -39,24 +39,39 @@ public class LEDs extends SubsystemChecker {
 	public static AddressableLEDBuffer ledBuffer;
 	public static AddressableLEDSim ledSim;
 	public static String gifStorage;
-	public static LEDStates currentLEDState = LEDStates.RAINBOW;
-	private int[] color = LEDConstants.blueRGB;
-	private int flashRateMs = 1000;
-	private double brightness = 1; //1 is max
+	public static LEDStates[] currentLEDState = { LEDStates.OFF, LEDStates.OFF
+	};
+	private int[][] color = new int[][] { LEDConstants.disabledRGB,
+			LEDConstants.disabledRGB
+	};
+	private int[] flashRateMs = new int[] { 1000, 1000
+	};
+	private double[] brightness = new double[] { 1, 1
+	}; //1 is max
 	private double currentTimeMs = TimeUtil.getLogTimeSeconds() * 1000.0;
-	private int[] altColor = LEDConstants.redRGB;
+	private int[][] altColor = new int[][] { LEDConstants.redRGB,
+			LEDConstants.greenRGB
+	};
 	//Rainbow variables
-	private double m_firstHue = 0; //Holds the current hue of the rainbow
+	private double[] m_firstHue = new double[] { 0, 0
+	}; //Holds the current hue of the rainbow
 	//Wave variables
-	private double wavePhaseOffset = 0; //Holds the current phase of the wave
+	private double[] wavePhaseOffset = new double[] { 0, 0
+	}; //Holds the current phase of the wave
 	//Breathing variables
-	private double breathingPhaseOffset = 0; //Holds the current phase of the breathing
+	private double[] breathingPhaseOffset = new double[] { 0, 0
+	}; //Holds the current phase of the breathing
 	//Gif variables
-	private static ImageStates currentImageState = ImageStates.debug; //Holds the current image state
-	private static int currentImageIndex = 0; //Holds the current image index WITHIN the image state
-	private static double lastUpdateTimeMs = Double.NEGATIVE_INFINITY; //Holds the last time the gif (or fire) was updated
-	//Fire variables
-	private static final int[] heat = new int[LEDConstants.ledBufferLength];
+	private static ImageStates[] currentImageState = new ImageStates[] {
+			ImageStates.debug, ImageStates.debug
+	}; //Holds the current image state
+	private static int[] currentImageIndex = new int[] { 0, 0
+	}; //Holds the current image index WITHIN the image state
+	private static double[] lastUpdateTimeMs = new double[] {
+			Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
+	}; //Holds the last time the gif (or fire) was updated
+	//Fire variables ONLY USABLE WITH ONE DISPLAY
+	private static final int[] heat = new int[(int) LEDConstants.ledBufferLength];
 	private static int COOLING = 55;
 	private static int SPARKING = 120;
 	private static boolean reverseDirection = true;
@@ -72,8 +87,8 @@ public class LEDs extends SubsystemChecker {
 			break;
 		}
 		//creates LED objects (the actual LEDs, and a buffer that stores data to be sent to them)
-		leds = new AddressableLED(LEDConstants.ledPort);
-		ledBuffer = new AddressableLEDBuffer(LEDConstants.ledBufferLength);
+		leds = new AddressableLED((int) LEDConstants.ledPort);
+		ledBuffer = new AddressableLEDBuffer((int) LEDConstants.ledBufferLength);
 		//sets length of the LED strip to buffer length
 		leds.setLength(ledBuffer.getLength());
 		//starts LED strips
@@ -82,36 +97,42 @@ public class LEDs extends SubsystemChecker {
 		LEDConstants.imageLedStates = preprocessImages(LEDConstants.imageList);
 	}
 
+	int timeCheck = 0;
+
 	@Override
 	public void periodic() {
 		// called every 20ms
 		currentTimeMs = TimeUtil.getLogTimeSeconds() * 1000.0;
+		timeCheck += 20;
 		runHandler();
-		switch (currentLEDState) {
-		case OFF:
-			ledBuffer.forEach((i, r, g, b) -> ledBuffer.setRGB(i, 0, 0, 0));
-			break;
-		case SOLID_COLOR:
-			setSolidColor();
-			break;
-		case RAINBOW:
-			setRainbow();
-			break;
-		case SINE_WAVE:
-			setWave();
-			break;
-		case WAVE2:
-			setWave2();
-			break;
-		case BREATHING:
-			setBreathing();
-			break;
-		case GIF:
-			setGif();
-			break;
-		case FIRE:
-			setFire();
-			break;
+		for (int i = 0; i < currentLEDState.length; i++) {
+			switch (currentLEDState[i]) {
+			case OFF:
+				color[i] = LEDConstants.disabledRGB;
+				setSolidColor(i);
+				break;
+			case SOLID_COLOR:
+				setSolidColor(i);
+				break;
+			case RAINBOW:
+				setRainbow(i);
+				break;
+			case SINE_WAVE:
+				setWave(i);
+				break;
+			case WAVE2:
+				setWave2(i);
+				break;
+			case BREATHING:
+				setBreathing(i);
+				break;
+			case GIF:
+				setGif(i);
+				break;
+			case FIRE:
+				setFire(i);
+				break;
+			}
 		}
 		leds.setData(ledBuffer);
 	}
@@ -122,43 +143,74 @@ public class LEDs extends SubsystemChecker {
 	}
 
 	/**
-	 * Turns off the LEDs
-	 */
-	public void setStateOff() { currentLEDState = LEDStates.OFF; }
-
-	/**
 	 * Sets the LEDs to a solid color INTERNAL ONLY
 	 */
-	private void setSolidColor() {
-		for (var i = 0; i < ledBuffer.getLength(); i++) {
-			ledBuffer.setRGB(i, (int) (color[0] * brightness),
-					(int) (color[1] * brightness), (int) (color[2] * brightness));
+	private void setSolidColor(int panelIndex) {
+		double startVal = 0;
+		double endVal = 1;
+		if (panelIndex == 0) {
+			startVal = 0;
+			endVal = LEDConstants.ledBufferCutoff;
+		} else if (panelIndex == 1) {
+			startVal = LEDConstants.ledBufferCutoff + 1;
+			endVal = LEDConstants.ledBufferLength;
+		}
+		for (var i = (int) startVal; i < endVal; i++) {
+			ledBuffer.setRGB(i,
+					(int) (color[panelIndex][0] * brightness[panelIndex]),
+					(int) (color[panelIndex][1] * brightness[panelIndex]),
+					(int) (color[panelIndex][2] * brightness[panelIndex]));
 		}
 	}
 
 	/**
 	 * Sets the LEDs to a rainbow INTERNAL ONLY
 	 */
-
-	private void setRainbow() {
+	private void setRainbow(int panelIndex) {
 		int currentHue;
-		for (int index = 0; index < ledBuffer.getLength(); index++) {
-			currentHue = (int) (m_firstHue + (index * 180 / ledBuffer.getLength()))
+		double startVal = 0;
+		double endVal = 1;
+		double length = 1;
+		if (panelIndex == 0) {
+			startVal = 0;
+			endVal = LEDConstants.ledBufferCutoff;
+			length = LEDConstants.ledBufferCutoff;
+		} else if (panelIndex == 1) {
+			startVal = LEDConstants.ledBufferCutoff + 1;
+			endVal = LEDConstants.ledBufferLength;
+			length = LEDConstants.ledBufferLength - LEDConstants.ledBufferCutoff;
+		}
+		for (int index = (int) startVal; index < endVal; index++) {
+			currentHue = (int) (m_firstHue[panelIndex] + (index * 180 / length))
 					% 180;
 			ledBuffer.setHSV(index, currentHue, 255, 128);
 		}
-		m_firstHue = Math
-				.round((m_firstHue + (3.6 / (flashRateMs / 1000.0))) % 180);
+		m_firstHue[panelIndex] = Math.round((m_firstHue[panelIndex]
+				+ (3.6 / (flashRateMs[panelIndex] / 1000.0))));
+		m_firstHue[panelIndex] %= 180;
 	}
 
 	/**
 	 * Sets the LEDs to a sine wave of 1 color INTERNAL ONLY
 	 */
-	private void setWave() {
-		double phaseInc = 10.25/(flashRateMs / 1000.0); // 10.25 was found to be this functions period
-		for (int i = 0; i < ledBuffer.getLength(); i++) {
-			double x = (wavePhaseOffset + i)
-					* LEDConstants.xDiffPerLed;
+	private void setWave(int panelIndex) {
+		double startVal = 0;
+		double endVal = 1;
+		double length = 1;
+		if (panelIndex == 0) {
+			startVal = 0;
+			endVal = LEDConstants.ledBufferCutoff;
+			length = LEDConstants.ledBufferCutoff;
+		} else if (panelIndex == 1) {
+			startVal = LEDConstants.ledBufferCutoff + 1;
+			endVal = LEDConstants.ledBufferLength;
+			length = LEDConstants.ledBufferLength - LEDConstants.ledBufferCutoff;
+		}
+		double phaseInc = (10.25 * (length / 512))
+				/ (flashRateMs[panelIndex] / 1000.0); // 10.25 was found to be this functions period FOR 512 PIXELS!
+		for (int i = (int) startVal; i < endVal; i++) {
+			double x = (wavePhaseOffset[panelIndex] + i) * (2.0 * Math.PI)
+					/ length;
 			double ratio = (Math.pow(Math.sin(x), LEDConstants.waveExponent) + 1.0)
 					/ 2.0;
 			if (Double.isNaN(ratio)) {
@@ -168,24 +220,39 @@ public class LEDs extends SubsystemChecker {
 			if (Double.isNaN(ratio)) {
 				ratio = 0.5;
 			}
-			int red = (int) (color[0] * ratio);
-			int green = (int) (color[1] * ratio);
-			int blue = (int) (color[2] * ratio);
-			ledBuffer.setRGB(i, (int) (red * brightness),
-					(int) (green * brightness), (int) (blue * brightness));
+			int red = (int) (color[panelIndex][0] * ratio);
+			int green = (int) (color[panelIndex][1] * ratio);
+			int blue = (int) (color[panelIndex][2] * ratio);
+			ledBuffer.setRGB(i, (int) (red * brightness[panelIndex]),
+					(int) (green * brightness[panelIndex]),
+					(int) (blue * brightness[panelIndex]));
 		}
-		wavePhaseOffset += phaseInc;
-		wavePhaseOffset %= LEDConstants.ledBufferLength;
+		wavePhaseOffset[panelIndex] += phaseInc;
+		wavePhaseOffset[panelIndex] %= length;
 	}
 
 	/**
 	 * Sets the LEDs to a sine wave of 2 colors INTERNAL ONLY
 	 */
-	private void setWave2() {
-		double phaseInc = 10.25/(flashRateMs / 1000.0); // 10.25 was found to be this functions period
-		for (int i = 0; i < ledBuffer.getLength(); i++) {
-			double x = (wavePhaseOffset + i)
-					* LEDConstants.xDiffPerLed;
+	private void setWave2(int panelIndex) {
+		double startVal = 0;
+		double endVal = 1;
+		double length = 1;
+		if (panelIndex == 0) {
+			startVal = 0;
+			endVal = LEDConstants.ledBufferCutoff;
+			length = LEDConstants.ledBufferCutoff;
+		} else if (panelIndex == 1) {
+			startVal = LEDConstants.ledBufferCutoff + 1;
+			endVal = LEDConstants.ledBufferLength;
+			length = LEDConstants.ledBufferLength - LEDConstants.ledBufferCutoff;
+		}
+		double constantMultiplier = 10.25
+				* (length / LEDConstants.ledBufferLength);
+		double phaseInc = constantMultiplier / (flashRateMs[panelIndex] / 1000.0); // 10.25 was found to be this functions period FOR 512 PIXELS!
+		for (int i = (int) startVal; i < endVal; i++) {
+			double x = (wavePhaseOffset[panelIndex] + i) * (2.0 * Math.PI)
+					/ length;
 			double ratio = (Math.pow(Math.sin(x), LEDConstants.waveExponent) + 1.0)
 					/ 2.0;
 			if (Double.isNaN(ratio)) {
@@ -195,76 +262,115 @@ public class LEDs extends SubsystemChecker {
 			if (Double.isNaN(ratio)) {
 				ratio = 0.5;
 			}
-			int red = (int) (((color[0] * (1 - ratio)) + (altColor[0] * ratio))
-					* brightness);
-			int green = (int) (((color[1] * (1 - ratio)) + (altColor[1] * ratio))
-					* brightness);
-			int blue = (int) (((color[2] * (1 - ratio)) + (altColor[2] * ratio))
-					* brightness);
-			ledBuffer.setRGB(i, (int) (red * brightness),
-					(int) (green * brightness), (int) (blue * brightness));
+			int red = (int) (((color[panelIndex][0] * (1 - ratio))
+					+ (altColor[panelIndex][0] * ratio)) * brightness[panelIndex]);
+			int green = (int) (((color[panelIndex][1] * (1 - ratio))
+					+ (altColor[panelIndex][1] * ratio)) * brightness[panelIndex]);
+			int blue = (int) (((color[panelIndex][2] * (1 - ratio))
+					+ (altColor[panelIndex][2] * ratio)) * brightness[panelIndex]);
+			ledBuffer.setRGB(i, (int) (red * brightness[panelIndex]),
+					(int) (green * brightness[panelIndex]),
+					(int) (blue * brightness[panelIndex]));
 		}
-		wavePhaseOffset += phaseInc;
-		wavePhaseOffset %= LEDConstants.ledBufferLength;
+		wavePhaseOffset[panelIndex] += phaseInc;
+		wavePhaseOffset[panelIndex] %= length;
 	}
-		/**
+
+	/**
 	 * Sets the LEDs to a breathing effect INTERNAL ONLY
 	 */
-	private void setBreathing() {
-		breathingPhaseOffset += (2 * Math.PI * .02) / (flashRateMs / 1000.0);
-		breathingPhaseOffset %= 2 * Math.PI;
-		double intensity = (Math.sin(breathingPhaseOffset) + 1) / 2;
+	private void setBreathing(int panelIndex) {
+		breathingPhaseOffset[panelIndex] += (2 * Math.PI * .02)
+				/ (flashRateMs[panelIndex] / 1000.0);
+		breathingPhaseOffset[panelIndex] %= 2 * Math.PI;
+		double intensity = (Math.sin(breathingPhaseOffset[panelIndex]) + 1) / 2;
 		// Set each LED to the current color with the calculated intensity
-		for (int i = 0; i < ledBuffer.getLength(); i++) {
-			int red = (int) (color[0] * intensity);
-			int green = (int) (color[1] * intensity);
-			int blue = (int) (color[2] * intensity);
-			ledBuffer.setRGB(i, (int) (red * brightness),
-					(int) (green * brightness), (int) (blue * brightness));
+		double startVal = 0;
+		double endVal = 1;
+		if (panelIndex == 0) {
+			startVal = 0;
+			endVal = LEDConstants.ledBufferCutoff;
+		} else if (panelIndex == 1) {
+			startVal = LEDConstants.ledBufferCutoff + 1;
+			endVal = LEDConstants.ledBufferLength;
+		}
+		for (int i = (int) startVal; i < endVal; i++) {
+			int red = (int) (color[panelIndex][0] * intensity);
+			int green = (int) (color[panelIndex][1] * intensity);
+			int blue = (int) (color[panelIndex][2] * intensity);
+			ledBuffer.setRGB(i, (int) (red * brightness[panelIndex]),
+					(int) (green * brightness[panelIndex]),
+					(int) (blue * brightness[panelIndex]));
 		}
 	}
 
 	/**
 	 * Sets the LEDs to a GIF INTERNAL ONLY
 	 */
-	private void setGif() {
-		if (!gifFound(currentImageState)) {
-			System.err.println(
-					"No images found for ID " + currentImageState.ordinal());
-			updateState(LEDStates.OFF);
+	private void setGif(int panelIndex) {
+		if (!gifFound(currentImageState[panelIndex])) {
+			System.err.println("No images found for ID "
+					+ currentImageState[panelIndex].ordinal());
+			updateState(new LEDState(LEDStates.OFF, panelIndex));
 			return;
 		}
-		if (currentTimeMs - lastUpdateTimeMs >= flashRateMs) { //20 +99999999 >= 5000
+		if (currentTimeMs
+				- lastUpdateTimeMs[panelIndex] >= flashRateMs[panelIndex]) { //20 +99999999 >= 5000
 			byte[][] currentLedStates = LEDConstants.imageLedStates
-					.get(currentImageState.ordinal()).get(currentImageIndex);
-			for (var i = 0; i < ledBuffer.getLength(); i++) {
-				ledBuffer.setRGB(i,
-						(int) (Byte.toUnsignedInt(currentLedStates[i][0])
-								* brightness),
-						(int) (Byte.toUnsignedInt(currentLedStates[i][1])
-								* brightness),
-						(int) (Byte.toUnsignedInt(currentLedStates[i][2])
-								* brightness));
+					.get(currentImageState[panelIndex].ordinal())
+					.get(currentImageIndex[panelIndex]);
+			double startVal = 0;
+			double endVal = 1;
+			if (panelIndex == 0) {
+				startVal = 0;
+				endVal = LEDConstants.ledBufferCutoff;
+			} else if (panelIndex == 1) {
+				startVal = LEDConstants.ledBufferCutoff + 1;
+				endVal = LEDConstants.ledBufferLength;
 			}
-			currentImageIndex = (currentImageIndex + 1)
-					% LEDConstants.imageLedStates.get(currentImageState.ordinal())
-							.size();
-			lastUpdateTimeMs = currentTimeMs;
+			for (int i = (int) startVal; i < endVal; i++) {
+				ledBuffer.setRGB(i,
+						(int) (Byte.toUnsignedInt(currentLedStates[i
+								- ((int) LEDConstants.ledBufferCutoff * panelIndex)][0])
+								* brightness[panelIndex]),
+						(int) (Byte.toUnsignedInt(currentLedStates[i
+								- ((int) LEDConstants.ledBufferCutoff * panelIndex)][1])
+								* brightness[panelIndex]),
+						(int) (Byte.toUnsignedInt(currentLedStates[i
+								- ((int) LEDConstants.ledBufferCutoff * panelIndex)][2])
+								* brightness[panelIndex]));
+			}
+			currentImageIndex[panelIndex] = (currentImageIndex[panelIndex] + 1)
+					% LEDConstants.imageLedStates
+							.get(currentImageState[panelIndex].ordinal()).size();
+			lastUpdateTimeMs[panelIndex] = currentTimeMs;
 		}
 	}
 
-	private void setFire() {
-		if (currentTimeMs - lastUpdateTimeMs >= flashRateMs) {
+	private void setFire(int panelIndex) {
+		if (currentTimeMs
+				- lastUpdateTimeMs[panelIndex] >= flashRateMs[panelIndex]) {
 			// Step 1. Cool down every cell a little
-			for (int i = 0; i < LEDConstants.ledBufferLength; i++) {
-				heat[i] = Math
-						.max(0,
-								heat[i] - (int) (CommonMath.random.nextDouble()
-										* ((COOLING * 10) / LEDConstants.ledBufferLength)
-										+ 2));
+			double startVal = 0;
+			double endVal = 1;
+			double length = 1;
+			if (panelIndex == 0) {
+				startVal = 0;
+				endVal = LEDConstants.ledBufferCutoff;
+				length = LEDConstants.ledBufferCutoff;
+			} else if (panelIndex == 1) {
+				startVal = LEDConstants.ledBufferCutoff + 1;
+				endVal = LEDConstants.ledBufferLength;
+				length = LEDConstants.ledBufferLength
+						- LEDConstants.ledBufferCutoff;
+			}
+			for (int i = (int) startVal; i < endVal; i++) {
+				heat[i] = Math.max(0,
+						heat[i] - (int) (CommonMath.random.nextDouble()
+								* ((COOLING * 10) / length) + 2));
 			}
 			// Step 2. Heat from each cell drifts 'up' and diffuses a little
-			for (int k = LEDConstants.ledBufferLength - 1; k >= 5; k--) {
+			for (int k = (int) (endVal - 1); k >= 5; k--) {
 				heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 3] + heat[k - 4]
 						+ heat[k - 5]) / 5;
 			}
@@ -275,19 +381,20 @@ public class LEDs extends SubsystemChecker {
 						heat[y] + (int) (CommonMath.random.nextDouble() * 96 + 160));
 			}
 			// Step 4. Map from heat cells to LED colors
-			for (int j = 0; j < LEDConstants.ledBufferLength; j++) {
+			for (int j = (int) startVal; j < endVal; j++) {
 				Color color = heatColor(heat[j]);
 				int pixelNumber;
 				if (reverseDirection) {
-					pixelNumber = (LEDConstants.ledBufferLength - 1) - j;
+					pixelNumber = (int) (endVal - 1) - j;
 				} else {
 					pixelNumber = j;
 				}
-				ledBuffer.setRGB(pixelNumber, (int) (color.red * 255 * brightness),
-						(int) (color.green * 255 * brightness),
-						(int) (color.blue * 255 * brightness));
+				ledBuffer.setRGB(pixelNumber,
+						(int) (color.red * 255 * brightness[panelIndex]),
+						(int) (color.green * 255 * brightness[panelIndex]),
+						(int) (color.blue * 255 * brightness[panelIndex]));
 			}
-			lastUpdateTimeMs = currentTimeMs;
+			lastUpdateTimeMs[panelIndex] = currentTimeMs;
 		}
 	}
 
@@ -308,7 +415,9 @@ public class LEDs extends SubsystemChecker {
 	/**
 	 * Resets all time specific variables
 	 */
-	private void resetTimeSpecificVariables() { lastUpdateTimeMs = Double.NEGATIVE_INFINITY; }
+	private void resetTimeSpecificVariables(int panelIndex) {
+		lastUpdateTimeMs[panelIndex] = Double.NEGATIVE_INFINITY;
+	}
 
 	/**
 	 * Updates all functions to the new flash rate "FlashRate" is defined as the
@@ -317,8 +426,8 @@ public class LEDs extends SubsystemChecker {
 	 * 
 	 * @param flashRateMilliSeconds
 	 */
-	public void updateFlashRate(int flashRateMilliSeconds) {
-		this.flashRateMs = flashRateMilliSeconds;
+	public void updateFlashRate(int flashRateMilliSeconds, int panelIndex) {
+		this.flashRateMs[panelIndex] = flashRateMilliSeconds;
 		//resetTimeSpecificVariables();
 	}
 
@@ -327,8 +436,8 @@ public class LEDs extends SubsystemChecker {
 	 * 
 	 * @param brightness (0-1)
 	 */
-	public void updateBrightness(int brightness) {
-		this.brightness = brightness;
+	public void updateBrightness(int brightness, int panelIndex) {
+		this.brightness[panelIndex] = brightness;
 	}
 
 	/**
@@ -336,28 +445,43 @@ public class LEDs extends SubsystemChecker {
 	 * 
 	 * @param color
 	 */
-	public void updateColor(int[] color) { this.color = color; }
+	public void updateColor(int[] color, int panelIndex) {
+		this.color[panelIndex] = color;
+	}
 
 	/**
 	 * Updates all functions to a new alternate color
 	 * 
 	 * @param altColor (Used in wave2)
 	 */
-	public void updateAltColor(int[] altColor) { this.altColor = altColor; }
+	public void updateAltColor(int[] altColor, int panelIndex) {
+		this.altColor[panelIndex] = altColor;
+	}
 
 	/**
 	 * Updates all functions to a new state
 	 * 
 	 * @param state
 	 */
-	public void updateState(LEDStates state) {
-		if (state == LEDStates.GIF) {
-			currentImageIndex = 0;
-			resetTimeSpecificVariables();
-		} else if (state == LEDStates.FIRE) {
-			resetTimeSpecificVariables();
+	public void updateState(LEDState state) {
+		if (state.state == LEDStates.OFF) {
+			timeCheck = 0;
+			/*             ^Set Checked state^
+			 * Example of time checking (Used when debugging if a pattern is completing at the correct flashRate)
+			 * IN METHOD OF PATTERN:
+			 * if (timeCheck >= FULL_CYCLE_OF_PATTERN) { 
+			 * 	throw new IllegalArgumentException("Pattern completed after " + timeCheck + 
+			 * 	"ms when the desired flash rate was " + flashRateMs[panelIndex] + " ms."); 
+			 * }
+			 */
 		}
-		currentLEDState = state;
+		if (state.state == LEDStates.GIF) {
+			currentImageIndex[state.panelIndex] = 0;
+			resetTimeSpecificVariables(state.panelIndex);
+		} else if (state.state == LEDStates.FIRE) {
+			resetTimeSpecificVariables(state.panelIndex);
+		}
+		currentLEDState[state.panelIndex] = state.state;
 	}
 
 	/**
@@ -365,15 +489,15 @@ public class LEDs extends SubsystemChecker {
 	 * 
 	 * @param imageState
 	 */
-	public void updateImageState(ImageStates imageState) {
-		currentImageState = imageState;
+	public void updateImageState(ImageStates imageState, int panelIndex) {
+		currentImageState[panelIndex] = imageState;
 	}
 
 	/**
 	 * Updates all functions to a new state, with additional arguments for the
 	 * flash rate, color, and image state.
 	 * 
-	 * @param state The new LED state.
+	 * @param state The new LED state with it's panel index.
 	 * @param args  Additional arguments that can be:
 	 *                 <ul>
 	 *                 <li>An int array representing the color. The array should
@@ -397,22 +521,22 @@ public class LEDs extends SubsystemChecker {
 	 *                 </ul>
 	 *                 The order of these arguments does not matter.
 	 */
-	public void updateLEDState(LEDStates state, Object... args) {
-		if (state != currentLEDState)
+	public void updateLEDState(LEDState state, Object... args) {
+		if (state.state != currentLEDState[state.panelIndex])
 			updateState(state);
 		boolean hasColor = false;
 		for (Object arg : args) {
 			if (arg instanceof int[]) {
 				if (!hasColor) {
-					updateColor((int[]) arg);
+					updateColor((int[]) arg, state.panelIndex);
 					hasColor = true;
 				} else {
-					updateAltColor((int[]) arg);
+					updateAltColor((int[]) arg, state.panelIndex);
 				}
 			} else if (arg instanceof Double || arg instanceof Integer) {
-				updateFlashRate((int) arg);
+				updateFlashRate((int) arg, state.panelIndex);
 			} else if (arg instanceof ImageStates) {
-				updateImageState((ImageStates) arg);
+				updateImageState((ImageStates) arg, state.panelIndex);
 			} else {
 				throw new IllegalArgumentException("Unexpected argument type: "
 						+ arg.getClass().getSimpleName());
@@ -465,12 +589,12 @@ public class LEDs extends SubsystemChecker {
 	}
 
 	private static byte[][] processImageToLedStates(BufferedImage image) {
-		int ledCount = LEDConstants.ledRows * LEDConstants.ledCols;
+		int ledCount = (int) LEDConstants.ledRows * (int) LEDConstants.ledCols;
 		// Resize image to fit the number of LEDs
-		BufferedImage resizedImage = new BufferedImage(LEDConstants.ledCols,
-				LEDConstants.ledRows, BufferedImage.TYPE_INT_RGB);
-		resizedImage.getGraphics().drawImage(image, 0, 0, LEDConstants.ledCols,
-				LEDConstants.ledRows, null);
+		BufferedImage resizedImage = new BufferedImage((int) LEDConstants.ledCols,
+				(int) LEDConstants.ledRows, BufferedImage.TYPE_INT_RGB);
+		resizedImage.getGraphics().drawImage(image, 0, 0,
+				(int) LEDConstants.ledCols, (int) LEDConstants.ledRows, null);
 		// Initialize ledStates from the image pixels
 		byte[][] ledStates = new byte[ledCount][3];
 		for (int y = 0; y < LEDConstants.ledRows; y++) {
@@ -479,9 +603,9 @@ public class LEDs extends SubsystemChecker {
 				byte red = (byte) ((pixel >> 16) & 0xFF);
 				byte green = (byte) ((pixel >> 8) & 0xFF);
 				byte blue = (byte) (pixel & 0xFF);
-				ledStates[x + y * LEDConstants.ledCols][0] = red;
-				ledStates[x + y * LEDConstants.ledCols][1] = green;
-				ledStates[x + y * LEDConstants.ledCols][2] = blue;
+				ledStates[x + y * (int) LEDConstants.ledCols][0] = red;
+				ledStates[x + y * (int) LEDConstants.ledCols][1] = green;
+				ledStates[x + y * (int) LEDConstants.ledCols][2] = blue;
 			}
 		}
 		return ledStates;
@@ -492,12 +616,12 @@ public class LEDs extends SubsystemChecker {
 	 */
 	@Override
 	protected Command systemCheckCommand() {
-		return Commands
-				.sequence(run(() -> updateLEDState(currentLEDState)).withTimeout(5),
-						runOnce(() -> {
-							System.out.println("OVER");
-						}))
-				.until(() -> !getFaults().isEmpty());
+		return Commands.sequence(
+				run(() -> updateLEDState(new LEDState(LEDStates.RAINBOW, 0)))
+						.withTimeout(5),
+				runOnce(() -> {
+					System.out.println("OVER");
+				})).until(() -> !getFaults().isEmpty());
 	}
 
 	@Override
@@ -514,13 +638,13 @@ public class LEDs extends SubsystemChecker {
     public void runHandler() { 
 		//Handle the LED logic here
 		if (Constants.currentMatchState == FRCMatchState.DISABLED) {
-			updateLEDState(LEDStates.SOLID_COLOR, LEDConstants.disabledRGB);
+			updateLEDState(new LEDState(LEDStates.SOLID_COLOR,0), LEDConstants.disabledRGB);
 		} else if (Constants.currentMatchState == FRCMatchState.AUTO) {
-			updateLEDState(LEDStates.RAINBOW, 1000);
+			updateLEDState(new LEDState(LEDStates.RAINBOW,0), 1000);
 		} else if (Constants.currentMatchState == FRCMatchState.TELEOP) {
-			updateLEDState(LEDStates.FIRE, 20);
+			updateLEDState(new LEDState(LEDStates.FIRE,0), 20);
 		} else if (Constants.currentMatchState == FRCMatchState.TEST) {
-			updateLEDState(LEDStates.GIF, 40, ImageStates.gif1);
+			updateLEDState(new LEDState(LEDStates.GIF,0), 40, ImageStates.gif1);
 		}
 	 }
 }
