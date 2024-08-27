@@ -3,6 +3,9 @@
 // Be sure to understand how it creates the "inputs" variable and edits it!
 package frc.robot.subsystems.drive.Mecanum;
 
+import frc.robot.utils.drive.DriveConstants.RobotPhysicsSimulationConfigs;
+
+import java.util.Arrays;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -10,18 +13,24 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.Sensors.GyroIO;
 import frc.robot.utils.drive.Sensors.GyroIOInputsAutoLogged;
+
 public class MecanumIOSim implements MecanumIO {
+	public final static MecanumDrivePhysicsSimResults results = new MecanumDrivePhysicsSimResults();
 	private static final double KP = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
 			.getP();
 	private static final double KD = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
 			.getD();
-	private DCMotorSim frontLeft = new DCMotorSim(DriveConstants.getDriveTrainMotors(1),
+	private DCMotorSim frontLeft = new DCMotorSim(
+			DriveConstants.getDriveTrainMotors(1),
 			DriveConstants.TrainConstants.kDriveMotorGearRatio, .01);
-	private DCMotorSim frontRight = new DCMotorSim(DriveConstants.getDriveTrainMotors(1),
+	private DCMotorSim frontRight = new DCMotorSim(
+			DriveConstants.getDriveTrainMotors(1),
 			DriveConstants.TrainConstants.kDriveMotorGearRatio, .01);
-	private DCMotorSim backLeft = new DCMotorSim(DriveConstants.getDriveTrainMotors(1),
+	private DCMotorSim backLeft = new DCMotorSim(
+			DriveConstants.getDriveTrainMotors(1),
 			DriveConstants.TrainConstants.kDriveMotorGearRatio, .01);
-	private DCMotorSim backRight = new DCMotorSim(DriveConstants.getDriveTrainMotors(1),
+	private DCMotorSim backRight = new DCMotorSim(
+			DriveConstants.getDriveTrainMotors(1),
 			DriveConstants.TrainConstants.kDriveMotorGearRatio, .01);
 	private double frontLeftAppliedVolts = 0.0;
 	private double frontRightAppliedVolts = 0.0;
@@ -36,19 +45,18 @@ public class MecanumIOSim implements MecanumIO {
 	private double frontRightFFVolts = 0.0;
 	private double backLeftFFVolts = 0.0;
 	private double backRightFFVolts = 0.0;
-
 	private final GyroIO gyro;
 	private GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
-	public MecanumIOSim(GyroIO gyroSim){
-		gyro = gyroSim;
 
-	}
-	public void updateSim(double dtSeconds){
+	public MecanumIOSim(GyroIO gyroSim) { gyro = gyroSim; }
+
+	public void updateSim(double dtSeconds) {
 		frontLeft.update(dtSeconds);
 		frontRight.update(dtSeconds);
 		backLeft.update(dtSeconds);
 		backRight.update(dtSeconds);
 	}
+
 	@Override
 	public void updateInputs(MecanumIOInputs inputs) {
 		gyro.updateInputs(gyroInputs);
@@ -134,5 +142,21 @@ public class MecanumIOSim implements MecanumIO {
 		this.backLeftFFVolts = backLeftFFVolts;
 		this.backRightFFVolts = backRightFFVolts;
 	}
-	
+
+	public static class MecanumDrivePhysicsSimResults {
+		public double[] driveWheelFinalRevolutions = { 0, 0, 0, 0
+		}, driveWheelFinalVelocityRevolutionsPerSec = { 0, 0, 0, 0
+		};
+		public boolean negateFF = false;
+		public final double[][] odometryDriveWheelRevolutions = new double[][] {
+				new double[RobotPhysicsSimulationConfigs.SIM_ITERATIONS_PER_ROBOT_PERIOD],
+				new double[RobotPhysicsSimulationConfigs.SIM_ITERATIONS_PER_ROBOT_PERIOD],
+				new double[RobotPhysicsSimulationConfigs.SIM_ITERATIONS_PER_ROBOT_PERIOD],
+				new double[RobotPhysicsSimulationConfigs.SIM_ITERATIONS_PER_ROBOT_PERIOD]
+		};
+
+		public MecanumDrivePhysicsSimResults() {
+			Arrays.fill(odometryDriveWheelRevolutions, 0);
+		}
+	}
 }

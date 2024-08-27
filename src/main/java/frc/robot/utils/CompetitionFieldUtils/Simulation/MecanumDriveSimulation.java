@@ -6,16 +6,23 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOInputsAutoLogged;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
+import frc.robot.RobotContainer;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 //import edu.wpi.first.math.kinematics.SwerveModuleState;
 //import edu.wpi.first.math.util.Units;
 import frc.robot.Robot;
+import frc.robot.subsystems.drive.DrivetrainS;
+import frc.robot.subsystems.drive.FastSwerve.ModuleIOSim;
 //import frc.robot.subsystems.drive.FastSwerve.ModuleIOSim;
 import frc.robot.subsystems.drive.FastSwerve.OdometryThread;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOSim;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.DriveConstants.TrainConstants;
 import frc.robot.utils.drive.Sensors.GyroIOSim;
+import frc.robot.utils.maths.SwerveStateProjection;
+
 //import frc.robot.utils.maths.SwerveStateProjection;
 import org.dyn4j.geometry.Vector2;
 import org.littletonrobotics.junction.Logger;
@@ -31,7 +38,7 @@ import java.util.function.Consumer;
 public class MecanumDriveSimulation extends HolonomicChassisSimulation {
 	private final MecanumIOSim mecanumIOSim;
 	private final GyroIOSim gyroIOSim;
-	private final MecanumDriveKinematics kinematics;
+	private final static MecanumDriveKinematics kinematics;
 	private final Consumer<Pose2d> resetOdometryCallBack;
 	private final MecanumIOInputsAutoLogged mecanumIOInputsAutoLogged = new MecanumIOInputsAutoLogged();
 	private double gForce = 0.0; //G
@@ -109,25 +116,24 @@ public class MecanumDriveSimulation extends HolonomicChassisSimulation {
 		results.hasReading = true;
 	}
 
-	/*private static void updateMecanumSimulationResults(
-			SwerveModuleState actualModuleFloorSpeed, double robotMaxVelocity,
+	private static void updateMecanumSimulationResults(
+			MecanumDriveWheelSpeeds speeds, double robotMaxVelocity,
 			int simulationIteration, double periodSeconds, double[] theoreticalWheelSpeeds,
 			ChassisSpeeds instantSpeed) {
+					
 			double[] degreeAngles = new double[4];
+			double[] physicsAccurateWheelSpeeds = {speeds.frontLeftMetersPerSecond/robotMaxVelocity,speeds.frontRightMetersPerSecond/robotMaxVelocity,speeds.rearLeftMetersPerSecond/robotMaxVelocity,speeds.rearRightMetersPerSecond/robotMaxVelocity};
 			//Convert mecanum array into wheel speeds (the loop should always iterate 4 times)
 			for (int i = 0; i < theoreticalWheelSpeeds.length; i++){
 				degreeAngles[i] = (TrainConstants.mecanumInitialAngleOffsetDegrees + i*90)%360;
-			}
-		MecanumDriveWheelSpeeds physicsAccurateWheelSpeeds = new MecanumDriveWheelSpeeds();
 
-		final SwerveModuleState moduleFreeSwerveSpeed = module
-				.getFreeSwerveSpeed(robotMaxVelocity);
-		final ModuleIOSim.SwerveModulePhysicsSimulationResults results = module.physicsSimulationResults;
-		final double projectedModuleFloorSpeedMetersPerSecond = SwerveStateProjection
-				.project(actualModuleFloorSpeed, Rotation2d.fromDegrees(45));
+			}
+			
+		final MecanumIOSim.MecanumDrivePhysicsSimResults results = MecanumIOSim.physicsSimulationResults;
+		
 		results.driveWheelFinalVelocityRevolutionsPerSec = getActualDriveMotorRotterSpeedRevPerSec(
-				projectedModuleFloorSpeedMetersPerSecond,
-				moduleFreeSwerveSpeed.speedMetersPerSecond);
+				
+				);
 		results.odometrySteerPositions[simulationIteration] = moduleFreeSwerveSpeed.angle;
 		if ((Math.sqrt(Math.pow(instantSpeed.vxMetersPerSecond, 2)
 				+ Math.pow(instantSpeed.vyMetersPerSecond, 2)) > 0.1)
@@ -140,25 +146,28 @@ public class MecanumDriveSimulation extends HolonomicChassisSimulation {
 		results.driveWheelFinalRevolutions += results.driveWheelFinalVelocityRevolutionsPerSec
 				* periodSeconds;
 		results.odometryDriveWheelRevolutions[simulationIteration] = results.driveWheelFinalRevolutions;
-	}*/
+	}
 
-	/*private static double getActualDriveMotorRotterSpeedRevPerSec(
+	private static double getActualDriveMotorRotterSpeedRevPerSec(
 			double moduleSpeedProjectedOnSwerveHeadingMPS,
 			double moduleFreeSpeedMPS) {
-		final double FLOOR_SPEED_WEIGHT_IN_ACTUAL_MOTOR_SPEED = 0.8,
-				rotterSpeedMPS;
+			//Motor efficiency? I.E. how much of the free speed does it get at max speed? 
+			final double FLOOR_SPEED_WEIGHT_IN_ACTUAL_MOTOR_SPEED = 0.8, 
+ 
+				rotorSpeedMetersPerSecond;
 		if (Math.abs(
 				moduleFreeSpeedMPS - moduleSpeedProjectedOnSwerveHeadingMPS) < 2)
-			rotterSpeedMPS = moduleSpeedProjectedOnSwerveHeadingMPS;
+			rotorSpeedMetersPerSecond = moduleSpeedProjectedOnSwerveHeadingMPS;
 		else
-			rotterSpeedMPS = moduleSpeedProjectedOnSwerveHeadingMPS
+			rotorSpeedMetersPerSecond = moduleSpeedProjectedOnSwerveHeadingMPS
 					* FLOOR_SPEED_WEIGHT_IN_ACTUAL_MOTOR_SPEED
 					+ moduleFreeSpeedMPS
 							* (1 - FLOOR_SPEED_WEIGHT_IN_ACTUAL_MOTOR_SPEED);
-		final double rotterSpeedRadPerSec = rotterSpeedMPS
+		final double rotorSpeedRadPerSec = rotorSpeedMetersPerSecond
 				/ DriveConstants.TrainConstants.kWheelDiameter / 2;
-		return Units.radiansToRotations(rotterSpeedRadPerSec);
-	}*/
+		return Units.radiansToRotations(rotorSpeedRadPerSec);
+		
+	}
 
 	public static final class OdometryThreadSim implements OdometryThread {
 		@Override
