@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkFlex;
@@ -19,14 +20,18 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.SerialPort.Port;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.DriveConstants.MotorVendor;
+import frc.robot.utils.drive.Sensors.GyroIO;
+import frc.robot.utils.drive.Sensors.GyroIOInputsAutoLogged;
 import frc.robot.utils.selfCheck.SelfChecking;
 import frc.robot.utils.selfCheck.drive.SelfCheckingNavX2;
+import frc.robot.utils.selfCheck.drive.SelfCheckingPigeon2;
 import frc.robot.utils.selfCheck.drive.SelfCheckingSparkBase;
-
-public class MecanumIOSparkBaseNavx implements MecanumIO {
+import frc.robot.utils.drive.Sensors.GyroIONavX;
+import frc.robot.utils.drive.Sensors.GyroIOPigeon2;
+//TODO: Test this
+public class MecanumIOSparkBase implements MecanumIO {
 	private static final double GEAR_RATIO = DriveConstants.TrainConstants.kDriveMotorGearRatio;
 	private static final double KP = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
 			.getP();
@@ -44,13 +49,24 @@ public class MecanumIOSparkBaseNavx implements MecanumIO {
 	private final SparkPIDController frontRightPID;
 	private final SparkPIDController backLeftPID;
 	private final SparkPIDController backRightPID;
-	private final AHRS navX = new AHRS(Port.kUSB);
-	private double last_world_linear_accel_x;
-	private double last_world_linear_accel_y;
+	private final GyroIO gyroIO;
+	private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
 	private static final Executor currentExecutor = Executors
 			.newFixedThreadPool(8);
 
-	public MecanumIOSparkBaseNavx() {
+	public MecanumIOSparkBase(GyroIO gyroIO) {
+		switch (DriveConstants.gyroType) {
+			case NAVX:
+				this.gyroIO = (GyroIONavX) gyroIO;
+				break;
+			case PIGEON:
+				this.gyroIO = (GyroIOPigeon2) gyroIO; 
+			default:
+				throw new IllegalArgumentException("Unknown implementation type, please check DriveConstants.java!");
+			}
+
+		
+
 		if (DriveConstants.robotMotorController == MotorVendor.NEO_SPARK_MAX) {
 			frontLeft = new CANSparkMax(DriveConstants.kFrontLeftDrivePort,
 					MotorType.kBrushless);
@@ -146,25 +162,19 @@ public class MecanumIOSparkBaseNavx implements MecanumIO {
 		};
 		inputs.frontRightDriveTemp = frontRight.getMotorTemperature();
 		inputs.backRightDriveTemp = backRight.getMotorTemperature();
-		inputs.gyroConnected = navX.isConnected();
-		inputs.gyroYaw = navX.getRotation2d();
-		double curr_world_linear_accel_x = navX.getWorldLinearAccelX();
-		double currentJerkX = curr_world_linear_accel_x
-				- last_world_linear_accel_x;
-		last_world_linear_accel_x = curr_world_linear_accel_x;
-		double curr_world_linear_accel_y = navX.getWorldLinearAccelY();
-		double currentJerkY = curr_world_linear_accel_y
-				- last_world_linear_accel_y;
-		last_world_linear_accel_y = curr_world_linear_accel_y;
-		if ((Math.abs(currentJerkX) > DriveConstants.MAX_G) //if we suddenly move .5 G's
-				|| (Math.abs(currentJerkY) > DriveConstants.MAX_G)) {
-			inputs.collisionDetected = true;
-		}
-		inputs.collisionDetected = false;
+		gyroIO.updateInputs(gyroInputs);
+		
+
+			
+					inputs.gyroConnected = gyroInputs.connected;
+			inputs.gyroYaw = gyroInputs.yawPosition;
+			inputs.collisionDetected = gyroInputs.collisionDetected;
+
+
 	}
 
 	@Override
-	public void reset() { navX.reset(); }
+	public void reset() { gyroIO.reset(); }
 
 	@Override
 	public void setVoltage(double frontLeftVolts, double frontRightVolts,
@@ -213,7 +223,17 @@ public class MecanumIOSparkBaseNavx implements MecanumIO {
 	@Override
 	public List<SelfChecking> getSelfCheckingHardware() {
 		List<SelfChecking> hardware = new ArrayList<SelfChecking>();
-		hardware.add(new SelfCheckingNavX2("IMU", navX));
+		switch (DriveConstants.gyroType) {
+			case PIGEON:
+				hardware.add(new SelfCheckingPigeon2("Pigeon", (Pigeon2) gyroIO.getSelfCheckingHardware()));
+				break;
+			case NAVX: 
+				hardware.add(new SelfCheckingNavX2("NavX", (AHRS) gyroIO.getSelfCheckingHardware()));
+			default:
+
+				break;
+		}
+
 		hardware.add(new SelfCheckingSparkBase("FrontLeftDrive", frontLeft));
 		hardware.add(new SelfCheckingSparkBase("BackLeftDrive", backLeft));
 		hardware.add(new SelfCheckingSparkBase("FrontRightDrive", frontRight));

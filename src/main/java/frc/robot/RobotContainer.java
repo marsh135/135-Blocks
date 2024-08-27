@@ -200,10 +200,10 @@ public class RobotContainer {
 				case VORTEX_SPARK_FLEX:
 					switch (DriveConstants.gyroType) {
 					case PIGEON:
-						drivetrainS = new Mecanum(new MecanumIOSparkBasePigeon());
+						drivetrainS = new Mecanum(new MecanumIOSparkBaseNavx(new GyroIOPigeon2()));
 						break;
 					case NAVX:
-						drivetrainS = new Mecanum(new MecanumIOSparkBaseNavx());
+						drivetrainS = new Mecanum(new MecanumIOSparkBaseNavx(new GyroIONavX()));
 						break;
 					}
 					break;

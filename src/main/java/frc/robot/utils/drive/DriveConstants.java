@@ -17,8 +17,8 @@ import frc.robot.utils.CompetitionFieldUtils.Simulation.HolonomicChassisSimulati
 
 public class DriveConstants {
 	public static MotorVendor robotMotorController = MotorVendor.NEO_SPARK_MAX;
-	public static DriveTrainType driveType = DriveTrainType.SWERVE;
-	public static GyroType gyroType = GyroType.PIGEON;
+	public static DriveTrainType driveType = DriveTrainType.MECANUM;
+	public static GyroType gyroType = GyroType.NAVX;
 	public static DCMotor getDriveTrainMotors(int number){
 		switch (robotMotorController) {
 			case NEO_SPARK_MAX:

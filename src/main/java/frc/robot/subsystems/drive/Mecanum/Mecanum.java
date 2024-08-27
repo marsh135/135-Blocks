@@ -1,6 +1,7 @@
 // IO implementation creation files are from
 // http://github.com/Mechanical-Advantage
 // Be sure to understand how it creates the "inputs" variable and edits it!
+//TODO: Fix mecanum/tank IOs to use the gyroIO function
 package frc.robot.subsystems.drive.Mecanum;
 
 import static edu.wpi.first.units.Units.*;
