@@ -15,19 +15,17 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.Pigeon2;
+
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.kauailabs.navx.frc.AHRS;
 
 import frc.robot.utils.drive.Sensors.GyroIO;
 import frc.robot.utils.drive.Sensors.GyroIOInputsAutoLogged;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.selfCheck.SelfChecking;
-import frc.robot.utils.selfCheck.drive.SelfCheckingNavX2;
-import frc.robot.utils.selfCheck.drive.SelfCheckingPigeon2;
+
 import frc.robot.utils.selfCheck.drive.SelfCheckingTalonFX;
 
 public class MecanumIOTalonFX implements MecanumIO {
@@ -218,24 +216,7 @@ public class MecanumIOTalonFX implements MecanumIO {
 	@Override
 	public List<SelfChecking> getSelfCheckingHardware() {
 		List<SelfChecking> hardware = new ArrayList<SelfChecking>();
-		switch (DriveConstants.gyroType) {
-			case PIGEON:
-				
-				break;
-		
-			default:
-				break;
-		}
-				switch (DriveConstants.gyroType) {
-			case PIGEON:
-				hardware.add(new SelfCheckingPigeon2("Pigeon", (Pigeon2) gyroIO.getSelfCheckingHardware()));
-				break;
-			case NAVX: 
-				hardware.add(new SelfCheckingNavX2("NavX", (AHRS) gyroIO.getSelfCheckingHardware()));
-			default:
-
-				break;
-		}
+		hardware.addAll(gyroIO.getSelfCheckingHardware());
 		hardware.add(new SelfCheckingTalonFX("FrontLeftDrive", frontLeft));
 		hardware.add(new SelfCheckingTalonFX("BackLeftDrive", backLeft));
 		hardware.add(new SelfCheckingTalonFX("FrontRightDrive", frontRight));

@@ -10,8 +10,7 @@ import java.util.concurrent.Executors;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix6.hardware.Pigeon2;
-import com.kauailabs.navx.frc.AHRS;
+
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkBase.ControlType;
@@ -25,8 +24,6 @@ import frc.robot.utils.drive.DriveConstants.MotorVendor;
 import frc.robot.utils.drive.Sensors.GyroIO;
 import frc.robot.utils.drive.Sensors.GyroIOInputsAutoLogged;
 import frc.robot.utils.selfCheck.SelfChecking;
-import frc.robot.utils.selfCheck.drive.SelfCheckingNavX2;
-import frc.robot.utils.selfCheck.drive.SelfCheckingPigeon2;
 import frc.robot.utils.selfCheck.drive.SelfCheckingSparkBase;
 //TODO: Test this
 public class MecanumIOSparkBase implements MecanumIO {
@@ -213,17 +210,7 @@ public class MecanumIOSparkBase implements MecanumIO {
 	@Override
 	public List<SelfChecking> getSelfCheckingHardware() {
 		List<SelfChecking> hardware = new ArrayList<SelfChecking>();
-		switch (DriveConstants.gyroType) {
-			case PIGEON:
-				hardware.add(new SelfCheckingPigeon2("Pigeon", (Pigeon2) gyroIO.getSelfCheckingHardware()));
-				break;
-			case NAVX: 
-				hardware.add(new SelfCheckingNavX2("NavX", (AHRS) gyroIO.getSelfCheckingHardware()));
-			default:
-
-				break;
-		}
-
+		hardware.addAll(gyroIO.getSelfCheckingHardware());
 		hardware.add(new SelfCheckingSparkBase("FrontLeftDrive", frontLeft));
 		hardware.add(new SelfCheckingSparkBase("BackLeftDrive", backLeft));
 		hardware.add(new SelfCheckingSparkBase("FrontRightDrive", frontRight));
