@@ -12,8 +12,7 @@ import frc.robot.subsystems.drive.FastSwerve.Swerve;
 import frc.robot.subsystems.drive.Mecanum.Mecanum;
 import frc.robot.subsystems.drive.Mecanum.MecanumIO;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOSim;
-import frc.robot.subsystems.drive.Mecanum.MecanumIOSparkBaseNavx;
-import frc.robot.subsystems.drive.Mecanum.MecanumIOSparkBasePigeon;
+import frc.robot.subsystems.drive.Mecanum.MecanumIOSparkBase;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFXNavx;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFXPigeon;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIO;
@@ -200,10 +199,10 @@ public class RobotContainer {
 				case VORTEX_SPARK_FLEX:
 					switch (DriveConstants.gyroType) {
 					case PIGEON:
-						drivetrainS = new Mecanum(new MecanumIOSparkBaseNavx(new GyroIOPigeon2()));
+						drivetrainS = new Mecanum(new MecanumIOSparkBase(new GyroIOPigeon2()));
 						break;
 					case NAVX:
-						drivetrainS = new Mecanum(new MecanumIOSparkBaseNavx(new GyroIONavX()));
+						drivetrainS = new Mecanum(new MecanumIOSparkBase(new GyroIONavX()));
 						break;
 					}
 					break;
@@ -241,7 +240,7 @@ public class RobotContainer {
 				drivetrainS = new Tank(new TankIOSim());
 				break;
 			default:
-				drivetrainS = new Mecanum(new MecanumIOSim());
+				drivetrainS = new Mecanum(new MecanumIOSim(new GyroIOSim()));
 				PPHolonomicDriveController
 						.setRotationTargetOverride(this::getRotationTargetOverride);
 				break;

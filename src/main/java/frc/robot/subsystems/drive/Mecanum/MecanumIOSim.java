@@ -3,13 +3,13 @@
 // Be sure to understand how it creates the "inputs" variable and edits it!
 package frc.robot.subsystems.drive.Mecanum;
 
-import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.utils.drive.DriveConstants;
-
+import frc.robot.utils.drive.Sensors.GyroIO;
+import frc.robot.utils.drive.Sensors.GyroIOInputsAutoLogged;
 public class MecanumIOSim implements MecanumIO {
 	private static final double KP = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
 			.getP();
@@ -36,10 +36,15 @@ public class MecanumIOSim implements MecanumIO {
 	private double frontRightFFVolts = 0.0;
 	private double backLeftFFVolts = 0.0;
 	private double backRightFFVolts = 0.0;
-	private final Pigeon2 pigeon = new Pigeon2(30);
+	private final GyroIO gyro;
+	private GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+	public MecanumIOSim(GyroIO gyroSim){
+		gyro = gyroSim;
 
+	}
 	@Override
 	public void updateInputs(MecanumIOInputs inputs) {
+		gyro.updateInputs(gyroInputs);
 		if (closedLoop) {
 			frontLeftAppliedVolts = MathUtil.clamp(
 					frontLeftPID.calculate(frontLeft.getAngularVelocityRadPerSec())
@@ -92,8 +97,8 @@ public class MecanumIOSim implements MecanumIO {
 		inputs.rightCurrentAmps = new double[] { frontRight.getCurrentDrawAmps(),
 				backRight.getCurrentDrawAmps()
 		};
-		inputs.gyroConnected = false;
-		inputs.gyroYaw = pigeon.getRotation2d();
+		inputs.gyroConnected = gyroInputs.connected;
+		inputs.gyroYaw = gyroInputs.yawPosition;
 	}
 
 	@Override
