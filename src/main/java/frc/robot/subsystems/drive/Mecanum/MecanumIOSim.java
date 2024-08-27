@@ -36,11 +36,18 @@ public class MecanumIOSim implements MecanumIO {
 	private double frontRightFFVolts = 0.0;
 	private double backLeftFFVolts = 0.0;
 	private double backRightFFVolts = 0.0;
+
 	private final GyroIO gyro;
 	private GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
 	public MecanumIOSim(GyroIO gyroSim){
 		gyro = gyroSim;
 
+	}
+	public void updateSim(double dtSeconds){
+		frontLeft.update(dtSeconds);
+		frontRight.update(dtSeconds);
+		backLeft.update(dtSeconds);
+		backRight.update(dtSeconds);
 	}
 	@Override
 	public void updateInputs(MecanumIOInputs inputs) {
@@ -67,10 +74,6 @@ public class MecanumIOSim implements MecanumIO {
 			backLeft.setInputVoltage(backLeftAppliedVolts);
 			backRight.setInputVoltage(backRightAppliedVolts);
 		}
-		frontLeft.update(.02);
-		frontRight.update(.02);
-		backLeft.update(.02);
-		backRight.update(.02);
 		// Update gyro simulation (you might want to base this on your robot's movement)
 		//Pigeon2SimState simState = pigeon.getSimState();
 		//double angularVelocity = (frontLeft.getAngularVelocityRadPerSec() - frontRight.getAngularVelocityRadPerSec()
@@ -131,4 +134,5 @@ public class MecanumIOSim implements MecanumIO {
 		this.backLeftFFVolts = backLeftFFVolts;
 		this.backRightFFVolts = backRightFFVolts;
 	}
+	
 }
