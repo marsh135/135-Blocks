@@ -28,8 +28,6 @@ import frc.robot.utils.selfCheck.SelfChecking;
 import frc.robot.utils.selfCheck.drive.SelfCheckingNavX2;
 import frc.robot.utils.selfCheck.drive.SelfCheckingPigeon2;
 import frc.robot.utils.selfCheck.drive.SelfCheckingSparkBase;
-import frc.robot.utils.drive.Sensors.GyroIONavX;
-import frc.robot.utils.drive.Sensors.GyroIOPigeon2;
 //TODO: Test this
 public class MecanumIOSparkBase implements MecanumIO {
 	private static final double GEAR_RATIO = DriveConstants.TrainConstants.kDriveMotorGearRatio;
@@ -55,15 +53,7 @@ public class MecanumIOSparkBase implements MecanumIO {
 			.newFixedThreadPool(8);
 
 	public MecanumIOSparkBase(GyroIO gyroIO) {
-		switch (DriveConstants.gyroType) {
-			case NAVX:
-				this.gyroIO = (GyroIONavX) gyroIO;
-				break;
-			case PIGEON:
-				this.gyroIO = (GyroIOPigeon2) gyroIO; 
-			default:
-				throw new IllegalArgumentException("Unknown implementation type, please check DriveConstants.java!");
-			}
+		this.gyroIO = gyroIO; 
 
 		
 

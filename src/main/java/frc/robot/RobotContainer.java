@@ -13,8 +13,7 @@ import frc.robot.subsystems.drive.Mecanum.Mecanum;
 import frc.robot.subsystems.drive.Mecanum.MecanumIO;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOSim;
 import frc.robot.subsystems.drive.Mecanum.MecanumIOSparkBase;
-import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFXNavx;
-import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFXPigeon;
+import frc.robot.subsystems.drive.Mecanum.MecanumIOTalonFX;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIO;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIOKrakenFOC;
 import frc.robot.subsystems.drive.FastSwerve.ModuleIOSim;
@@ -188,10 +187,10 @@ public class RobotContainer {
 				case CTRE_ON_CANIVORE:
 					switch (DriveConstants.gyroType) {
 					case PIGEON:
-						drivetrainS = new Mecanum(new MecanumIOTalonFXPigeon());
+						drivetrainS = new Mecanum(new MecanumIOTalonFX(new GyroIOPigeon2()));
 						break;
 					case NAVX:
-						drivetrainS = new Mecanum(new MecanumIOTalonFXNavx());
+						drivetrainS = new Mecanum(new MecanumIOTalonFX(new GyroIONavX()));
 						break;
 					}
 					break;
