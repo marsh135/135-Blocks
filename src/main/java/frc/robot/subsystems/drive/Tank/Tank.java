@@ -103,7 +103,10 @@ public class Tank extends SubsystemChecker implements DrivetrainS {
 		return kinematics.toChassisSpeeds(new DifferentialDriveWheelSpeeds(
 				getLeftVelocityMetersPerSec(), getRightVelocityMetersPerSec()));
 	}
-
+	/** SIM ONLY */
+	public void updateSim(double dtSeconds){
+		io.updateSim(dtSeconds);
+	}
 	@Override
 	public void setChassisSpeeds(ChassisSpeeds speeds) {
 		DifferentialDriveWheelSpeeds wheelSpeeds = kinematics
@@ -162,7 +165,7 @@ public class Tank extends SubsystemChecker implements DrivetrainS {
 
 	/** Stops the drive. */
 	@Override
-	public void stopModules() { io.setVoltage(0.0, 0.0); }
+	public void stopModules() { driveVelocity(new DifferentialDriveWheelSpeeds()); }
 
 	/**
 	 * Returns a command to run a quasistatic test in the specified direction.
