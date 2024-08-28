@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 
 import org.littletonrobotics.junction.Logger;
 
-
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkBase.ControlType;
@@ -25,7 +24,8 @@ import frc.robot.utils.drive.Sensors.GyroIO;
 import frc.robot.utils.drive.Sensors.GyroIOInputsAutoLogged;
 import frc.robot.utils.selfCheck.SelfChecking;
 import frc.robot.utils.selfCheck.drive.SelfCheckingSparkBase;
-//TODO: Test this
+
+// TODO: Test this
 public class MecanumIOSparkBase implements MecanumIO {
 	private static final double GEAR_RATIO = DriveConstants.TrainConstants.kDriveMotorGearRatio;
 	private static final double KP = DriveConstants.TrainConstants.overallDriveMotorConstantContainer
@@ -50,10 +50,7 @@ public class MecanumIOSparkBase implements MecanumIO {
 			.newFixedThreadPool(8);
 
 	public MecanumIOSparkBase(GyroIO gyroIO) {
-		this.gyroIO = gyroIO; 
-
-		
-
+		this.gyroIO = gyroIO;
 		if (DriveConstants.robotMotorController == MotorVendor.NEO_SPARK_MAX) {
 			frontLeft = new CANSparkMax(DriveConstants.kFrontLeftDrivePort,
 					MotorType.kBrushless);
@@ -150,14 +147,10 @@ public class MecanumIOSparkBase implements MecanumIO {
 		inputs.frontRightDriveTemp = frontRight.getMotorTemperature();
 		inputs.backRightDriveTemp = backRight.getMotorTemperature();
 		gyroIO.updateInputs(gyroInputs);
-		
-
-			
-					inputs.gyroConnected = gyroInputs.connected;
-			inputs.gyroYaw = gyroInputs.yawPosition;
-			inputs.collisionDetected = gyroInputs.collisionDetected;
-
-
+		Logger.processInputs("Gyro", gyroInputs);
+		inputs.gyroConnected = gyroInputs.connected;
+		inputs.gyroYaw = gyroInputs.yawPosition;
+		inputs.collisionDetected = gyroInputs.collisionDetected;
 	}
 
 	@Override

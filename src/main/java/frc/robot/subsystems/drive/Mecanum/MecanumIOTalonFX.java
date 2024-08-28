@@ -123,6 +123,7 @@ public class MecanumIOTalonFX implements MecanumIO {
 	@Override
 	public void updateInputs(MecanumIOInputs inputs) {
 		gyroIO.updateInputs(gyroInputs);
+		Logger.processInputs("Gyro", gyroInputs);
 		BaseStatusSignal.refreshAll(frontLeftVelocity, frontLeftAppliedVolts,
 				frontLeftCurrent, frontLeftTemp, frontRightVelocity,
 				frontRightAppliedVolts, frontRightCurrent, frontRightTemp,

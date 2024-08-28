@@ -1,7 +1,6 @@
 // IO implementation creation files are from
 // http://github.com/Mechanical-Advantage
 // Be sure to understand how it creates the "inputs" variable and edits it!
-//TODO: Fix mecanum/tank IOs to use the gyroIO function
 package frc.robot.subsystems.drive.Mecanum;
 
 import static edu.wpi.first.units.Units.*;
@@ -141,7 +140,10 @@ public class Mecanum extends SubsystemChecker implements DrivetrainS {
 				getFrontRightPositionMeters(), getBackLeftPositionMeters(),
 				getBackRightPositionMeters());
 	}
-
+	/**SIM ONLY */
+	public void updateSim(double dtSeconds){
+		io.updateSim(dtSeconds);
+	}
 	@Override
 	public void periodic() {
 		io.updateInputs(inputs);
@@ -160,7 +162,7 @@ public class Mecanum extends SubsystemChecker implements DrivetrainS {
 			rawGyroRotation = inputs.gyroYaw;
 		} else {
 			rawGyroRotation = rawGyroRotation.plus(
-					new Rotation2d(m_ChassisSpeeds.omegaRadiansPerSecond * .02));
+					new Rotation2d(m_ChassisSpeeds.omegaRadiansPerSecond * .004));
 		}
 		Translation2d linearFieldVelocity = new Translation2d(
 				m_ChassisSpeeds.vxMetersPerSecond,
@@ -199,7 +201,7 @@ public class Mecanum extends SubsystemChecker implements DrivetrainS {
 
 	/** Stops the drive. */
 	@Override
-	public void stopModules() { io.setVoltage(0.0, 0.0, 0.0, 0.0); }
+	public void stopModules() { driveVelocity(new MecanumDriveWheelSpeeds()); }
 
 	/**
 	 * Returns a command to run a quasistatic test in the specified direction.
