@@ -9,6 +9,7 @@ public class LEDConstants {
 	ledPort = 9,
 			//The number of LEDs in the PANELS (if there are multiple, they are daisy chained and MUST be the same dimensions)
 			ledCols = 16, ledRows = 32,
+			ledColsPerPanel = 16, ledRowsPerPanel = 16,
 			// amount of LEDs in the light strip
 			ledBufferLength = 512,
 			//at what LED index the 2nd panel starts (if there is only 1 panel, this is the same as ledBufferLength)		

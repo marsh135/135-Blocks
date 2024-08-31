@@ -26,6 +26,7 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import com.ctre.phoenix6.hardware.ParentDevice;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,12 +42,13 @@ public class LEDs extends SubsystemChecker {
 	public static AddressableLEDBuffer ledBuffer;
 	public static AddressableLEDSim ledSim;
 	public static String gifStorage;
+	public static boolean override = false, debounce = false;
 	public static LEDStates[] currentLEDState = { LEDStates.OFF, LEDStates.OFF
 	};
 	private int[][] color = new int[][] { LEDConstants.disabledRGB,
 			LEDConstants.disabledRGB
 	};
-	private int[] flashRateMs = new int[] { 1000, 1000
+	public int[] flashRateMs = new int[] { 1000, 1000
 	};
 	private double[] brightness = new double[] { 1, 1
 	}; //1 is max
@@ -64,7 +66,7 @@ public class LEDs extends SubsystemChecker {
 	private double[] breathingPhaseOffset = new double[] { 0, 0
 	}; //Holds the current phase of the breathing
 	//Gif variables
-	private static ImageStates[] currentImageState = new ImageStates[] {
+	public static ImageStates[] currentImageState = new ImageStates[] {
 			ImageStates.debug, ImageStates.debug
 	}; //Holds the current image state
 	private static int[] currentImageIndex = new int[] { 0, 0
@@ -78,12 +80,14 @@ public class LEDs extends SubsystemChecker {
 	private static int SPARKING = 120;
 	private static boolean reverseDirection = true;
 	//Text variables
-	private static String[] fontString = new String[] { "Monospaced", "Monospaced"
+	private static String[] fontString = new String[] { "Monospaced",
+			"Monospaced"
 	};
 	private static String[] text = new String[] { "ROBOT!", "135"
 	};
 	private double[] offsetX = new double[] { 0, 0
 	};
+	public static int textIndex = 0;
 
 	public LEDs() {
 		switch (Constants.currentMode) {
@@ -210,9 +214,10 @@ public class LEDs extends SubsystemChecker {
 		double endVal = getEndVal(panelIndex);
 		double length = getLength(panelIndex);
 		for (int index = (int) startVal; index < endVal; index++) {
+			int pixelIndex = getLedIndex(index);
 			currentHue = (int) (m_firstHue[panelIndex] + (index * 180 / length))
 					% 180;
-			ledBuffer.setHSV(index, currentHue, 255, 128);
+			ledBuffer.setHSV(pixelIndex, currentHue, 255, 128);
 		}
 		m_firstHue[panelIndex] = Math.round((m_firstHue[panelIndex]
 				+ (3.6 / (flashRateMs[panelIndex] / 1000.0))));
@@ -240,10 +245,11 @@ public class LEDs extends SubsystemChecker {
 			if (Double.isNaN(ratio)) {
 				ratio = 0.5;
 			}
+			int pixelIndex = getLedIndex(i);
 			int red = (int) (color[panelIndex][0] * ratio);
 			int green = (int) (color[panelIndex][1] * ratio);
 			int blue = (int) (color[panelIndex][2] * ratio);
-			ledBuffer.setRGB(i, (int) (red * brightness[panelIndex]),
+			ledBuffer.setRGB(pixelIndex, (int) (red * brightness[panelIndex]),
 					(int) (green * brightness[panelIndex]),
 					(int) (blue * brightness[panelIndex]));
 		}
@@ -258,8 +264,7 @@ public class LEDs extends SubsystemChecker {
 		double startVal = getStartVal(panelIndex);
 		double endVal = getEndVal(panelIndex);
 		double length = getLength(panelIndex);
-		double constantMultiplier = 10.25
-				* (length / 512);
+		double constantMultiplier = 10.25 * (length / 512);
 		double phaseInc = constantMultiplier / (flashRateMs[panelIndex] / 1000.0); // 10.25 was found to be this functions period FOR 512 PIXELS!
 		for (int i = (int) startVal; i < endVal; i++) {
 			double x = (wavePhaseOffset[panelIndex] + i) * (2.0 * Math.PI)
@@ -273,13 +278,14 @@ public class LEDs extends SubsystemChecker {
 			if (Double.isNaN(ratio)) {
 				ratio = 0.5;
 			}
+			int pixelIndex = getLedIndex(i);
 			int red = (int) (((color[panelIndex][0] * (1 - ratio))
 					+ (altColor[panelIndex][0] * ratio)) * brightness[panelIndex]);
 			int green = (int) (((color[panelIndex][1] * (1 - ratio))
 					+ (altColor[panelIndex][1] * ratio)) * brightness[panelIndex]);
 			int blue = (int) (((color[panelIndex][2] * (1 - ratio))
 					+ (altColor[panelIndex][2] * ratio)) * brightness[panelIndex]);
-			ledBuffer.setRGB(i, (int) (red * brightness[panelIndex]),
+			ledBuffer.setRGB(pixelIndex, (int) (red * brightness[panelIndex]),
 					(int) (green * brightness[panelIndex]),
 					(int) (blue * brightness[panelIndex]));
 		}
@@ -299,10 +305,11 @@ public class LEDs extends SubsystemChecker {
 		double startVal = getStartVal(panelIndex);
 		double endVal = getEndVal(panelIndex);
 		for (int i = (int) startVal; i < endVal; i++) {
+			int pixelIndex = getLedIndex(i);
 			int red = (int) (color[panelIndex][0] * intensity);
 			int green = (int) (color[panelIndex][1] * intensity);
 			int blue = (int) (color[panelIndex][2] * intensity);
-			ledBuffer.setRGB(i, (int) (red * brightness[panelIndex]),
+			ledBuffer.setRGB(pixelIndex, (int) (red * brightness[panelIndex]),
 					(int) (green * brightness[panelIndex]),
 					(int) (blue * brightness[panelIndex]));
 		}
@@ -326,7 +333,9 @@ public class LEDs extends SubsystemChecker {
 			double startVal = getStartVal(panelIndex);
 			double endVal = getEndVal(panelIndex);
 			for (int i = (int) startVal; i < endVal; i++) {
-				ledBuffer.setRGB(i,
+				//Convert i into pixel index, since it's wired up differently
+				int pixelIndex = getLedIndex(i);
+				ledBuffer.setRGB(pixelIndex,
 						(int) (Byte.toUnsignedInt(currentLedStates[i
 								- ((int) LEDConstants.ledBufferCutoff * panelIndex)][0])
 								* brightness[panelIndex]),
@@ -376,6 +385,7 @@ public class LEDs extends SubsystemChecker {
 				} else {
 					pixelNumber = j;
 				}
+				pixelNumber = getLedIndex(pixelNumber);
 				ledBuffer.setRGB(pixelNumber,
 						(int) (color.red * 255 * brightness[panelIndex]),
 						(int) (color.green * 255 * brightness[panelIndex]),
@@ -402,14 +412,16 @@ public class LEDs extends SubsystemChecker {
 	/**
 	 * @param panelIndex
 	 */
-
 	private void setText(int panelIndex) {
 		String textToDisplay = text[panelIndex];
 		BufferedImage textImage = renderTextToImage(textToDisplay,
 				(int) LEDConstants.ledCols, (int) LEDConstants.ledRows, panelIndex,
 				offsetX[panelIndex]);
-		double startVal = getStartVal(panelIndex);
-		double endVal = getEndVal(panelIndex);
+		double startVal = 0, endVal = LEDConstants.ledBufferLength;
+		if (LEDConstants.ledBufferCutoff != LEDConstants.ledBufferLength) {
+			startVal = getStartVal(panelIndex);
+			endVal = getEndVal(panelIndex);
+		}
 		double numUpdatesInFlashRate = flashRateMs[panelIndex] / 20;
 		double increment = textLengthInPixels / numUpdatesInFlashRate;
 		// Increment the offsetX
@@ -430,9 +442,36 @@ public class LEDs extends SubsystemChecker {
 	}
 
 	private int getLedIndex(int x, int y) {
-		return y * (int) LEDConstants.ledCols + x; // Adjust based on how your matrix is wired
+		if (Constants.currentMode == Mode.SIM) {
+			return y * (int) LEDConstants.ledCols + x;
+		}
+		int index = 0, wrappedX = x;
+		if (x >= LEDConstants.ledColsPerPanel) {
+			index += LEDConstants.ledColsPerPanel
+					* (int) LEDConstants.ledRowsPerPanel;
+			wrappedX %= (int) LEDConstants.ledColsPerPanel;
+		}
+		// Determine if the row is reversed (serpentine)
+		if (y % 2 == 1) {
+			// Reverse the x coordinate for odd rows
+			wrappedX = (int) LEDConstants.ledColsPerPanel - 1 - wrappedX;
+		}
+		// Calculate the index
+		index += y * LEDConstants.ledColsPerPanel + wrappedX;
+		return index;
 	}
+
+	private int getLedIndex(int index) {
+		if (Constants.currentMode == Mode.SIM) {
+			return index;
+		}
+		int translatedY = index / (int) LEDConstants.ledCols;
+		int translatedX = index % (int) LEDConstants.ledCols;
+		return getLedIndex(translatedX, translatedY);
+	}
+
 	double textLengthInPixels = 16;
+
 	private BufferedImage renderTextToImage(String text, int width, int height,
 			int panelIndex, double offsetX) {
 		BufferedImage image = new BufferedImage(width, height,
@@ -443,7 +482,7 @@ public class LEDs extends SubsystemChecker {
 		g.setColor(new java.awt.Color(color[panelIndex][0], color[panelIndex][1],
 				color[panelIndex][2]));
 		// Draw the text to the image
-		g.drawString(text, (int)-offsetX, height-2);
+		g.drawString(text, (int) -offsetX, height - 2);
 		textLengthInPixels = g.getFontMetrics().stringWidth(text);
 		g.dispose();
 		return image;
@@ -574,15 +613,17 @@ public class LEDs extends SubsystemChecker {
 				updateFlashRate((int) arg, state.panelIndex);
 			} else if (arg instanceof ImageStates) {
 				updateImageState((ImageStates) arg, state.panelIndex);
-			}else if (arg instanceof String) {
+			} else if (arg instanceof String) {
 				if (!hasText) {
+					System.out.println("Text: " + arg);
 					text[state.panelIndex] = (String) arg;
+					offsetX[state.panelIndex] = 0;
+					//reset 
 					hasText = true;
 				} else {
 					fontString[state.panelIndex] = (String) arg;
 				}
-			} 
-			else {
+			} else {
 				throw new IllegalArgumentException("Unexpected argument type: "
 						+ arg.getClass().getSimpleName());
 			}
