@@ -167,9 +167,8 @@ public class TankIOSparkBase implements TankIO {
 
 	/**
 	 * Takes the radians per second of the motor (rad/s), multiplies it by the
-	 * gear ratio and then multiplies by the radius (diameter over 2) to get the
-	 * wheel speed. Then it divides the wheel speed by the max speed to get a
-	 * proportion, then multiplies by 12v to get a voltage
+	 * gear ratio and then multiplies by the radius (diameter over 2) to get the wheel speed.
+	 * Then divides the wheel speed by the max speed to get a proportion,
 	 * 
 	 * @param radPerSec radians per second of the motor
 	 * @return
