@@ -23,6 +23,7 @@ import frc.robot.utils.drive.Sensors.GyroIO;
 import frc.robot.utils.drive.Sensors.GyroIOInputsAutoLogged;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utils.drive.DriveConstants;
+import frc.robot.utils.drive.DriveConstants.TrainConstants;
 import frc.robot.utils.selfCheck.SelfChecking;
 import frc.robot.utils.selfCheck.drive.SelfCheckingTalonFX;
 
@@ -172,12 +173,31 @@ public class TankIOTalonFX implements TankIO {
 	@Override
 	public void setVelocity(double leftRadPerSec, double rightRadPerSec,
 			double leftFFVolts, double rightFFVolts) {
-		leftLeader.setControl(new VelocityVoltage(
-				Units.radiansToRotations(leftRadPerSec * GEAR_RATIO), 0.0, true,
-				leftFFVolts, 0, false, false, false));
-		rightLeader.setControl(new VelocityVoltage(
-				Units.radiansToRotations(rightRadPerSec * GEAR_RATIO), 0.0, true,
-				rightFFVolts, 0, false, false, false));
+		if (DriveConstants.enablePID) {
+			leftLeader.setControl(new VelocityVoltage(
+					Units.radiansToRotations(leftRadPerSec * GEAR_RATIO), 0.0, true,
+					leftFFVolts, 0, false, false, false));
+			rightLeader.setControl(new VelocityVoltage(
+					Units.radiansToRotations(rightRadPerSec * GEAR_RATIO), 0.0, true,
+					rightFFVolts, 0, false, false, false));
+		} else {
+			setVoltage(convertRadPerSecondToVoltage(leftRadPerSec),
+					convertRadPerSecondToVoltage(rightRadPerSec));
+		}
+	}
+
+	/**
+	 * Takes the radians per second of the motor (rad/s), multiplies it by the
+	 * gear ratio and then multiplies by the radius (diameter over 2) to get the
+	 * wheel speed. Then it divides the wheel speed by the max speed to get a
+	 * proportion, then multiplies by 12v to get a voltage
+	 * 
+	 * @param radPerSec radians per second of the motor
+	 * @return
+	 */
+	public double convertRadPerSecondToVoltage(double radPerSec) {
+		return (12 * radPerSec * GEAR_RATIO * TrainConstants.kWheelDiameter
+				/ (2 * DriveConstants.kMaxSpeedMetersPerSecond));
 	}
 
 	@Override

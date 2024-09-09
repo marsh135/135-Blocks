@@ -19,6 +19,7 @@ import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utils.drive.DriveConstants;
 import frc.robot.utils.drive.DriveConstants.MotorVendor;
+import frc.robot.utils.drive.DriveConstants.TrainConstants;
 import frc.robot.utils.selfCheck.SelfChecking;
 import frc.robot.utils.selfCheck.drive.SelfCheckingSparkBase;
 import frc.robot.utils.drive.Sensors.GyroIO;
@@ -134,6 +135,7 @@ public class TankIOSparkBase implements TankIO {
 		leftLeader.setVoltage(leftVolts);
 		rightLeader.setVoltage(rightVolts);
 	}
+
 	@Override
 	public void setCurrentLimit(int amps) {
 		currentExecutor.execute(() -> {
@@ -144,23 +146,43 @@ public class TankIOSparkBase implements TankIO {
 		});
 		Logger.recordOutput("Drive/CurrentLimit", amps);
 	}
+
 	@Override
 	public void setVelocity(double leftRadPerSec, double rightRadPerSec,
 			double leftFFVolts, double rightFFVolts) {
-		leftPID.setReference(
-				Units.radiansPerSecondToRotationsPerMinute(
-						leftRadPerSec * GEAR_RATIO),
-				ControlType.kVelocity, 0, leftFFVolts);
-		rightPID.setReference(
-				Units.radiansPerSecondToRotationsPerMinute(
-						rightRadPerSec * GEAR_RATIO),
-				ControlType.kVelocity, 0, rightFFVolts);
+		if (DriveConstants.enablePID) {
+			leftPID.setReference(
+					Units.radiansPerSecondToRotationsPerMinute(
+							leftRadPerSec * GEAR_RATIO),
+					ControlType.kVelocity, 0, leftFFVolts);
+			rightPID.setReference(
+					Units.radiansPerSecondToRotationsPerMinute(
+							rightRadPerSec * GEAR_RATIO),
+					ControlType.kVelocity, 0, rightFFVolts);
+		} else {
+			setVoltage(convertRadPerSecondToVoltage(leftRadPerSec),
+					convertRadPerSecondToVoltage(rightRadPerSec));
+		}
+	}
+
+	/**
+	 * Takes the radians per second of the motor (rad/s), multiplies it by the
+	 * gear ratio and then multiplies by the radius (diameter over 2) to get the
+	 * wheel speed. Then it divides the wheel speed by the max speed to get a
+	 * proportion, then multiplies by 12v to get a voltage
+	 * 
+	 * @param radPerSec radians per second of the motor
+	 * @return
+	 */
+	public double convertRadPerSecondToVoltage(double radPerSec) {
+		return (12 * radPerSec * GEAR_RATIO * TrainConstants.kWheelDiameter
+				/ (2 * DriveConstants.kMaxSpeedMetersPerSecond));
 	}
 
 	@Override
 	public List<SelfChecking> getSelfCheckingHardware() {
 		List<SelfChecking> hardware = new ArrayList<SelfChecking>();
-		 hardware.addAll(gyro.getSelfCheckingHardware());
+		hardware.addAll(gyro.getSelfCheckingHardware());
 		hardware.add(new SelfCheckingSparkBase("FrontLeftDrive", leftLeader));
 		hardware.add(new SelfCheckingSparkBase("BackLeftDrive", leftFollower));
 		hardware.add(new SelfCheckingSparkBase("FrontRightDrive", rightLeader));
