@@ -106,7 +106,7 @@ public class DataHandler {
 					port++; // Try the next port
 				}
 			}
-			System.err.println(port + "GOOD!");
+			System.err.println(port + " GOOD!");
 			if (Constants.currentMode == Constants.Mode.SIM) {
 				PortForwarder.add(port, "localhost", port);
 			} else {
@@ -434,7 +434,7 @@ public class DataHandler {
 
 	/**
 	 * Updates state of the handler, and continually sends any data via network
-	 * tables. Whenever we have a change in NetworkTables, log that as well.q
+	 * tables. Whenever we have a change in NetworkTables, log that as well. 
 	 */
 	private static int oldTime = 0;
 
