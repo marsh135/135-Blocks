@@ -21,6 +21,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
+import frc.robot.Constants.FRCMatchState;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.SubsystemChecker;
@@ -34,7 +36,6 @@ import frc.robot.utils.drive.LocalADStarAK;
 import frc.robot.utils.drive.Sensors.GyroIO;
 import frc.robot.utils.drive.Sensors.GyroIOInputsAutoLogged;
 import frc.robot.utils.selfCheck.SelfChecking;
-import com.choreo.lib.*;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -137,7 +138,6 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	private Twist2d robotVelocity = new Twist2d();
 	private final SwerveSetpointGenerator setpointGenerator;
 	private boolean collisionDetected;
-	private int x = 0;
 	boolean[] isSkidding = new boolean[] { false, false, false, false
 	};
 
@@ -184,8 +184,10 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		});
 		PathPlannerLogging.setLogTargetPoseCallback((targetPose) -> {
 			//If it's a Choreo auto, find the ChoreoTrajectory and record it
-			if (RobotContainer.currentAuto != null && (Constants.currentMatchState == FRCMatchState.AUTOINIT || Constants.currentMatchState == FRCMatchState.AUTO))
-			List<PathPlannerPath> auto = PathPlannerAuto.getPathGroupFromAutoFile(RobotContainer.currentAuto.getName());
+			if (RobotContainer.currentAuto != null && (Constants.currentMatchState == FRCMatchState.AUTOINIT || Constants.currentMatchState == FRCMatchState.AUTO)){
+				@SuppressWarnings("unused")
+				List<PathPlannerPath> auto = PathPlannerAuto.getPathGroupFromAutoFile(RobotContainer.currentAuto.getName());
+			}
 
 			Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
 		});
@@ -486,6 +488,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 				// Optimize setpoints
 				optimizedSetpointStates[i] = currentSetpoint.moduleStates()[i];
 				if (currentDriveMode == DriveMode.TRAJECTORY) {
+					@SuppressWarnings("unused")
 					edu.wpi.first.math.Vector<N2> wheelDirection = VecBuilder.fill(
 							optimizedSetpointStates[i].angle.getCos(),
 							optimizedSetpointStates[i].angle.getSin());
