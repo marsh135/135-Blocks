@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -21,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.FastSwerve.Setpoints.SwerveSetpointGenerator;
@@ -32,6 +34,7 @@ import frc.robot.utils.drive.LocalADStarAK;
 import frc.robot.utils.drive.Sensors.GyroIO;
 import frc.robot.utils.drive.Sensors.GyroIOInputsAutoLogged;
 import frc.robot.utils.selfCheck.SelfChecking;
+import com.choreo.lib.*;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -45,6 +48,8 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
@@ -132,6 +137,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	private Twist2d robotVelocity = new Twist2d();
 	private final SwerveSetpointGenerator setpointGenerator;
 	private boolean collisionDetected;
+	private int x = 0;
 	boolean[] isSkidding = new boolean[] { false, false, false, false
 	};
 
@@ -177,6 +183,10 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 					activePath.toArray(new Pose2d[activePath.size()]));
 		});
 		PathPlannerLogging.setLogTargetPoseCallback((targetPose) -> {
+			//If it's a Choreo auto, find the ChoreoTrajectory and record it
+			if (RobotContainer.currentAuto != null && (Constants.currentMatchState == FRCMatchState.AUTOINIT || Constants.currentMatchState == FRCMatchState.AUTO))
+			List<PathPlannerPath> auto = PathPlannerAuto.getPathGroupFromAutoFile(RobotContainer.currentAuto.getName());
+
 			Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
 		});
 		sysId = new SysIdRoutine(
@@ -475,8 +485,21 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 			for (int i = 0; i < modules.length; i++) {
 				// Optimize setpoints
 				optimizedSetpointStates[i] = currentSetpoint.moduleStates()[i];
-				optimizedSetpointTorques[i] = new SwerveModuleState(0.0,
-						optimizedSetpointStates[i].angle);
+				if (currentDriveMode == DriveMode.TRAJECTORY) {
+					edu.wpi.first.math.Vector<N2> wheelDirection = VecBuilder.fill(
+							optimizedSetpointStates[i].angle.getCos(),
+							optimizedSetpointStates[i].angle.getSin());
+					//double[] currentWheelForces = getWheelForces();
+					// Get wheel torque from Choreo
+					/*edu.wpi.first.math.Vector<N2> wheelForces = 
+					double wheelTorque = wheelForces.dot(wheelDirection)
+							* DriveConstants.TrainConstants.kWheelDiameter/2.0;
+					optimizedSetpointTorques[i] = new SwerveModuleState(wheelTorque,
+							optimizedSetpointStates[i].angle);*/
+				} else {
+					optimizedSetpointTorques[i] = new SwerveModuleState(0.0,
+							optimizedSetpointStates[i].angle);
+				}
 				modules[i].runSetpoint(optimizedSetpointStates[i],
 						optimizedSetpointTorques[i]);
 			}

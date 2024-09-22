@@ -20,7 +20,7 @@ public class DriveConstants {
 	//If true, tank/mecanum use their native PIDs. If false, tank/mech output their voltages directly
 	public static boolean enablePID = true;
 	public static MotorVendor robotMotorController = MotorVendor.NEO_SPARK_MAX;
-	public static DriveTrainType driveType = DriveTrainType.MECANUM;
+	public static DriveTrainType driveType = DriveTrainType.SWERVE;
 	public static GyroType gyroType = GyroType.NAVX;
 	public static DCMotor getDriveTrainMotors(int number){
 		switch (robotMotorController) {
@@ -146,9 +146,9 @@ public class DriveConstants {
 				kT = 1.0 / DCMotor.getKrakenX60Foc(1).KtNMPerAmp, kDeadband = 0.05,
 				weight = Units.lbsToKilograms(110);
 		public static final MotorConstantContainer pathplannerTranslationConstantContainer = new MotorConstantContainer(
-				0.001, 0.001, 0.001, 5, 2.4, 0.006),
+				0.001, 0.001, 0.001, 5, 0, 0),
 				pathplannerRotationConstantContainer = new MotorConstantContainer(
-						0.001, 0.001, 0.001, 5, 0, 0.006),
+						0.001, 0.001, 0.001, 5, 0, 0),
 				//rev 
 				overallTurningMotorConstantContainer = new MotorConstantContainer(
 						0.001, 0.001, 0.001, 5, 0, 0.001), //Average the turning motors for these vals.
