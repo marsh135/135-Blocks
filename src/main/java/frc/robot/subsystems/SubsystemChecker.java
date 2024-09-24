@@ -22,7 +22,6 @@ import frc.robot.utils.selfCheck.drive.SelfCheckingPigeon2;
 import frc.robot.utils.selfCheck.drive.SelfCheckingSparkBase;
 import frc.robot.utils.selfCheck.drive.SelfCheckingTalonFX;
 import frc.robot.Robot;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -34,7 +33,7 @@ public abstract class SubsystemChecker extends SubsystemBase {
 	}
 
 	private final ConcurrentLinkedQueue<SubsystemFault> faults = new ConcurrentLinkedQueue<>();
-	private final List<SelfChecking> hardware = new ArrayList<>();
+	private final ConcurrentLinkedQueue<SelfChecking> hardware = new ConcurrentLinkedQueue<>();
 	private final String statusTable;
 	private final boolean checkErrors;
 
@@ -175,11 +174,7 @@ public abstract class SubsystemChecker extends SubsystemBase {
 	// Method to check for faults while the robot is operating normally
 	private void checkForFaults() {
 		if (checkErrors) {
-			for (SelfChecking device : hardware) {
-				for (SubsystemFault fault : device.checkForFaults()) {
-					addFault(fault);
-				}
-			}
+			hardware.forEach(device -> device.checkForFaults().forEach(this::addFault));
 		}
 	}
 }
