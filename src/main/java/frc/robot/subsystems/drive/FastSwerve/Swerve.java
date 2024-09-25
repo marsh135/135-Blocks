@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -21,10 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants;
-import frc.robot.Constants.FRCMatchState;
 import frc.robot.Robot;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.subsystems.drive.DrivetrainS;
 import frc.robot.subsystems.drive.FastSwerve.Setpoints.SwerveSetpointGenerator;
@@ -39,18 +35,13 @@ import frc.robot.utils.selfCheck.SelfChecking;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
-import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
@@ -78,15 +69,9 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		AUTOMATIC, ALWAYS_BRAKE, ALWAYS_COAST
 	}
 
-	@AutoLog
-	public static class OdometryTimestampInputs {
-		public double[] timestamps = new double[] {};
-	}
-
-	public static final Lock odometryLock = new ReentrantLock();
 	public static final Queue<Double> timestampQueue = new ArrayBlockingQueue<>(
 			20);
-	private final OdometryTimestampInputsAutoLogged odometryTimestampInputs = new OdometryTimestampInputsAutoLogged();
+	private final OdometryThreadInputsAutoLogged odometryTimestampInputs;
 	private final GyroIO gyroIO;
 	private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
 	private final Module[] modules = new Module[4];
@@ -105,7 +90,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	private CoastRequest coastRequest = CoastRequest.AUTOMATIC;
 	private boolean lastEnabled = false;
 	private ChassisSpeeds desiredSpeeds = new ChassisSpeeds();
-	private static final double poseBufferSizeSeconds = 2.0;
+	private static final double poseBufferSizeSeconds = 1.0;
 	private Pose2d odometryPose = new Pose2d();
 	private Pose2d estimatedPose = new Pose2d();
 	private SwerveSetpoint currentSetpoint = new SwerveSetpoint(
@@ -140,6 +125,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 	private boolean collisionDetected;
 	boolean[] isSkidding = new boolean[] { false, false, false, false
 	};
+	private final OdometryThread odometryThread;
 
 	public Swerve(GyroIO gyroIO, ModuleIO fl, ModuleIO fr, ModuleIO bl,
 			ModuleIO br) {
@@ -183,12 +169,6 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 					activePath.toArray(new Pose2d[activePath.size()]));
 		});
 		PathPlannerLogging.setLogTargetPoseCallback((targetPose) -> {
-			//If it's a Choreo auto, find the ChoreoTrajectory and record it
-			if (RobotContainer.currentAuto != null && (Constants.currentMatchState == FRCMatchState.AUTOINIT || Constants.currentMatchState == FRCMatchState.AUTO)){
-				@SuppressWarnings("unused")
-				List<PathPlannerPath> auto = PathPlannerAuto.getPathGroupFromAutoFile(RobotContainer.currentAuto.getName());
-			}
-
 			Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
 		});
 		sysId = new SysIdRoutine(
@@ -202,6 +182,9 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 				}, null, this));
 		setBrakeMode(true);
 		registerSelfCheckHardware();
+		this.odometryThread = OdometryThread.createInstance();
+		this.odometryTimestampInputs = new OdometryThreadInputsAutoLogged();
+		this.odometryThread.start();
 	}
 
 	/** Add odometry observation */
@@ -215,6 +198,8 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 			twist = new Twist2d(twist.dx, twist.dy,
 					observation.gyroAngle().minus(lastGyroAngle).getRadians());
 			lastGyroAngle = observation.gyroAngle();
+		} else {
+			twist = new Twist2d(twist.dx, twist.dy, twist.dtheta);
 		}
 		// Add twist to odometry pose
 		odometryPose = odometryPose.exp(twist);
@@ -229,10 +214,12 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		try {
 			if (poseBuffer.getInternalBuffer().lastKey()
 					- poseBufferSizeSeconds > observation.timestamp()) {
+				System.out.println("OUTSIDE BUFFER");
 				return;
 			}
 		}
 		catch (NoSuchElementException ex) {
+			System.err.println("NO ELEMENT!");
 			return;
 		}
 		// Get odometry based pose at timestamp
@@ -370,12 +357,13 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		//Check if modules are skidding
 		isSkidding = calculateSkidding();
 		// Update & process inputs
-		odometryLock.lock();
+		odometryThread.lockOdometry();
+		odometryThread.updateInputs(odometryTimestampInputs);
 		// Read timestamps from odometry thread and fake sim timestamps
-		odometryTimestampInputs.timestamps = timestampQueue.stream()
+		odometryTimestampInputs.measurementTimeStamps = timestampQueue.stream()
 				.mapToDouble(Double::valueOf).toArray();
-		if (odometryTimestampInputs.timestamps.length == 0) { //for sim
-			odometryTimestampInputs.timestamps = new double[] {
+		if (odometryTimestampInputs.measurementTimeStamps.length == 0) { //for sim
+			odometryTimestampInputs.measurementTimeStamps = new double[] {
 					Timer.getFPGATimestamp()
 			};
 		}
@@ -391,11 +379,11 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 		Logger.processInputs("Drive/Gyro", gyroInputs);
 		// Read inputs from modules
 		Arrays.stream(modules).forEach(Module::updateInputs);
-		odometryLock.unlock();
+		odometryThread.unlockOdometry();
 		ModuleLimits currentModuleLimits = DriveConstants.moduleLimitsFree; //implement limiting based off what you need
 		// Calculate the min odometry position updates across all modules
 		int minOdometryUpdates = IntStream
-				.of(odometryTimestampInputs.timestamps.length,
+				.of(odometryTimestampInputs.measurementTimeStamps.length,
 						Arrays.stream(modules)
 								.mapToInt(module -> module.getModulePositions().length)
 								.min().orElse(0))
@@ -419,7 +407,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 			// Filtering based on delta wheel positions
 			boolean includeMeasurement = true;
 			if (lastPositions != null) {
-				double dt = odometryTimestampInputs.timestamps[i] - lastTime;
+				double dt = odometryTimestampInputs.measurementTimeStamps[i] - lastTime;
 				for (int j = 0; j < modules.length; j++) {
 					double velocity = (wheelPositions.positions[j].distanceMeters
 							- lastPositions.positions[j].distanceMeters) / dt;
@@ -439,8 +427,8 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 			if (includeMeasurement) {
 				lastPositions = wheelPositions;
 				addOdometryObservation(new OdometryObservation(wheelPositions, yaw,
-						odometryTimestampInputs.timestamps[i]));
-				lastTime = odometryTimestampInputs.timestamps[i];
+						odometryTimestampInputs.measurementTimeStamps[i]));
+				lastTime = odometryTimestampInputs.measurementTimeStamps[i];
 			}
 		}
 		// Update current velocities use gyro when possible
@@ -487,22 +475,8 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 			for (int i = 0; i < modules.length; i++) {
 				// Optimize setpoints
 				optimizedSetpointStates[i] = currentSetpoint.moduleStates()[i];
-				if (currentDriveMode == DriveMode.TRAJECTORY) {
-					@SuppressWarnings("unused")
-					edu.wpi.first.math.Vector<N2> wheelDirection = VecBuilder.fill(
-							optimizedSetpointStates[i].angle.getCos(),
-							optimizedSetpointStates[i].angle.getSin());
-					//double[] currentWheelForces = getWheelForces();
-					// Get wheel torque from Choreo
-					/*edu.wpi.first.math.Vector<N2> wheelForces = 
-					double wheelTorque = wheelForces.dot(wheelDirection)
-							* DriveConstants.TrainConstants.kWheelDiameter/2.0;
-					optimizedSetpointTorques[i] = new SwerveModuleState(wheelTorque,
-							optimizedSetpointStates[i].angle);*/
-				} else {
-					optimizedSetpointTorques[i] = new SwerveModuleState(0.0,
-							optimizedSetpointStates[i].angle);
-				}
+				optimizedSetpointTorques[i] = new SwerveModuleState(0.0,
+						optimizedSetpointStates[i].angle);
 				modules[i].runSetpoint(optimizedSetpointStates[i],
 						optimizedSetpointTorques[i]);
 			}
@@ -521,12 +495,15 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 
 	@Override
 	public void setChassisSpeeds(ChassisSpeeds speeds) {
-		desiredSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
+		desiredSpeeds = new ChassisSpeeds(speeds.vxMetersPerSecond,
+				speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
+		desiredSpeeds = ChassisSpeeds.discretize(desiredSpeeds, 0.02);
 	}
 
 	@Override
 	public void setDiscreteChassisSpeeds(ChassisSpeeds speeds) {
-		desiredSpeeds = speeds;
+		desiredSpeeds = new ChassisSpeeds(speeds.vxMetersPerSecond,
+				speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
 	}
 
 	/**
@@ -687,7 +664,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 											false, true);
 								}
 							}
-						}), run(() -> setChassisSpeeds(new ChassisSpeeds(0, 0, -0.5)))
+						}), run(() -> setChassisSpeeds(new ChassisSpeeds(0, 0, -2)))
 								.withTimeout(2.0),
 						runOnce(() -> {
 							for (int i = 0; i < modules.length; i++) {
@@ -735,7 +712,7 @@ public class Swerve extends SubsystemChecker implements DrivetrainS {
 									}
 								}
 							}
-						}), run(() -> setChassisSpeeds(new ChassisSpeeds(0, 0, 0.5)))
+						}), run(() -> setChassisSpeeds(new ChassisSpeeds(0, 0, 2)))
 								.withTimeout(2.0),
 						runOnce(() -> {
 							for (int i = 0; i < modules.length; i++) {
