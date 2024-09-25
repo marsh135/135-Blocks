@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Constants;
 import frc.robot.Constants.FRCMatchState;
@@ -486,8 +487,8 @@ public class LEDs extends SubsystemChecker {
 				}
 		});
 		// Character '!'
-		CHAR_MAP.put('!',
-				new boolean[][] { { false, false, false, true, true, false, false, false
+		CHAR_MAP.put('!', new boolean[][] {
+				{ false, false, false, true, true, false, false, false
 				}, { false, false, false, true, true, false, false, false
 				}, { false, false, false, true, true, false, false, false
 				}, { false, false, false, true, true, false, false, false
@@ -496,7 +497,7 @@ public class LEDs extends SubsystemChecker {
 				}, { false, false, false, true, true, false, false, false
 				}, { false, false, false, true, true, false, false, false
 				}
-				});
+		});
 		// Character '?'
 		CHAR_MAP.put('?',
 				new boolean[][] { { false, true, true, true, true, true, true, false
@@ -515,7 +516,8 @@ public class LEDs extends SubsystemChecker {
 	public static AddressableLEDSim ledSim;
 	public static String gifStorage;
 	public static boolean override = false, debounce = false;
-	public static LEDStates[] currentLEDState = { LEDStates.SOLID_COLOR, LEDStates.SOLID_COLOR
+	public static LEDStates[] currentLEDState = { LEDStates.SOLID_COLOR,
+			LEDStates.SOLID_COLOR
 	};
 	private int[][] color = new int[][] { LEDConstants.whiteRGB,
 			LEDConstants.whiteRGB
@@ -620,6 +622,9 @@ public class LEDs extends SubsystemChecker {
 			case TEXT:
 				setText(i);
 				break;
+			case DEBUG_PIXEL:
+				setDebugPixel(i);
+				break;
 			}
 		}
 		leds.setData(ledBuffer);
@@ -674,6 +679,29 @@ public class LEDs extends SubsystemChecker {
 					(int) (color[panelIndex][0] * brightness[panelIndex]),
 					(int) (color[panelIndex][1] * brightness[panelIndex]),
 					(int) (color[panelIndex][2] * brightness[panelIndex]));
+		}
+	}
+
+	/**
+	 * Sets an individual pixel to the main color
+	 * 
+	 * @param panelIndex
+	 */
+	private void setDebugPixel(int panelIndex) {
+		double x = SmartDashboard.getNumber("ledXPosition", 0);
+		double y = SmartDashboard.getNumber("ledYPosition", 0);
+		SmartDashboard.putNumber("ledXPosition", x);
+		SmartDashboard.putNumber("ledYPosition", y);
+		int pixelIndex = getLedIndex((int) x, (int) y);
+		ledBuffer.setRGB(pixelIndex,
+				(int) (color[panelIndex][0] * brightness[panelIndex]),
+				(int) (color[panelIndex][1] * brightness[panelIndex]),
+				(int) (color[panelIndex][2] * brightness[panelIndex]));
+		//every pixel besides that, OFF.
+		for (int i = 0; i < LEDConstants.ledBufferLength; i++) {
+			if (i != pixelIndex) {
+				ledBuffer.setRGB(i, 0, 0, 0);
+			}
 		}
 	}
 
@@ -921,7 +949,8 @@ public class LEDs extends SubsystemChecker {
 		}
 		int index = 0, wrappedX = x;
 		// If top right, X's are reversed
-		if (LEDConstants.panelOrientation == PanelOrientation.TOP_RIGHT || LEDConstants.panelOrientation == PanelOrientation.BOTTOM_RIGHT) {
+		if (LEDConstants.panelOrientation == PanelOrientation.TOP_RIGHT
+				|| LEDConstants.panelOrientation == PanelOrientation.BOTTOM_RIGHT) {
 			wrappedX = (int) LEDConstants.ledCols - 1 - x;
 		}
 		if (x >= LEDConstants.ledColsPerPanel) {
@@ -931,7 +960,8 @@ public class LEDs extends SubsystemChecker {
 		}
 		int adjustedY = y;
 		// If bottom right / left, Y's are reversed
-		if (LEDConstants.panelOrientation == PanelOrientation.BOTTOM_RIGHT || LEDConstants.panelOrientation == PanelOrientation.BOTTOM_LEFT) {
+		if (LEDConstants.panelOrientation == PanelOrientation.BOTTOM_RIGHT
+				|| LEDConstants.panelOrientation == PanelOrientation.BOTTOM_LEFT) {
 			adjustedY = (int) LEDConstants.ledRowsPerPanel - 1 - y;
 		}
 		// Determine if the row is reversed (serpentine)
@@ -941,7 +971,6 @@ public class LEDs extends SubsystemChecker {
 		}
 		// Calculate the index
 		index += adjustedY * LEDConstants.ledColsPerPanel + wrappedX;
-
 		return index;
 	}
 
@@ -1228,16 +1257,17 @@ public class LEDs extends SubsystemChecker {
 	@Override
 	public void setCurrentLimit(int amps) { return; }
 
-    public void runHandler() { 
+	public void runHandler() {
 		//Handle the LED logic here
 		if (Constants.currentMatchState == FRCMatchState.DISABLED) {
-			updateLEDState(new LEDState(LEDStates.SOLID_COLOR,0), LEDConstants.disabledRGB);
+			updateLEDState(new LEDState(LEDStates.SOLID_COLOR, 0),
+					LEDConstants.disabledRGB);
 		} else if (Constants.currentMatchState == FRCMatchState.AUTO) {
-			updateLEDState(new LEDState(LEDStates.RAINBOW,0), 1000);
+			updateLEDState(new LEDState(LEDStates.RAINBOW, 0), 1000);
 		} else if (Constants.currentMatchState == FRCMatchState.TELEOP) {
-			updateLEDState(new LEDState(LEDStates.FIRE,0), 20);
+			updateLEDState(new LEDState(LEDStates.FIRE, 0), 20);
 		} else if (Constants.currentMatchState == FRCMatchState.TEST) {
-			updateLEDState(new LEDState(LEDStates.GIF,0), 40, ImageStates.gif1);
+			updateLEDState(new LEDState(LEDStates.GIF, 0), 40, ImageStates.gif1);
 		}
-	 }
+	}
 }
