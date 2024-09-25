@@ -505,9 +505,12 @@ public class DataHandler {
 			String jsonResponse = gson.toJson(responseData);
 			// Convert JSON to string and send as response
 			out.println(jsonResponse);
+			RobotContainer.piConnection = "OK";
 			SmartDashboard.putString("PiConnection", "OK");
+
 		}
 		catch (Exception e) {
+			RobotContainer.piConnection = "DISCONNECTED";
 			SmartDashboard.putString("PiConnection", "PI NOT DETECTED");
 		}
 		//We are not using network tables
