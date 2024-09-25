@@ -12,10 +12,10 @@ import frc.robot.subsystems.SubsystemChecker;
 import frc.robot.utils.leds.LEDConstants;
 import frc.robot.utils.leds.LEDConstants.ImageStates;
 import frc.robot.utils.leds.LEDConstants.LEDStates;
+import frc.robot.utils.leds.LEDConstants.PanelOrientation;
 import frc.robot.utils.maths.CommonMath;
 import frc.robot.utils.maths.TimeUtil;
 
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -38,15 +38,487 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 public class LEDs extends SubsystemChecker {
+	// Basic 5x7 bitmap for ASCII characters A-Z
+	private static final Map<Character, boolean[][]> CHAR_MAP = new HashMap<>();
+	static {
+		// Character 'A'
+		CHAR_MAP.put('A', new boolean[][] {
+				{ false, false, true, true, true, true, false, false
+				}, { false, true, false, false, false, false, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, true, true, true, true, true, true, true, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}
+		});
+		// Character 'B'
+		CHAR_MAP.put('B',
+				new boolean[][] { { true, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, true, true, true, true, true, true, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, true, true, true, true, true, true, false
+				}
+				});
+		// Character 'C'
+		CHAR_MAP.put('C',
+				new boolean[][] { { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+				});
+		// Character 'D'
+		CHAR_MAP.put('D',
+				new boolean[][] { { true, true, true, true, true, true, false, false
+				}, { true, false, false, false, false, false, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, true, false
+				}, { true, true, true, true, true, true, true, false
+				}
+				});
+		// Character 'E'
+		CHAR_MAP.put('E',
+				new boolean[][] { { true, true, true, true, true, true, true, true
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, true, true, true, true, true, true, true
+				}
+				});
+		// Character 'F'
+		CHAR_MAP.put('F',
+				new boolean[][] { { true, true, true, true, true, true, true, true
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}
+				});
+		// Character 'G'
+		CHAR_MAP.put('G',
+				new boolean[][] { { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, true, true, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+				});
+		// Character 'H'
+		CHAR_MAP.put('H', new boolean[][] {
+				{ true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, true, true, true, true, true, true, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}
+		});
+		// Character 'I'
+		CHAR_MAP.put('I',
+				new boolean[][] { { true, true, true, true, true, true, true, true
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { true, true, true, true, true, true, true, true
+				}
+				});
+		// Character 'J'
+		CHAR_MAP.put('J', new boolean[][] {
+				{ false, false, false, false, true, true, true, true
+				}, { false, false, false, false, false, false, true, true
+				}, { false, false, false, false, false, false, true, true
+				}, { false, false, false, false, false, false, true, true
+				}, { false, false, false, false, false, false, true, true
+				}, { true, false, false, false, false, false, true, true
+				}, { true, false, false, false, false, false, true, true
+				}, { false, true, true, true, true, true, false, false
+				}
+		});
+		// Character 'K'
+		CHAR_MAP.put('K', new boolean[][] {
+				{ true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, true, false
+				}, { true, false, false, false, false, true, false, false
+				}, { true, true, true, true, true, false, false, false
+				}, { true, false, false, false, false, true, false, false
+				}, { true, false, false, false, false, false, true, false
+				}, { true, false, false, false, false, false, false, true
+				}
+		});
+		// Character 'L'
+		CHAR_MAP.put('L', new boolean[][] {
+				{ true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, true, true, true, true, true, true, true
+				}
+		});
+		// Character 'M'
+		CHAR_MAP.put('M', new boolean[][] {
+				{ true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, true, false, false, false, false, true, true
+				}, { true, false, true, false, false, true, false, true
+				}, { true, false, false, true, true, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}
+		});
+		// Character 'N'
+		CHAR_MAP.put('N', new boolean[][] {
+				{ true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, true, false, false, false, false, false, true
+				}, { true, false, true, false, false, false, false, true
+				}, { true, false, false, true, false, false, false, true
+				}, { true, false, false, false, true, false, false, true
+				}, { true, false, false, false, false, true, false, true
+				}, { true, false, false, false, false, false, true, true
+				}
+		});
+		// Character 'O'
+		CHAR_MAP.put('O',
+				new boolean[][] { { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+				});
+		// Character 'P'
+		CHAR_MAP.put('P',
+				new boolean[][] { { true, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}
+				});
+		// Character 'Q'
+		CHAR_MAP.put('Q',
+				new boolean[][] { { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, true, false, true
+				}, { true, false, false, false, false, false, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+				});
+		// Character 'R'
+		CHAR_MAP.put('R',
+				new boolean[][] { { true, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}
+				});
+		// Character 'S'
+		CHAR_MAP.put('S', new boolean[][] {
+				{ false, false, true, true, true, true, true, false
+				}, { false, true, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, false
+				}, { false, true, true, true, true, true, true, true
+				}, { false, false, false, false, false, false, false, true
+				}, { false, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+		});
+		// Character 'T'
+		CHAR_MAP.put('T',
+				new boolean[][] { { true, true, true, true, true, true, true, true
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}
+				});
+		// Character 'U'
+		CHAR_MAP.put('U', new boolean[][] {
+				{ true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+		});
+		// Character 'V'
+		CHAR_MAP.put('V', new boolean[][] {
+				{ true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, false, false, false, false, true, false
+				}, { false, true, false, false, false, false, true, false
+				}, { false, false, true, false, false, true, false, false
+				}, { false, false, true, false, false, true, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}
+		});
+		// Character 'W'
+		CHAR_MAP.put('W', new boolean[][] {
+				{ true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, true, true, false, false, true
+				}, { true, false, true, false, false, true, false, true
+				}, { true, true, false, false, false, false, true, true
+				}, { true, false, false, false, false, false, false, true
+				}
+		});
+		// Character 'X'
+		CHAR_MAP.put('X', new boolean[][] {
+				{ true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, false, false, false, false, true, false
+				}, { false, false, true, false, false, true, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, true, false, false, true, false, false
+				}, { false, true, false, false, false, false, true, false
+				}, { true, false, false, false, false, false, false, true
+				}
+		});
+		// Character 'Y'
+		CHAR_MAP.put('Y', new boolean[][] {
+				{ true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, false, false, false, false, true, false
+				}, { false, false, true, false, false, true, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}
+		});
+		// Character 'Z'
+		CHAR_MAP.put('Z',
+				new boolean[][] { { true, true, true, true, true, true, true, true
+				}, { false, false, false, false, false, true, true, false
+				}, { false, false, false, false, true, false, false, false
+				}, { false, false, false, true, false, false, false, false
+				}, { false, false, true, false, false, false, false, false
+				}, { false, true, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, true, true, true, true, true, true, true
+				}
+				});
+		// Character '0'
+		CHAR_MAP.put('0',
+				new boolean[][] { { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, true, true
+				}, { true, false, false, false, false, true, false, true
+				}, { true, false, false, false, true, false, false, true
+				}, { true, false, false, true, false, false, false, true
+				}, { true, false, true, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+				});
+		// Character '1'
+		CHAR_MAP.put('1', new boolean[][] {
+				{ false, false, true, false, false, false, false, false
+				}, { false, true, true, false, false, false, false, false
+				}, { true, false, true, false, false, false, false, false
+				}, { false, false, true, false, false, false, false, false
+				}, { false, false, true, false, false, false, false, false
+				}, { false, false, true, false, false, false, false, false
+				}, { false, false, true, false, false, false, false, false
+				}, { true, true, true, true, true, true, true, true
+				}
+		});
+		// Character '2'
+		CHAR_MAP.put('2',
+				new boolean[][] { { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { false, false, false, false, false, false, true, false
+				}, { false, false, false, false, false, true, false, false
+				}, { false, false, false, false, true, false, false, false
+				}, { false, false, false, true, false, false, false, false
+				}, { false, false, true, false, false, false, false, false
+				}, { true, true, true, true, true, true, true, true
+				}
+				});
+		// Character '3'
+		CHAR_MAP.put('3',
+				new boolean[][] { { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { false, false, false, false, false, false, true, false
+				}, { false, false, false, false, false, true, false, false
+				}, { false, false, false, false, false, false, true, false
+				}, { false, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+				});
+		// Character '4'
+		CHAR_MAP.put('4', new boolean[][] {
+				{ false, false, false, false, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, true, false, true, false, false, false
+				}, { false, true, false, false, true, false, false, false
+				}, { true, true, true, true, true, true, true, true
+				}, { false, false, false, false, true, false, false, false
+				}, { false, false, false, false, true, false, false, false
+				}, { false, false, false, false, true, false, false, false
+				}
+		});
+		// Character '5'
+		CHAR_MAP.put('5',
+				new boolean[][] { { true, true, true, true, true, true, true, true
+				}, { true, false, false, false, false, false, false, false
+				}, { true, false, false, false, false, false, false, false
+				}, { true, true, true, true, true, true, true, false
+				}, { false, false, false, false, false, false, false, true
+				}, { false, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+				});
+		// Character '6'
+		CHAR_MAP.put('6',
+				new boolean[][] { { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, false
+				}, { true, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+				});
+		// Character '7'
+		CHAR_MAP.put('7',
+				new boolean[][] { { true, true, true, true, true, true, true, true
+				}, { false, false, false, false, false, false, false, true
+				}, { false, false, false, false, false, false, true, false
+				}, { false, false, false, false, false, true, false, false
+				}, { false, false, false, false, true, false, false, false
+				}, { false, false, false, true, false, false, false, false
+				}, { false, false, false, true, false, false, false, false
+				}, { false, false, false, true, false, false, false, false
+				}
+				});
+		// Character '8'
+		CHAR_MAP.put('8',
+				new boolean[][] { { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+				});
+		// Character '9'
+		CHAR_MAP.put('9',
+				new boolean[][] { { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { true, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, true
+				}, { false, false, false, false, false, false, false, true
+				}, { false, false, false, false, false, false, false, true
+				}, { false, true, true, true, true, true, true, false
+				}
+				});
+		// Character ' '
+		CHAR_MAP.put(' ', new boolean[][] {
+				{ false, false, false, false, false, false, false, false
+				}, { false, false, false, false, false, false, false, false
+				}, { false, false, false, false, false, false, false, false
+				}, { false, false, false, false, false, false, false, false
+				}, { false, false, false, false, false, false, false, false
+				}, { false, false, false, false, false, false, false, false
+				}, { false, false, false, false, false, false, false, false
+				}, { false, false, false, false, false, false, false, false
+				}
+		});
+		// Character '!'
+		CHAR_MAP.put('!',
+				new boolean[][] { { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, false, false, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}
+				});
+		// Character '?'
+		CHAR_MAP.put('?',
+				new boolean[][] { { false, true, true, true, true, true, true, false
+				}, { true, false, false, false, false, false, false, true
+				}, { false, false, false, false, false, true, true, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, false, false, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}, { false, false, false, true, true, false, false, false
+				}
+				});
+	}
 	public static AddressableLED leds;
 	public static AddressableLEDBuffer ledBuffer;
 	public static AddressableLEDSim ledSim;
 	public static String gifStorage;
 	public static boolean override = false, debounce = false;
-	public static LEDStates[] currentLEDState = { LEDStates.OFF, LEDStates.OFF
+	public static LEDStates[] currentLEDState = { LEDStates.SOLID_COLOR, LEDStates.SOLID_COLOR
 	};
-	private int[][] color = new int[][] { LEDConstants.disabledRGB,
-			LEDConstants.disabledRGB
+	private int[][] color = new int[][] { LEDConstants.whiteRGB,
+			LEDConstants.whiteRGB
 	};
 	public int[] flashRateMs = new int[] { 1000, 1000
 	};
@@ -83,7 +555,7 @@ public class LEDs extends SubsystemChecker {
 	private static String[] fontString = new String[] { "Monospaced",
 			"Monospaced"
 	};
-	private static String[] text = new String[] { "ROBOT!", "135"
+	private static String[] text = new String[] { "ROBOT?", "135"
 	};
 	private double[] offsetX = new double[] { 0, 0
 	};
@@ -414,6 +886,8 @@ public class LEDs extends SubsystemChecker {
 	 */
 	private void setText(int panelIndex) {
 		String textToDisplay = text[panelIndex];
+		textLengthInPixels = textToDisplay.length()
+				* (ORIGINAL_CHAR_WIDTH + SPACING) + 1 * SPACING;
 		BufferedImage textImage = renderTextToImage(textToDisplay,
 				(int) LEDConstants.ledCols, (int) LEDConstants.ledRows, panelIndex,
 				offsetX[panelIndex]);
@@ -446,23 +920,34 @@ public class LEDs extends SubsystemChecker {
 			return y * (int) LEDConstants.ledCols + x;
 		}
 		int index = 0, wrappedX = x;
+		// If top right, X's are reversed
+		if (LEDConstants.panelOrientation == PanelOrientation.TOP_RIGHT || LEDConstants.panelOrientation == PanelOrientation.BOTTOM_RIGHT) {
+			wrappedX = (int) LEDConstants.ledCols - 1 - x;
+		}
 		if (x >= LEDConstants.ledColsPerPanel) {
 			index += LEDConstants.ledColsPerPanel
 					* (int) LEDConstants.ledRowsPerPanel;
 			wrappedX %= (int) LEDConstants.ledColsPerPanel;
 		}
+		int adjustedY = y;
+		// If bottom right / left, Y's are reversed
+		if (LEDConstants.panelOrientation == PanelOrientation.BOTTOM_RIGHT || LEDConstants.panelOrientation == PanelOrientation.BOTTOM_LEFT) {
+			adjustedY = (int) LEDConstants.ledRowsPerPanel - 1 - y;
+		}
 		// Determine if the row is reversed (serpentine)
-		if (y % 2 == 1) {
+		if (adjustedY % 2 == 1) {
 			// Reverse the x coordinate for odd rows
 			wrappedX = (int) LEDConstants.ledColsPerPanel - 1 - wrappedX;
 		}
 		// Calculate the index
-		index += y * LEDConstants.ledColsPerPanel + wrappedX;
+		index += adjustedY * LEDConstants.ledColsPerPanel + wrappedX;
+
 		return index;
 	}
 
 	private int getLedIndex(int index) {
-		if (Constants.currentMode == Mode.SIM) {
+		if (Constants.currentMode == Mode.SIM
+				|| LEDConstants.ledBufferCutoff <= index) {
 			return index;
 		}
 		int translatedY = index / (int) LEDConstants.ledCols;
@@ -470,22 +955,44 @@ public class LEDs extends SubsystemChecker {
 		return getLedIndex(translatedX, translatedY);
 	}
 
-	double textLengthInPixels = 16;
+	double textLengthInPixels = 7;
+	private static final int ORIGINAL_CHAR_WIDTH = 8;
+	private static final int ORIGINAL_CHAR_HEIGHT = 8;
+	private static final int SPACING = 1;
 
-	private BufferedImage renderTextToImage(String text, int width, int height,
+	public BufferedImage renderTextToImage(String text, int width, int height,
 			int panelIndex, double offsetX) {
 		BufferedImage image = new BufferedImage(width, height,
 				BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
-		Font font = new Font(fontString[panelIndex], Font.PLAIN, height);
-		g.setFont(font);
+		// Set the text color
 		g.setColor(new java.awt.Color(color[panelIndex][0], color[panelIndex][1],
 				color[panelIndex][2]));
-		// Draw the text to the image
-		g.drawString(text, (int) -offsetX, height - 2);
-		textLengthInPixels = g.getFontMetrics().stringWidth(text);
+		// Calculate starting position to center the text
+		//int startX = (width - ((charWidth + spacing) * text.length() - spacing)) / 2;
+		int startY = (height - ORIGINAL_CHAR_HEIGHT) / 2;
+		// Render each character in the text
+		int x = (int) -offsetX;
+		for (char c : text.toCharArray()) {
+			drawCharacter(g, c, x, startY);
+			x += ORIGINAL_CHAR_WIDTH + SPACING; // Move to the next character position
+		}
 		g.dispose();
 		return image;
+	}
+
+	private static void drawCharacter(Graphics2D g, char c, int x, int y) {
+		// Get the character bitmap
+		boolean[][] bitmap = CHAR_MAP.getOrDefault(Character.toUpperCase(c),
+				CHAR_MAP.get('A')); // Default to 'A' if unknown
+		// Draw the bitmap pixel by pixel, scaling to the new character width and height
+		for (int row = 0; row < ORIGINAL_CHAR_HEIGHT; row++) {
+			for (int col = 0; col < ORIGINAL_CHAR_WIDTH; col++) {
+				if (bitmap[row][col]) {
+					g.fillRect(x + col, y + row, 1, 1); // Draw a single pixel
+				}
+			}
+		}
 	}
 
 	/**

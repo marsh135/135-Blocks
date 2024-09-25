@@ -8,8 +8,7 @@ public class LEDConstants {
 	//The physical port where the LED strip is plugged in 
 	ledPort = 9,
 			//The number of LEDs in the PANELS (if there are multiple, they are daisy chained and MUST be the same dimensions)
-			ledCols = 16, ledRows = 32,
-			ledColsPerPanel = 16, ledRowsPerPanel = 16,
+			ledCols = 16, ledRows = 32, ledColsPerPanel = 16, ledRowsPerPanel = 16,
 			// amount of LEDs in the light strip
 			ledBufferLength = 512,
 			//at what LED index the 2nd panel starts (if there is only 1 panel, this is the same as ledBufferLength)		
@@ -21,13 +20,21 @@ public class LEDConstants {
 	}, pinkRGB = new int[] { 255, 192, 203
 	}, goldRGB = new int[] { 255, 215, 0
 	}, disabledRGB = new int[] { 0, 0, 0
+	}, whiteRGB = new int[] { 255, 255, 255
 	};
 
 	public enum LEDStates {
 		OFF, SOLID_COLOR, RAINBOW, SINE_WAVE, WAVE2, BREATHING, GIF, FIRE, TEXT
 	}
-
-	//Wave constnats
+	public enum PanelOrientation{
+		TOP_RIGHT, TOP_LEFT, BOTTOM_RIGHT, BOTTOM_LEFT
+	}
+	public static PanelOrientation panelOrientation = PanelOrientation.BOTTOM_LEFT;
+	//String constants
+	public static String[] phrases = new String[]{
+		"TOUCHDOWN", "GO PENN", "WIN!" 
+	};
+	//Wave constants
 	public static double waveExponent = .5;
 
 	public enum ImageStates {
