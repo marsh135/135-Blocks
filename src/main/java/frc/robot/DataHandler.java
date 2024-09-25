@@ -110,7 +110,7 @@ public class DataHandler {
 					port++; // Try the next port
 				}
 			}
-			System.err.println(port + "GOOD!");
+			System.err.println(port + " GOOD!");
 			if (Constants.currentMode == Constants.Mode.SIM) {
 				PortForwarder.add(port, "localhost", port);
 			} else {
@@ -438,7 +438,7 @@ public class DataHandler {
 
 	/**
 	 * Updates state of the handler, and continually sends any data via network
-	 * tables. Whenever we have a change in NetworkTables, log that as well.q
+	 * tables. Whenever we have a change in NetworkTables, log that as well. 
 	 */
 	public static void updateHandlerState() {
 		String dataHandlerJson = SmartDashboard.getString("ToRobot", "default");
@@ -525,9 +525,12 @@ public class DataHandler {
 			String jsonResponse = gson.toJson(responseData);
 			// Convert JSON to string and send as response
 			out.println(jsonResponse);
+			RobotContainer.piConnection = "OK";
 			SmartDashboard.putString("PiConnection", "OK");
+
 		}
 		catch (Exception e) {
+			RobotContainer.piConnection = "DISCONNECTED";
 			SmartDashboard.putString("PiConnection", "PI NOT DETECTED");
 		}
 		//We are not using network tables
