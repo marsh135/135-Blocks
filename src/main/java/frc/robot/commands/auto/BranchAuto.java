@@ -57,7 +57,7 @@ public class BranchAuto extends Command {
 		} else {
 			//We've lost all sense of time. End the command.
 			System.out.println("BranchAuto is finished BAD");
-			isFinished = false;
+			isFinished = true;
 		}
 	}
 
