@@ -26,7 +26,7 @@ public class LoggableTunedNumber {
 	 * @param dashboardKey Key on dashboard
 	 */
 	public LoggableTunedNumber(String dashboardKey) {
-		this.key = tableKey + "/" + dashboardKey
+		this.key = tableKey + "/" + dashboardKey;
 	}
 
 	/**
