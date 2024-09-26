@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Path to the Constants.java file
+CONSTANTS_FILE="src/java/frc/robot/Constants.java"
+
+# Use sed to find and replace the currentMode assignment
+sed -i 's/currentMode = .*;/currentMode = Mode.SIM;/' "$CONSTANTS_FILE"
+
+echo "Updated currentMode to Mode.SIM in $CONSTANTS_FILE"
+
 # Run the FRC simulator in the background
 ./gradlew simulateJava &
 
