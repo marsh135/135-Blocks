@@ -1,4 +1,4 @@
-name: FRC Gradle Build
+name: build
 
 on:
   push:
