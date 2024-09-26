@@ -49,4 +49,4 @@ jobs:
 
       # Run FRC robot simulation for 30 seconds
       - name: Run FRC robot simulation
-        run: run_simulation.sh
+        run: ./run_simulation.sh
