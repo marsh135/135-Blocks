@@ -3,10 +3,10 @@ name: FRC Gradle Build
 on:
   push:
     branches:
-      - main
+      - '*'
   pull_request:
     branches:
-      - main
+      - '*'
 
 jobs:
   build:
@@ -36,7 +36,9 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
+      # Grant execute permission for the run_simulation.sh script
+      - name: Grant execute permission for run_simulation.sh
+        run: chmod +x run_simulation.sh
       # Build the FRC robot code using GradleRIO
       - name: Build with GradleRIO
         run: ./gradlew build
@@ -45,6 +47,6 @@ jobs:
       - name: Run FRC unit tests
         run: ./gradlew test
 
-      # Run simulation tests if needed
+      # Run FRC robot simulation for 30 seconds
       - name: Run FRC robot simulation
-        run: ./gradlew simulateJava # Or another relevant simulation command
+        run: ./run_simulation.sh
