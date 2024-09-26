@@ -24,7 +24,7 @@ public interface DoubleJointedArmIO {
 	/** Updates the set of loggable inputs. */
 	public default void updateInputs(DoubleJointedArmIOInputs inputs) {}
 
-	/** Dumb control the doubleJointedArm using volts, no State Space */
+	/** Dumb control the doubleJointedArm using volts, no State-Space */
 	public default void setVoltage(List<Double> volts) {}
 
 	/** Update the motor controllers to a specificed max amperage */
