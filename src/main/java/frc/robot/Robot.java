@@ -4,6 +4,12 @@
 package frc.robot;
 
 import org.littletonrobotics.urcl.URCL;
+
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.SignalLogger;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathConstraints;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import org.littletonrobotics.junction.LogFileUtil;
@@ -14,18 +20,24 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import frc.robot.Constants.FRCMatchState;
 import frc.robot.Constants.SysIdRoutines;
-import frc.robot.utils.SimGamePiece;
+import frc.robot.subsystems.SubsystemChecker;
+import frc.robot.subsystems.drive.FastSwerve.Swerve.ModuleLimits;
+import frc.robot.utils.LoggableTunedNumber;
+import frc.robot.utils.drive.DriveConstants;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.net.PortForwarder;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -38,10 +50,11 @@ public class Robot extends LoggedRobot {
 	private Command m_autonomousCommand;
 	private RobotContainer m_robotContainer;
 	public static boolean isRed;
-	private boolean hasBeenEnabled, isPracticeDSMode = false;
+	private boolean isPracticeDSMode = false;
 	private double lastMatchTime = 0;
 	public static SysIdRoutines runningTest = Constants.SysIdRoutines
 			.values()[0];
+	private static final List<PeriodicFunction> periodicFunctions = new ArrayList<>();
 
 	/**
 	 * This function is run when the robot is first started up and should be used
@@ -49,19 +62,42 @@ public class Robot extends LoggedRobot {
 	 */
 	@Override
 	public void robotInit() {
-		PortForwarder.add(22, "orangepi@photonvision.local", 22);
-		PortForwarder.add(22, "photonvision.local", 22);
+		if (!Constants.isCompetition) {
+			PortForwarder.add(22, "orangepi@photonvision.local", 22);
+			PortForwarder.add(22, "photonvision.local", 22);
+		}
 		// Instantiate our RobotContainer.  This will perform all our button bindings, and put our
 		// autonomous chooser on the dashboard
 		Logger.recordMetadata("ProjectName", "The Chef"); // Set a metadata value
+		Logger.recordMetadata("TuningMode",
+				Boolean.toString(Constants.isTuningPID));
+		Logger.recordMetadata("RuntimeType", getRuntimeType().toString());
+		Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
+		Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
+		Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+		Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
+		Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+		switch (BuildConstants.DIRTY) {
+		case 0:
+			Logger.recordMetadata("GitDirty", "All changes committed");
+			break;
+		case 1:
+			Logger.recordMetadata("GitDirty", "Uncomitted changes");
+			break;
+		default:
+			Logger.recordMetadata("GitDirty", "Unknown");
+			break;
+		}
 		switch (Constants.currentMode) {
 		case REAL:
 			// Running on a real robot, log to a USB stick ("/U/logs")
 			Logger.addDataReceiver(new WPILOGWriter());
 			Logger.addDataReceiver(new NT4Publisher());
+			SignalLogger.setPath("/media/sda1/");
 			break;
 		case SIM:
 			// Running a physics simulator, log to NT
+			Logger.addDataReceiver(new WPILOGWriter());
 			Logger.addDataReceiver(new NT4Publisher());
 			break;
 		case REPLAY:
@@ -73,13 +109,16 @@ public class Robot extends LoggedRobot {
 					new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
 			break;
 		}
-		DataLogManager.start();
-		DriverStation.startDataLog(DataLogManager.getLog());
 		Logger.registerURCL(URCL.startExternal(Constants.manCanIdsToNames()));
 		Logger.start();
 		m_robotContainer = new RobotContainer();
 		DataHandler.startHandler("C:");
 		SmartDashboard.putString("QUEUED TEST", runningTest.toString()); //Put what Test we're going to run on the test controller.
+		for (Subsystem subsys : RobotContainer.getAllSubsystems()) {
+			if (subsys instanceof SubsystemChecker) {
+				((SubsystemChecker) subsys).allowFaultPolling(false);
+			}
+		}
 	}
 
 	/**
@@ -92,6 +131,19 @@ public class Robot extends LoggedRobot {
 	 */
 	@Override
 	public void robotPeriodic() {
+		double startTime = Logger.getRealTimestamp();
+		LoggableTunedNumber.ifChanged(hashCode(), () -> {
+			DriveConstants.pathConstraints = new PathConstraints(
+					DriveConstants.pathConstraints.getMaxVelocityMps(),
+					DriveConstants.maxTranslationalAcceleration.get(),
+					DriveConstants.pathConstraints.getMaxAngularVelocityRps(),
+					DriveConstants.maxRotationalAcceleration.get());
+			DriveConstants.moduleLimitsFree = new ModuleLimits(
+					DriveConstants.kMaxSpeedMetersPerSecond,
+					DriveConstants.maxTranslationalAcceleration.get(),
+					DriveConstants.maxRotationalAcceleration.get());
+		}, DriveConstants.maxTranslationalAcceleration,
+				DriveConstants.maxRotationalAcceleration);
 		DataHandler.updateHandlerState();
 		SmartDashboard.putString("Match State",
 				Constants.currentMatchState.name());
@@ -106,6 +158,18 @@ public class Robot extends LoggedRobot {
 				.values()[RobotContainer.currentTest];
 		SmartDashboard.putString("QUEUED TEST", runningTest.toString());
 		CommandScheduler.getInstance().run();
+		for (PeriodicFunction f : periodicFunctions) {
+			f.runIfReady();
+		}
+		Logger.recordOutput("MemoryTotal", Runtime.getRuntime().totalMemory());
+		Logger.recordOutput("MemoryFree", Runtime.getRuntime().freeMemory());
+		SmartDashboard.putNumber("MatchTime", DriverStation.getMatchTime());
+		Logger.recordOutput("BatteryVoltage",
+				RobotController.getBatteryVoltage());
+		CANBus.CANBusStatus canBusStatus = CANBus.getStatus("rio");
+		Logger.recordOutput("CANUtil", canBusStatus.BusUtilization * 100.0);
+		double runtimeMS = (Logger.getRealTimestamp() - startTime) / 1000.0;
+		Logger.recordOutput("RobotPeriodicMS", runtimeMS);
 	}
 
 	/** This function is called once each time the robot enters Disabled mode. */
@@ -114,8 +178,13 @@ public class Robot extends LoggedRobot {
 		isPracticeDSMode = false;
 		if (Constants.currentMatchState == FRCMatchState.ENDGAME) {
 			Constants.currentMatchState = FRCMatchState.MATCHOVER;
-		}else{
+		} else {
 			Constants.currentMatchState = FRCMatchState.DISABLED;
+		}
+		for (Subsystem subsys : RobotContainer.getAllSubsystems()) {
+			if (subsys instanceof SubsystemChecker) {
+				((SubsystemChecker) subsys).allowFaultPolling(false);
+			}
 		}
 	}
 
@@ -129,9 +198,27 @@ public class Robot extends LoggedRobot {
 	@Override
 	public void autonomousInit() {
 		Constants.currentMatchState = FRCMatchState.AUTOINIT;
+		for (Subsystem subsys : RobotContainer.getAllSubsystems()) {
+			if (subsys instanceof SubsystemChecker) {
+				((SubsystemChecker) subsys).allowFaultPolling(false);
+			}
+		}
+		RobotContainer.drivetrainS.zeroHeading();
+		RobotContainer.drivetrainS.zeroHeading(); //ENSURE gyro is reset.
 		m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 		// schedule the autonomous command (example)
 		if (m_autonomousCommand != null) {
+			if (Constants.currentMode == frc.robot.Constants.Mode.SIM) {
+				if (RobotContainer.currentAuto != null) {
+					RobotContainer.fieldSimulation.resetField(true);
+					RobotContainer.fieldSimulation.getMainDriveSimulation()
+							.setSimulationWorldPose(
+									PathPlannerAuto.getStaringPoseFromAutoFile(
+											RobotContainer.currentAuto.getName()));
+					RobotContainer.fieldSimulation.getMainDriveSimulation()
+							.resetOdometryToActualRobotPose();
+				}
+			}
 			m_autonomousCommand.schedule();
 		}
 	}
@@ -145,8 +232,14 @@ public class Robot extends LoggedRobot {
 	@Override
 	public void teleopInit() {
 		Constants.currentMatchState = FRCMatchState.TELEOPINIT;
+		for (Subsystem subsys : RobotContainer.getAllSubsystems()) {
+			if (subsys instanceof SubsystemChecker) {
+				((SubsystemChecker) subsys).allowFaultPolling(false);
+			}
+		}
 		RobotContainer.field.getObject("path").setTrajectory(new Trajectory());
-		RobotContainer.field.getObject("target pose").setPose(new Pose2d(-50,-50,new Rotation2d())); //the void
+		RobotContainer.field.getObject("target pose")
+				.setPose(new Pose2d(-50, -50, new Rotation2d())); //the void
 		// This makes sure that the autonomous stops running when
 		// teleop starts running. If you want the autonomous to
 		// continue until interrupted by another command, remove
@@ -162,18 +255,25 @@ public class Robot extends LoggedRobot {
 		/*An FRC teleop period takes 2 minutes and 15 seconds (135 seconds). Endgame occurs during the last 20 seconds.
 		Based on this, endgame should initialize at 115 seconds and end at 135 seconds. */
 		double matchTime = DriverStation.getMatchTime();
+		if (RobotContainer.angleOverrider.isPresent()) {
+			Logger.recordOutput("Odometry/AimGoal",
+					new Pose2d(RobotContainer.drivetrainS.getPose().getTranslation(),
+							RobotContainer.angleOverrider.get()));
+		} else {
+			Logger.recordOutput("Odometry/AimGoal",
+					RobotContainer.drivetrainS.getPose());
+		}
 		if (DriverStation.isFMSAttached() || isPracticeDSMode) {
 			if (matchTime > 30) {
 				Constants.currentMatchState = FRCMatchState.TELEOP;
 			} else if (matchTime == 30) {
 				Constants.currentMatchState = FRCMatchState.ENDGAMEINIT;
-			} else if (matchTime < 30
-					&& matchTime > 0) {
+			} else if (matchTime < 30 && matchTime > 0) {
 				Constants.currentMatchState = FRCMatchState.ENDGAME;
 			}
 		} else {
-			if (matchTime % 1 != 0){ //is a double (running on DS)
-				if (matchTime < lastMatchTime){
+			if (matchTime % 1 != 0) { //is a double (running on DS)
+				if (matchTime < lastMatchTime) {
 					isPracticeDSMode = true;
 				}
 				lastMatchTime = matchTime;
@@ -182,24 +282,36 @@ public class Robot extends LoggedRobot {
 		}
 		if (RobotContainer.driveController.getPOV() == 0) {
 			//System.err.println("UP");
-			DataHandler.logData(new double[]{4.5,25.4}, "shouldUpdateModel");
+			DataHandler.logData(new double[] { 4.5, 25.4
+			}, "shouldUpdateModel");
 		}
 		if (RobotContainer.manipController.getAButton()) {
 			System.out.println("A");
-			DataHandler.logData(new double[]{4.5}, "modelInputs");
+			DataHandler.logData(new double[] { 4.5
+			}, "modelInputs");
 		}
 	}
 
 	@Override
 	public void testInit() {
 		Constants.currentMatchState = FRCMatchState.TESTINIT;
+		for (Subsystem subsys : RobotContainer.getAllSubsystems()) {
+			if (subsys instanceof SubsystemChecker) {
+				((SubsystemChecker) subsys).allowFaultPolling(true);
+			}
+		}
 		// Cancels all running commands at the start of test mode.
 		CommandScheduler.getInstance().cancelAll();
+		//RobotContainer.allSystemsCheck().schedule();
 	}
 
 	/** This function is called periodically during test mode. */
 	@Override
 	public void testPeriodic() {
+		for (Map.Entry<String, Double> set : RobotContainer.getAllTemps()
+				.entrySet()) {
+			Logger.recordOutput("Temps/" + set.getKey(), set.getValue());
+		}
 		Constants.currentMatchState = FRCMatchState.TEST;
 	}
 
@@ -213,16 +325,33 @@ public class Robot extends LoggedRobot {
 	/** This function is called periodically whilst in simulation. */
 	@Override
 	public void simulationPeriodic() {
-		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(RobotContainer.getCurrentDraw()));
-		SmartDashboard.putNumber("Robot Voltage", RobotController.getBatteryVoltage());
-		SimGamePiece.updateStates(); //update position of gamePieces
-		if (Constants.currentMatchState == Constants.FRCMatchState.AUTO
-				&& !hasBeenEnabled) {
-			SimGamePiece.resetPieces();
-			hasBeenEnabled = true;
-		} else if (Constants.currentMatchState == Constants.FRCMatchState.DISABLED) {
-			hasBeenEnabled = false;
+		RobotContainer.updateSimulationWorld();
+		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(
+				RobotContainer.getCurrentDraw()));
+		SmartDashboard.putNumber("Robot Voltage",
+				RobotController.getBatteryVoltage());
+	}
+
+	public static void addPeriodic(Runnable callback, double period) {
+		periodicFunctions.add(new PeriodicFunction(callback, period));
+	}
+
+	private static class PeriodicFunction {
+		private final Runnable callback;
+		private final double periodSeconds;
+		private double lastRunTimeSeconds;
+
+		private PeriodicFunction(Runnable callback, double periodSeconds) {
+			this.callback = callback;
+			this.periodSeconds = periodSeconds;
+			this.lastRunTimeSeconds = 0.0;
 		}
-		//DataHandler.updateHandlerState();
+
+		private void runIfReady() {
+			if (Logger.getTimestamp() > lastRunTimeSeconds + periodSeconds) {
+				callback.run();
+				lastRunTimeSeconds = Logger.getTimestamp();
+			}
+		}
 	}
 }
