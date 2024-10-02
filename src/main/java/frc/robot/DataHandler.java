@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+import org.littletonrobotics.junction.Logger;
+
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.IOError;
@@ -19,6 +21,7 @@ import com.google.gson.reflect.TypeToken;
 
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.BindException;
@@ -52,7 +55,8 @@ public class DataHandler {
 	private static int port = 5802;
 	private static ServerSocket serverSocket;
 	private static final boolean usingLaptop = true;
-
+	private static int oldTime = 0;
+	private static long oldTimestamp = Logger.getTimestamp();
 	/**
 	 * Creates a new Streamwriter, designed to be contingent in case of USB
 	 * disconnection and reconnection
@@ -436,8 +440,6 @@ public class DataHandler {
 	 * Updates state of the handler, and continually sends any data via network
 	 * tables. Whenever we have a change in NetworkTables, log that as well. 
 	 */
-	private static int oldTime = 0;
-
 	public static void updateHandlerState() {
 		String dataHandlerJson = SmartDashboard.getString("ToRobot", "default");
 		if (!dataHandlerJson.equals("default") && usingLaptop) {
@@ -499,6 +501,24 @@ public class DataHandler {
 				List<Double> list = makeDoubleList(rawData);
 				System.out.println(list);
 				//Remove brackets
+			}
+			if (receivedData.has("voltages")) {
+				String rawData = receivedData.get("voltages").getAsString();
+				List<Double> voltages = makeDoubleList(rawData);
+				RobotContainer.doubleJointedArmS.setVoltages(voltages.subList(0, 2));
+				RobotContainer.doubleJointedArmS.setExpectedPositions(voltages.subList(2, 4));
+				long currentTime = Logger.getTimestamp();
+				double latency = (currentTime - oldTimestamp)/1e6;
+				RobotContainer.doubleJointedArmS.latency = latency;
+				Logger.recordOutput("DoubleJointedArmS/Latency", latency);
+				oldTimestamp = currentTime;
+
+				//System.out.println(voltages);
+			}
+			if (receivedData.has("gotEncoder")){
+				if (responseData.containsKey("DoubleJointedEncoders")){
+					responseData.remove("DoubleJointedEncoders");
+				}
 			}
 			responseData.put("status", "running");
 			// Prepare response JSON

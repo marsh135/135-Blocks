@@ -64,7 +64,9 @@ public final class Constants {
 		MATCHOVER
 	}
 
-	public static enum SysIdRoutines { swerveDrive }
+	public static enum SysIdRoutines {
+		swerveDrive, flywheel, singleJointedArm, elevator
+	}
 
 	public static int PowerDistributionID = 1;
 

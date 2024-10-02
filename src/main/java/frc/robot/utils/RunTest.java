@@ -28,6 +28,26 @@ public class RunTest extends Command {
 				test = RobotContainer.drivetrainS.sysIdDynamicDrive(direction);
 			}
 			break;
+		case elevator:
+			if (isQuasiastic) {
+				test = RobotContainer.elevatorS.sysIdQuasistatic(direction);
+			} else {
+				test = RobotContainer.elevatorS.sysIdDynamic(direction);
+			}
+			break;
+		case flywheel:
+			if (isQuasiastic) {
+				test = RobotContainer.flywheelS.sysIdQuasistatic(direction);
+			} else {
+				test = RobotContainer.flywheelS.sysIdDynamic(direction);
+			}
+			break;
+		case singleJointedArm:
+			if (isQuasiastic) {
+				test = RobotContainer.armS.sysIdQuasistatic(direction);
+			} else {
+				test = RobotContainer.armS.sysIdDynamic(direction);
+			}
 		default:
 			System.err.println("NO GIVEN ROUTINE!");
 			break;
