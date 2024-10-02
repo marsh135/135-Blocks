@@ -19,9 +19,9 @@ import java.util.HashMap;
 
 public class DriveConstants {
 	//If true, tank/mecanum use their native PIDs. If false, tank/mech output their voltages directly
-	public static final boolean enablePID = true;
+	public static final boolean enablePID = false;
 	public static final MotorVendor robotMotorController = MotorVendor.NEO_SPARK_MAX;
-	public static final DriveTrainType driveType = DriveTrainType.SWERVE;
+	public static final DriveTrainType driveType = DriveTrainType.TANK;
 	public static final GyroType gyroType = GyroType.NAVX;
 	public static DCMotor getDriveTrainMotors(int number){
 		switch (robotMotorController) {
