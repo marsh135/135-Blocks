@@ -24,6 +24,7 @@ import frc.robot.subsystems.drive.Tank.TankIOSparkBase;
 import frc.robot.subsystems.drive.Tank.TankIOTalonFX;
 import frc.robot.subsystems.drive.Tank.Tank;
 import frc.robot.utils.RunTest;
+import frc.robot.subsystems.solenoid.SolenoidS;
 import frc.robot.utils.CompetitionFieldUtils.FieldConstants;
 import frc.robot.utils.CompetitionFieldUtils.Simulation.Crescendo2024FieldSimulation;
 import frc.robot.utils.CompetitionFieldUtils.Simulation.MecanumDriveSimulation;
@@ -90,6 +91,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
+	public static SolenoidS solenoidS = new SolenoidS();
 	private static final LEDs leds = new LEDs();
 	private final SendableChooser<Command> autoChooser;
 	public static XboxController driveController = new XboxController(0);
