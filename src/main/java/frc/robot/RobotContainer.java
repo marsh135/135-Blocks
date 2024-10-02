@@ -41,6 +41,7 @@ import frc.robot.utils.drive.Sensors.GyroIOSim;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.hardware.ParentDevice;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathfindingCommand;
@@ -51,6 +52,7 @@ import com.pathplanner.lib.util.PPLibTelemetry;
 import java.util.List;
 import java.util.Optional;
 
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 import edu.wpi.first.math.Pair;
@@ -69,6 +71,9 @@ import java.io.File;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+
+import frc.robot.subsystems.leds.LEDs;
+import frc.robot.utils.leds.LEDConstants.ImageStates;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -85,6 +90,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	public static DrivetrainS drivetrainS;
+	private static final LEDs leds = new LEDs();
 	private final SendableChooser<Command> autoChooser;
 	public static XboxController driveController = new XboxController(0);
 	public static XboxController manipController = new XboxController(1);
@@ -381,7 +387,6 @@ public class RobotContainer {
 		drivetrainS.setDefaultCommand(new DrivetrainC(drivetrainS));
 		Pathfinding.setPathfinder(new LocalADStarAK());
 		NamedCommands.registerCommands(autoCommands);
-		PathfindingCommand.warmupCommand().schedule();
 		if (Constants.isCompetition) {
 			PPLibTelemetry.enableCompetitionMode();
 		}
@@ -393,6 +398,10 @@ public class RobotContainer {
 				.finallyDo(() -> RobotContainer.field.getObject("target pose")
 						.setPose(new Pose2d(-50, -50, new Rotation2d())))
 				.schedule();
+		if (!leds.gifFound(ImageStates.debug)) {
+			Logger.recordOutput("LEDS/Main",
+					"No images found for " + ImageStates.debug.name());
+		}
 		autoChooser = AutoBuilder.buildAutoChooser();
 		SmartDashboard.putData(field);
 		SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -498,7 +507,8 @@ public class RobotContainer {
 	 * @return a command with all of them in a sequence.
 	 */
 	public static Command allSystemsCheck() {
-		return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand());
+		return Commands.sequence(drivetrainS.getRunnableSystemCheckCommand(),
+				leds.getSystemCheckCommand());
 	}
 
 	public static HashMap<String, Double> combineMaps(
@@ -526,7 +536,8 @@ public class RobotContainer {
 	 */
 	public static boolean allSystemsOK() {
 		return drivetrainS
-				.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK;
+				.getTrueSystemStatus() == SubsystemChecker.SystemStatus.OK
+				&& leds.getSystemStatus() == SubsystemChecker.SystemStatus.OK;
 	}
 
 	public static Collection<ParentDevice> getOrchestraDevices() {
